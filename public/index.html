@@ -1,0 +1,1068 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Aqui Ahora — Buying Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --kraft:      #EBE1CF;
+    --kraft-deep: #D9CCB1;
+    --paper:      #FAF6EE;
+    --ink:        #1B1916;
+    --carbon:     #5A5147;
+
+    --c-record:   #2F6B4F;
+    --c-shipping: #7A6A52;
+    --c-duty:     #C67A16;
+    --c-iva:      #8C1F16;
+    /* Amber is fine as a bar fill but fails contrast as small text — this is
+       the darkened variant for anywhere it has to be read. */
+    --c-duty-text: #8A5410;
+
+    --sans: 'Archivo', system-ui, sans-serif;
+    --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--kraft);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .shell { max-width: 1060px; margin: 0 auto; padding: 0 24px 90px; }
+
+  h1, h2, h3 { margin: 0; }
+  p { margin: 0 0 14px; }
+
+  /* ---------------------------------------------------- top bar */
+
+  .topbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    flex-wrap: wrap;
+    padding: 14px 0 12px;
+  }
+  .wordmark {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .wordmark span { color: var(--carbon); }
+
+  .ccy { display: flex; border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
+  .ccy button {
+    font-family: var(--mono);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    padding: 6px 13px;
+    border: 0;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .ccy button[aria-pressed="true"] { background: var(--ink); color: var(--kraft); }
+  .ccy button:focus-visible { outline: 2px solid var(--c-record); outline-offset: -3px; }
+
+  /* ---------------------------------------------------- tabs */
+
+  .tabs { display: flex; gap: 26px; border-bottom: 1.5px solid var(--ink); }
+  .tab {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0 0 11px;
+    margin-bottom: -1.5px;
+    border: 0;
+    border-bottom: 3px solid transparent;
+    background: none;
+    color: var(--carbon);
+    cursor: pointer;
+  }
+  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
+  .tab:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+
+  .panel { padding-top: 8px; }
+  .panel[hidden] { display: none; }
+
+  /* ---------------------------------------------------- hero */
+
+  .hero { padding: 56px 0 34px; }
+  .hero h1 {
+    font-size: clamp(2.1rem, 5.6vw, 3.7rem);
+    font-weight: 800;
+    line-height: 0.98;
+    letter-spacing: -0.032em;
+    margin-bottom: 20px;
+    text-wrap: balance;
+    max-width: 20ch;
+  }
+  .hero .lede { max-width: 58ch; color: var(--carbon); font-size: 1.04rem; margin: 0; }
+
+  /* ---------------------------------------------------- search */
+
+  .search {
+    margin-top: 34px;
+    border: 1.5px solid var(--ink);
+    border-radius: 3px;
+    background: var(--paper);
+    padding: 22px 22px 20px;
+  }
+  .search-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 16px;
+  }
+  .search-head h2 {
+    font-family: var(--mono);
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
+  .search-count { font-family: var(--mono); font-size: 0.68rem; color: var(--carbon); letter-spacing: 0.06em; }
+
+  .qrow { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
+  .qrow-n {
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    color: var(--carbon);
+    width: 1.6rem;
+    flex: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .qrow input {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--sans);
+    font-size: 0.95rem;
+    padding: 9px 11px;
+    border: 1.5px solid var(--kraft-deep);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .qrow input:focus { outline: 2px solid var(--c-record); outline-offset: -1px; border-color: var(--c-record); }
+  .qrow-x {
+    flex: none;
+    width: 30px; height: 30px;
+    border: 1.5px solid var(--kraft-deep);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--carbon);
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+  .qrow-x:hover { border-color: var(--c-iva); color: var(--c-iva); }
+  .qrow-x:focus-visible { outline: 2px solid var(--c-record); outline-offset: 2px; }
+
+  .search-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
+  .or { font-family: var(--mono); font-size: 0.68rem; color: var(--carbon); letter-spacing: 0.08em; text-transform: uppercase; }
+
+  .btn {
+    font-family: var(--mono);
+    font-size: 0.71rem;
+    font-weight: 600;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+    padding: 10px 18px;
+    border: 1.5px solid var(--ink);
+    border-radius: 2px;
+    background: var(--ink);
+    color: var(--kraft);
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .btn:hover:not(:disabled) { background: transparent; color: var(--ink); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+  .btn-ghost { background: transparent; color: var(--ink); }
+  .btn-ghost:hover:not(:disabled) { background: var(--ink); color: var(--kraft); }
+  .btn-link {
+    border: 0; background: none; padding: 4px 0;
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--c-record); cursor: pointer; text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .btn-link:disabled { color: var(--carbon); text-decoration: none; cursor: not-allowed; }
+  .btn-link:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+
+  /* ---------------------------------------------------- summary */
+
+  .summary {
+    margin: 42px 0 0;
+    padding: 26px 0 0;
+    border-top: 1.5px solid var(--ink);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+    gap: 30px;
+    align-items: start;
+  }
+  .summary[hidden] { display: none; }
+  @media (max-width: 720px) { .summary { grid-template-columns: 1fr; gap: 18px; } }
+
+  .summary-figure {
+    font-size: clamp(3rem, 10vw, 5rem);
+    font-weight: 800;
+    letter-spacing: -0.04em;
+    line-height: 0.9;
+    font-variant-numeric: tabular-nums;
+  }
+  .summary-label {
+    font-family: var(--mono);
+    font-size: 0.69rem;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--carbon);
+    margin-top: 9px;
+  }
+  .summary-note { font-size: 0.94rem; color: var(--carbon); margin: 0; }
+  .summary-note strong { color: var(--ink); font-weight: 600; }
+  .summary-note code { font-family: var(--mono); font-size: 0.86em; }
+
+  .legend {
+    display: flex; flex-wrap: wrap; gap: 6px 18px;
+    margin-top: 15px;
+    font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.08em; text-transform: uppercase; color: var(--carbon);
+  }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 1px; margin-right: 6px; vertical-align: -1px; }
+
+  /* ---------------------------------------------------- rows */
+
+  .results { margin-top: 40px; }
+
+  /* The row itself is the grid, so the sleeve can stretch the full height of
+     the header + bar + meta block. The detail panel sits on its own track. */
+  .row {
+    display: grid;
+    grid-template-columns: 2.2rem 86px minmax(0, 1fr);
+    grid-template-areas:
+      "rank thumb main"
+      ".    .     detail";
+    column-gap: 14px;
+    border-top: 1px solid var(--kraft-deep);
+    padding: 17px 0 15px;
+  }
+  .row:last-child { border-bottom: 1px solid var(--kraft-deep); }
+  .row.is-miss { opacity: 0.72; }
+
+  .row-rank { grid-area: rank; align-self: start; padding-top: 3px; }
+  .row-main { grid-area: main; min-width: 0; }
+
+  .row-thumb, .row-thumb-none {
+    grid-area: thumb;
+    width: 86px;
+    height: 100%;
+    align-self: stretch;
+    border-radius: 2px;
+    background: var(--paper);
+  }
+  .row-thumb { border: 1px solid var(--kraft-deep); object-fit: cover; display: block; }
+  .row-thumb-none { border: 1px dashed var(--kraft-deep); }
+
+  .row-head {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto 1.1rem;
+    grid-template-areas: "title total caret";
+    gap: 14px;
+    align-items: baseline;
+    width: 100%;
+    background: none; border: 0; padding: 0;
+    text-align: left; font: inherit; color: inherit; cursor: pointer;
+  }
+  .row-title { grid-area: title; }
+  .row-total { grid-area: total; }
+  .row-caret { grid-area: caret; }
+  .row-head:focus-visible { outline: 2px solid var(--c-record); outline-offset: 4px; }
+  .row-head[disabled] { cursor: default; }
+
+  .row-rank { font-family: var(--mono); font-size: 0.71rem; color: var(--carbon); font-variant-numeric: tabular-nums; }
+  .row-title { font-weight: 600; font-size: 1rem; line-height: 1.25; }
+  .row-artist { display: block; font-weight: 400; color: var(--carbon); font-size: 0.86rem; }
+  .row-total {
+    font-family: var(--mono); font-weight: 600; font-size: 1rem;
+    font-variant-numeric: tabular-nums; white-space: nowrap;
+  }
+  .row-total.is-none { color: var(--carbon); font-weight: 400; font-size: 0.85rem; }
+  .row-caret { font-family: var(--mono); font-size: 0.7rem; color: var(--carbon); text-align: right; }
+
+  .bar {
+    display: flex; height: 15px;
+    margin: 11px 0 0;
+    border: 1px solid var(--ink); border-radius: 2px;
+    overflow: hidden; background: var(--paper);
+  }
+  .bar[hidden] { display: none; }
+  .bar-seg { height: 100%; width: 0; transition: width 650ms cubic-bezier(.22,.61,.36,1); }
+  .bar-seg.record   { background: var(--c-record); }
+  .bar-seg.shipping { background: var(--c-shipping); }
+  .bar-seg.duty     { background: var(--c-duty); }
+  .bar-seg.iva      { background: var(--c-iva); }
+
+  /* Narrow screens: drop the rank and stack the price under the title, or the
+     title gets squeezed to an unreadable sliver. */
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 64px minmax(0, 1fr);
+      grid-template-areas:
+        "thumb main"
+        ".     detail";
+      column-gap: 12px;
+    }
+    .row-rank { display: none; }
+    /* Content stacks taller here, so a full-height sleeve would crop to a
+       narrow vertical strip. Keep it square and top-aligned instead. */
+    .row-thumb, .row-thumb-none { width: 64px; height: 64px; align-self: start; }
+    .row-head {
+      grid-template-columns: minmax(0, 1fr) 1.1rem;
+      grid-template-areas:
+        "title caret"
+        "total caret";
+      gap: 3px 12px;
+      align-items: start;
+    }
+  }
+
+  .row-meta {
+    margin: 9px 0 0;
+    font-family: var(--mono); font-size: 0.66rem;
+    letter-spacing: 0.06em; text-transform: uppercase; color: var(--carbon);
+    display: flex; flex-wrap: wrap; gap: 4px 14px;
+  }
+  .tag-domestic { color: var(--c-record); font-weight: 600; }
+  .tag-formal   { color: var(--c-iva); font-weight: 600; }
+  .tag-approx   { color: var(--c-duty-text); font-weight: 600; }
+
+  /* ---------------------------------------------------- detail */
+
+  .detail {
+    grid-area: detail;
+    margin: 14px 0 4px;
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--kraft-deep);
+    border-radius: 3px;
+  }
+  .detail[hidden] { display: none; }
+
+  .facts { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 14px; font-size: 0.86rem; }
+  .facts dt {
+    font-family: var(--mono); font-size: 0.64rem;
+    letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--carbon); padding-top: 2px;
+  }
+  .facts dd { margin: 0; }
+
+  .why {
+    margin: 16px 0 0;
+    padding: 11px 13px;
+    border-left: 2px solid var(--c-record);
+    background: rgba(47,107,79,0.07);
+    font-size: 0.87rem;
+    color: var(--carbon);
+  }
+  .why strong {
+    display: block;
+    font-family: var(--mono); font-size: 0.62rem;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--c-record); margin-bottom: 3px; font-weight: 600;
+  }
+
+  .costs { width: 100%; border-collapse: collapse; margin-top: 18px; font-family: var(--mono); font-size: 0.8rem; }
+  .costs th {
+    font-size: 0.63rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--carbon); text-align: right; padding: 0 0 7px 12px; border-bottom: 1px solid var(--kraft-deep);
+  }
+  .costs th:first-child { text-align: left; padding-left: 0; }
+  .costs td { padding: 7px 0 7px 12px; text-align: right; font-variant-numeric: tabular-nums; }
+  .costs td:first-child { text-align: left; padding-left: 0; display: flex; align-items: center; gap: 8px; }
+  .costs .swatch { width: 10px; height: 10px; border-radius: 1px; flex: none; }
+  .costs tr.total td { border-top: 1px solid var(--kraft-deep); font-weight: 600; padding-top: 9px; }
+  .costs .muted { color: var(--carbon); }
+
+  .detail-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 17px; }
+  .lnk {
+    font-family: var(--mono); font-size: 0.67rem; font-weight: 600;
+    letter-spacing: 0.1em; text-transform: uppercase;
+    padding: 9px 15px; border: 1.5px solid var(--ink); border-radius: 2px;
+    text-decoration: none; color: var(--ink); background: transparent;
+    transition: background 120ms ease, color 120ms ease;
+  }
+  .lnk:hover { background: var(--ink); color: var(--paper); }
+  .lnk:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+  .lnk-primary { background: var(--c-record); border-color: var(--c-record); color: #fff; }
+  .lnk-primary:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+
+  .shipnote { margin: 13px 0 0; font-size: 0.8rem; color: var(--carbon); }
+
+  /* ---------------------------------------------------- states */
+
+  .state {
+    padding: 44px 0; margin-top: 36px;
+    border-top: 1.5px solid var(--ink);
+    font-family: var(--mono); font-size: 0.79rem;
+    letter-spacing: 0.05em; color: var(--carbon);
+  }
+  .state[hidden] { display: none; }
+  .state-err { color: var(--c-iva); }
+  .progress { margin-top: 12px; font-size: 0.73rem; }
+  .progress b { color: var(--ink); font-weight: 600; }
+
+  /* ---------------------------------------------------- how it works */
+
+  .steps { margin: 30px 0 0; padding: 0; list-style: none; counter-reset: s; }
+  .steps li {
+    counter-increment: s;
+    position: relative;
+    padding: 0 0 22px 52px;
+    border-left: 1.5px solid var(--kraft-deep);
+    margin-left: 13px;
+  }
+  .steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
+  .steps li::before {
+    content: counter(s, decimal-leading-zero);
+    position: absolute; left: -14px; top: 0;
+    width: 27px; height: 27px;
+    display: grid; place-items: center;
+    background: var(--ink); color: var(--kraft);
+    font-family: var(--mono); font-size: 0.64rem; font-weight: 600;
+    border-radius: 50%;
+  }
+  .steps h3 { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
+  .steps p { font-size: 0.92rem; color: var(--carbon); margin: 0; max-width: 62ch; }
+  .steps code { font-family: var(--mono); font-size: 0.85em; }
+
+  .hiw-h2 {
+    font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
+    margin-bottom: 12px; text-wrap: balance;
+  }
+  .hiw-lede { max-width: 62ch; color: var(--carbon); }
+  .hiw-section { padding-top: 46px; }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
+  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+  .card {
+    border: 1.5px solid var(--ink); border-radius: 3px;
+    padding: 17px 18px; background: var(--paper);
+  }
+  .card h3 {
+    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
+    letter-spacing: 0.11em; text-transform: uppercase; margin-bottom: 9px;
+  }
+  .card.is-real h3 { color: var(--c-record); }
+  .card.is-illus h3 { color: var(--c-duty-text); }
+  .card ul { margin: 0; padding-left: 17px; }
+  .card li { font-size: 0.88rem; color: var(--carbon); margin-bottom: 6px; }
+  .card li:last-child { margin-bottom: 0; }
+  .card strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------------------------------------------------- caveats */
+
+  .caveats { margin-top: 50px; padding-top: 21px; border-top: 1.5px solid var(--ink); }
+  .caveats h2 {
+    font-family: var(--mono); font-size: 0.69rem;
+    letter-spacing: 0.13em; text-transform: uppercase;
+    margin-bottom: 13px; color: var(--c-iva);
+  }
+  .caveats ul { margin: 0; padding-left: 18px; max-width: 70ch; }
+  .caveats li { margin-bottom: 8px; font-size: 0.88rem; color: var(--carbon); }
+  .caveats strong { color: var(--ink); font-weight: 600; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar-seg { transition: none; }
+  }
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <header class="topbar">
+    <div class="wordmark">Aqui Ahora <span>/ Buying Desk</span></div>
+    <div class="ccy" role="group" aria-label="Display currency">
+      <button id="ccy-mxn" aria-pressed="true">MXN</button>
+      <button id="ccy-usd" aria-pressed="false">USD</button>
+    </div>
+  </header>
+
+  <div class="tabs" role="tablist">
+    <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
+    <button class="tab" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
+  </div>
+
+  <!-- ========================= BUYING DESK ========================= -->
+  <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk">
+
+    <section class="hero">
+      <h1>What a record actually costs, landed in Mexico.</h1>
+      <p class="lede">Type in what you're hunting for, or load the demo list. Each result shows the current Discogs price plus shipping, duty and IVA — the number that decides whether a record is worth buying, and the one you can't see while you're clicking through listings.</p>
+    </section>
+
+    <section class="search">
+      <div class="search-head">
+        <h2>Records to price</h2>
+        <span class="search-count" id="qcount">0 of 10</span>
+      </div>
+      <div id="qrows"></div>
+      <button class="btn-link" id="addrow" type="button">+ Add another</button>
+      <div class="search-actions">
+        <button class="btn" id="go" type="button">Check these records</button>
+        <span class="or">or</span>
+        <button class="btn btn-ghost" id="godemo" type="button">Use the demo list</button>
+      </div>
+    </section>
+
+    <div class="state" id="idle">
+      Add a record above, or press <b>Use the demo list</b> for eight hand-picked pressings across five countries.
+    </div>
+
+    <div class="state" id="loading" hidden>
+      <span id="loading-label">Checking Discogs…</span>
+      <div class="progress" id="progress"></div>
+    </div>
+
+    <div class="state state-err" id="error" hidden></div>
+
+    <section class="results" id="results"></section>
+
+    <section class="summary" id="summary" hidden>
+      <div>
+        <div class="summary-figure" id="overhead">—</div>
+        <div class="summary-label">Isn't the records</div>
+      </div>
+      <div>
+        <p class="summary-note" id="summary-note"></p>
+        <div class="legend">
+          <span><i style="background:var(--c-record)"></i>Record</span>
+          <span><i style="background:var(--c-shipping)"></i>Shipping</span>
+          <span><i style="background:var(--c-duty)"></i>Duty</span>
+          <span><i style="background:var(--c-iva)"></i>IVA</span>
+        </div>
+      </div>
+    </section>
+
+    <footer class="caveats">
+      <h2>Read before trusting these numbers</h2>
+      <ul>
+        <li><strong>Customs rules are not broker-validated.</strong> Duty, IVA and the formal-entry threshold come from public reporting on Mexico's 2026 Customs Law, not from a licensed broker.</li>
+        <li><strong>Origin is the pressing country, not the seller's location.</strong> Customs depends on where a parcel actually ships from, and the official Discogs API doesn't expose that. A German pressing may well be sold from Guadalajara.</li>
+        <li><strong>Shipping is illustrative</strong>, not a live carrier quote. The real system refines these from actual purchase data over time.</li>
+        <li><strong>This is one snapshot</strong>, not continuous monitoring, and it takes the single cheapest copy listed — not the best copy at a fair price.</li>
+        <li><strong>No identity resolution yet</strong> — reissues, repressings and regional variants aren't matched against each other.</li>
+      </ul>
+    </footer>
+  </div>
+
+  <!-- ========================= HOW IT WORKS ========================= -->
+  <div class="panel" id="panel-hiw" role="tabpanel" aria-labelledby="tab-hiw" hidden>
+
+    <section class="hero">
+      <h1>Eight steps, about twenty seconds.</h1>
+      <p class="lede">This demo does a small version of what the full system would do continuously in the background. Here's the whole chain, start to finish, so nothing about the numbers is a black box.</p>
+    </section>
+
+    <ol class="steps">
+      <li>
+        <h3>You give it a list</h3>
+        <p>Here you type it. In the real system this is your Discogs want list, synced automatically, plus the artists and labels you follow — so you never type anything at all.</p>
+      </li>
+      <li>
+        <h3>It finds the release on Discogs</h3>
+        <p>Using the official Discogs API and nothing else. No scraping, ever — Discogs' terms prohibit it, and your account holds your inventory, so an enforcement action would hit the shop and not just the tool.</p>
+      </li>
+      <li>
+        <h3>It reads the current lowest price</h3>
+        <p>Live marketplace figures: what the cheapest listed copy costs right now, and how many copies are for sale. Both come straight from Discogs at the moment you press the button.</p>
+      </li>
+      <li>
+        <h3>It converts to pesos</h3>
+        <p>At today's European Central Bank reference rate. The real system also stores the Banxico FIX rate, which is what SAT expects when the purchase is later reconciled for accounting.</p>
+      </li>
+      <li>
+        <h3>It adds shipping</h3>
+        <p>Estimated from the pressing country. The full system replaces these estimates with real carrier quotes, then keeps sharpening them against what shipments actually cost once they arrive.</p>
+      </li>
+      <li>
+        <h3>It applies Mexican customs</h3>
+        <p>Records from the US and Canada under about <code>USD $50</code> come in free under USMCA. Everything else picks up the roughly <code>19%</code> tasa global, and then <code>16%</code> IVA on top of value plus duty.</p>
+      </li>
+      <li>
+        <h3>It flags anything needing a broker</h3>
+        <p>Above roughly <code>USD $250</code> a shipment needs formal customs entry through a licensed broker. That's a delay and a fee, not just a bigger number, so it gets called out rather than buried in a total.</p>
+      </li>
+      <li>
+        <h3>You get one number, and a link to buy</h3>
+        <p>A single peso figure per record, sorted cheapest first, with the cost broken into its parts and a direct link to the Discogs marketplace. You decide; nothing is ever bought automatically.</p>
+      </li>
+    </ol>
+
+    <section class="hiw-section">
+      <h2 class="hiw-h2">What's real here, and what isn't</h2>
+      <p class="hiw-lede">Worth being precise about, because two of these numbers are solid and two are placeholders standing in for work that belongs in the real build.</p>
+      <div class="grid2">
+        <div class="card is-real">
+          <h3>Real, live data</h3>
+          <ul>
+            <li><strong>Discogs prices and stock</strong> — pulled live from the official API each time you press the button.</li>
+            <li><strong>Release metadata</strong> — artist, label, catalogue number, format, year, cover art, all from Discogs.</li>
+            <li><strong>Exchange rates</strong> — today's ECB reference rate, fetched at the start of every run.</li>
+            <li><strong>Customs arithmetic</strong> — the de minimis, tasa global, IVA and formal-entry logic all genuinely run.</li>
+          </ul>
+        </div>
+        <div class="card is-illus">
+          <h3>Placeholder, pending real work</h3>
+          <ul>
+            <li><strong>Shipping costs</strong> — sensible estimates by country, not live carrier quotes. Every one is labelled low confidence.</li>
+            <li><strong>The customs figures themselves</strong> — from public reporting, not yet confirmed by a licensed broker.</li>
+            <li><strong>Shipping origin</strong> — we use the pressing country, because the official API won't tell us where the seller actually is.</li>
+            <li><strong>Matching</strong> — a search takes Discogs' best guess. Reissues and repressings aren't reconciled against each other.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="hiw-section">
+      <h2 class="hiw-h2">What the full system adds</h2>
+      <p class="hiw-lede">This page is one snapshot, run by hand. The build proper turns it into something that works while you're doing something else.</p>
+      <div class="grid2">
+        <div class="card">
+          <h3>Phase 1</h3>
+          <ul>
+            <li>Your want list, checked automatically every morning</li>
+            <li>eBay alongside Discogs, with real seller location and shipping</li>
+            <li>A digest document you read with your coffee</li>
+            <li>Mark records bought, passed or snoozed, so nothing you've rejected comes back</li>
+            <li>Alerts only for genuinely rare finds or prices below your threshold</li>
+          </ul>
+        </div>
+        <div class="card">
+          <h3>Later phases</h3>
+          <ul>
+            <li>New releases from the labels, distributors and stores you follow</li>
+            <li>Bandcamp, for the indie pressings that never reach Discogs</li>
+            <li>Records you sell well, re-sourced automatically</li>
+            <li>Suggestions based on what you've bought and passed on before</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+  </div>
+
+</div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const MAX = 10;
+
+  const state = {
+    currency: 'MXN',
+    data: null,
+    live: [],      // results as they stream in
+    running: false,
+  };
+
+  // ------------------------------------------------ formatting
+
+  const num = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  const rate = () => (state.data && state.data.fx ? state.data.fx.ratesToMxn.USD : 1);
+
+  /** Both currencies use "$", so the code always rides along to disambiguate. */
+  function moneyBare(usdAmount) {
+    return '$' + num(state.currency === 'USD' ? usdAmount : usdAmount * rate());
+  }
+  function money(usdAmount) {
+    return moneyBare(usdAmount) + ' ' + state.currency;
+  }
+
+  const SEGMENTS = [
+    { key: 'recordUsd',   cls: 'record',   label: 'Record',   color: 'var(--c-record)' },
+    { key: 'shippingUsd', cls: 'shipping', label: 'Shipping', color: 'var(--c-shipping)' },
+    { key: 'dutyUsd',     cls: 'duty',     label: 'Duty',     color: 'var(--c-duty)' },
+    { key: 'ivaUsd',      cls: 'iva',      label: 'IVA',      color: 'var(--c-iva)' },
+  ];
+
+  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // ------------------------------------------------ tabs
+
+  function selectTab(which) {
+    const isDesk = which === 'desk';
+    $('tab-desk').setAttribute('aria-selected', String(isDesk));
+    $('tab-hiw').setAttribute('aria-selected', String(!isDesk));
+    $('panel-desk').hidden = !isDesk;
+    $('panel-hiw').hidden = isDesk;
+  }
+  $('tab-desk').addEventListener('click', () => selectTab('desk'));
+  $('tab-hiw').addEventListener('click', () => selectTab('hiw'));
+
+  // ------------------------------------------------ currency
+
+  function setCurrency(c) {
+    state.currency = c;
+    $('ccy-mxn').setAttribute('aria-pressed', String(c === 'MXN'));
+    $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
+    if (state.data) renderResults(state.data.results, true);
+    if (state.data) renderSummary(state.data);
+  }
+  $('ccy-mxn').addEventListener('click', () => setCurrency('MXN'));
+  $('ccy-usd').addEventListener('click', () => setCurrency('USD'));
+
+  // ------------------------------------------------ search rows
+
+  function queryRows() { return [...document.querySelectorAll('.qrow input')]; }
+
+  function updateCount() {
+    const rows = queryRows();
+    const filled = rows.filter((i) => i.value.trim()).length;
+    $('qcount').textContent = filled + ' of ' + MAX;
+    $('addrow').disabled = rows.length >= MAX;
+    $('go').disabled = state.running || filled === 0;
+  }
+
+  function addRow(value) {
+    const rows = document.querySelectorAll('.qrow');
+    if (rows.length >= MAX) return;
+    const n = rows.length + 1;
+    const div = document.createElement('div');
+    div.className = 'qrow';
+    div.innerHTML =
+      '<span class="qrow-n">' + String(n).padStart(2, '0') + '</span>' +
+      '<input type="text" placeholder="Artist and title — e.g. Basic Channel Q 1.1" ' +
+        'aria-label="Record ' + n + '" value="' + esc(value || '') + '">' +
+      '<button class="qrow-x" type="button" aria-label="Remove record ' + n + '">&times;</button>';
+    $('qrows').appendChild(div);
+    div.querySelector('input').addEventListener('input', updateCount);
+    div.querySelector('input').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') { e.preventDefault(); run('search'); }
+    });
+    div.querySelector('.qrow-x').addEventListener('click', () => {
+      div.remove();
+      renumber();
+      updateCount();
+      if (!document.querySelector('.qrow')) addRow('');
+    });
+    updateCount();
+  }
+
+  function renumber() {
+    document.querySelectorAll('.qrow').forEach((row, i) => {
+      row.querySelector('.qrow-n').textContent = String(i + 1).padStart(2, '0');
+      row.querySelector('input').setAttribute('aria-label', 'Record ' + (i + 1));
+      row.querySelector('.qrow-x').setAttribute('aria-label', 'Remove record ' + (i + 1));
+    });
+  }
+
+  $('addrow').addEventListener('click', () => addRow(''));
+  addRow(''); addRow(''); addRow('');
+
+  // ------------------------------------------------ rendering
+
+  function renderSummary(data) {
+    if (!data.totals || data.totals.totalUsd <= 0) { $('summary').hidden = true; return; }
+    const t = data.totals;
+    $('overhead').textContent = t.overheadPct.toFixed(1) + '%';
+    $('summary-note').innerHTML =
+      'Across ' + data.results.filter((r) => r.cost).length + ' records, <strong>' +
+      esc(money(t.shippingUsd + t.importUsd)) + '</strong> of the <strong>' + esc(money(t.totalUsd)) +
+      '</strong> total is shipping and import cost rather than the records themselves. Rates from ' +
+      esc(data.fx.date) + '. Customs ruleset <code>' + esc(data.customsRuleVersion) + '</code>.';
+    $('summary').hidden = false;
+  }
+
+  function detailHtml(r, id) {
+    const labels = (r.labels || []).map((l) => esc(l.name) + (l.catno ? ' — ' + esc(l.catno) : '')).join('<br>');
+    const tags = [...(r.genres || []), ...(r.styles || [])].map(esc).join(' · ');
+
+    const facts =
+      '<dl class="facts">' +
+      (r.artist ? '<dt>Artist</dt><dd>' + esc(r.artist) + '</dd>' : '') +
+      (r.title ? '<dt>Title</dt><dd>' + esc(r.title) + '</dd>' : '') +
+      (r.labels && r.labels.length ? '<dt>Label</dt><dd>' + labels + '</dd>' : '') +
+      (r.format ? '<dt>Format</dt><dd>' + esc(r.format) + '</dd>' : '') +
+      (r.year ? '<dt>Year</dt><dd>' + esc(r.year) + '</dd>' : '') +
+      (r.originLabel ? '<dt>Pressed</dt><dd>' + esc(r.originLabel) +
+        (r.originApproximate ? ' <span class="tag-approx">(approx.)</span>' : '') + '</dd>' : '') +
+      (tags ? '<dt>Style</dt><dd>' + tags + '</dd>' : '') +
+      '<dt>For sale</dt><dd>' + r.numForSale + ' cop' + (r.numForSale === 1 ? 'y' : 'ies') + ' on Discogs</dd>' +
+      '</dl>';
+
+    const why = r.note
+      ? '<p class="why"><strong>Why this record is in the demo</strong>' + esc(r.note) + '</p>'
+      : '<p class="why"><strong>You searched for</strong>' + esc(r.requested) + '</p>';
+
+    let costs = '';
+    if (r.cost) {
+      const total = r.cost.totalUsd;
+      costs =
+        '<table class="costs"><thead><tr>' +
+        '<th>Component</th><th>Share</th><th>' + (state.currency === 'USD' ? 'USD' : 'MXN') + '</th>' +
+        '</tr></thead><tbody>' +
+        SEGMENTS.map((s) => {
+          const v = r.cost[s.key];
+          return '<tr><td><span class="swatch" style="background:' + s.color + '"></span>' + s.label + '</td>' +
+            '<td class="muted">' + (v / total * 100).toFixed(1) + '%</td>' +
+            '<td>' + esc(moneyBare(v)) + '</td></tr>';
+        }).join('') +
+        '<tr class="total"><td>Landed total</td><td></td><td>' + esc(money(total)) + '</td></tr>' +
+        '</tbody></table>' +
+        (r.shippingNote ? '<p class="shipnote">Shipping: ' + esc(r.shippingNote) + '</p>' : '');
+    }
+
+    const links = r.buyUrl
+      ? '<div class="detail-links">' +
+        '<a class="lnk lnk-primary" href="' + esc(r.buyUrl) + '" target="_blank" rel="noopener noreferrer">Buy on Discogs</a>' +
+        '<a class="lnk" href="' + esc(r.releaseUrl) + '" target="_blank" rel="noopener noreferrer">Release details</a>' +
+        '</div>'
+      : '';
+
+    return '<div class="detail" id="' + id + '" hidden>' +
+      facts + why + costs + links + '</div>';
+  }
+
+  /** Sleeve thumbnail for the row header; keeps its slot even with no image. */
+  function thumbHtml(r) {
+    return r.coverImage
+      ? '<img class="row-thumb" src="' + esc(r.coverImage) + '" alt="Sleeve for ' + esc(r.title || r.requested) + '" ' +
+        'onerror="this.outerHTML=\'<span class=&quot;row-thumb-none&quot;></span>\'">'
+      : '<span class="row-thumb-none"></span>';
+  }
+
+  function rowHtml(r, i) {
+    // Keyed by release, not position — the list re-sorts between the streaming
+    // pass and the final one, so an index-based id would reopen the wrong row.
+    const id = 'detail-' + (r.discogsId ? 'd' + r.discogsId : 'q' + i);
+    const rank = String(i + 1).padStart(2, '0');
+
+    if (!r.matched) {
+      return '<article class="row is-miss">' +
+        '<span class="row-rank">' + rank + '</span>' +
+        thumbHtml(r) +
+        '<div class="row-main">' +
+          '<button class="row-head" disabled>' +
+            '<span class="row-title">' + esc(r.requested) +
+              '<span class="row-artist">' + esc(r.unmatchedReason || 'No match') + '</span></span>' +
+            '<span class="row-total is-none">No match</span><span class="row-caret"></span>' +
+          '</button>' +
+        '</div></article>';
+    }
+
+    if (!r.cost) {
+      return '<article class="row is-miss">' +
+        '<span class="row-rank">' + rank + '</span>' +
+        thumbHtml(r) +
+        '<div class="row-main">' +
+          '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
+            '<span class="row-title">' + esc(r.title) +
+              '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
+            '<span class="row-total is-none">None listed</span><span class="row-caret">+</span>' +
+          '</button>' +
+        '</div>' + detailHtml(r, id) + '</article>';
+    }
+
+    const total = r.cost.totalUsd;
+    const meta = [
+      esc(r.originIso),
+      r.numForSale + ' for sale',
+      r.customsRuleApplied === 'domestic'
+        ? '<span class="tag-domestic">Domestic — no import cost</span>'
+        : esc(String(r.customsRuleApplied).replace(/_/g, ' ')),
+      r.requiresFormalEntry ? '<span class="tag-formal">Formal entry required</span>' : '',
+      r.originApproximate ? '<span class="tag-approx">Origin approximate</span>' : '',
+    ].filter(Boolean);
+
+    return '<article class="row">' +
+      '<span class="row-rank">' + rank + '</span>' +
+      thumbHtml(r) +
+      '<div class="row-main">' +
+        '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
+          '<span class="row-title">' + esc(r.title) +
+            '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
+          '<span class="row-total">' + esc(money(total)) + '</span>' +
+          '<span class="row-caret">+</span>' +
+        '</button>' +
+        '<div class="bar">' +
+          SEGMENTS.map((s) => '<span class="bar-seg ' + s.cls + '" data-pct="' + (r.cost[s.key] / total * 100) + '"></span>').join('') +
+        '</div>' +
+        '<div class="row-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
+      '</div>' +
+      detailHtml(r, id) + '</article>';
+  }
+
+  function wireRows(root) {
+    root.querySelectorAll('.row-head:not([disabled])').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const panel = document.getElementById(btn.getAttribute('aria-controls'));
+        if (!panel) return;
+        const open = btn.getAttribute('aria-expanded') === 'true';
+        btn.setAttribute('aria-expanded', String(!open));
+        panel.hidden = open;
+        const caret = btn.querySelector('.row-caret');
+        if (caret) caret.textContent = open ? '+' : '–';
+      });
+    });
+    requestAnimationFrame(() => {
+      root.querySelectorAll('.bar-seg').forEach((el) => { el.style.width = el.dataset.pct + '%'; });
+    });
+  }
+
+  function renderResults(results, sorted) {
+    const wrap = $('results');
+
+    // Re-rendering (a currency flip, say) rebuilds every row, which would
+    // otherwise snap shut whatever the user had open. Remember and restore.
+    const openIds = new Set(
+      [...wrap.querySelectorAll('.row-head[aria-expanded="true"]')]
+        .map((b) => b.getAttribute('aria-controls')),
+    );
+
+    const list = sorted
+      ? [...results].sort((a, b) => {
+          if (!a.cost && !b.cost) return 0;
+          if (!a.cost) return 1;
+          if (!b.cost) return -1;
+          return a.cost.totalUsd - b.cost.totalUsd;
+        })
+      : results;
+
+    wrap.innerHTML = list.map(rowHtml).join('');
+
+    openIds.forEach((id) => {
+      const panel = document.getElementById(id);
+      const btn = wrap.querySelector('[aria-controls="' + id + '"]');
+      if (!panel || !btn) return;
+      panel.hidden = false;
+      btn.setAttribute('aria-expanded', 'true');
+      const caret = btn.querySelector('.row-caret');
+      if (caret) caret.textContent = '–';
+    });
+
+    wireRows(wrap);
+  }
+
+  // ------------------------------------------------ run
+
+  function run(mode) {
+    if (state.running) return;
+
+    let params;
+    if (mode === 'search') {
+      const queries = queryRows().map((i) => i.value.trim()).filter(Boolean).slice(0, MAX);
+      if (!queries.length) return;
+      params = new URLSearchParams({ mode: 'search' });
+      queries.forEach((q) => params.append('q', q));
+    } else {
+      params = new URLSearchParams({ mode: 'demo' });
+    }
+
+    state.running = true;
+    state.live = [];
+    $('go').disabled = true;
+    $('godemo').disabled = true;
+    $('idle').hidden = true;
+    $('error').hidden = true;
+    $('summary').hidden = true;
+    $('results').innerHTML = '';
+    $('loading').hidden = false;
+    $('loading-label').textContent = mode === 'demo' ? 'Checking the demo list…' : 'Checking Discogs…';
+    $('progress').textContent = '';
+
+    const es = new EventSource('/api/stream?' + params.toString());
+
+    es.addEventListener('progress', (e) => {
+      const p = JSON.parse(e.data);
+      $('progress').innerHTML = '<b>' + p.index + ' of ' + p.total + '</b> — ' + esc(p.label);
+    });
+
+    es.addEventListener('result', (e) => {
+      state.live.push(JSON.parse(e.data));
+      // Show arrivals immediately, unsorted, so the demo feels live.
+      state.data = state.data || { fx: { ratesToMxn: { USD: 1 } } };
+      renderResults(state.live, false);
+    });
+
+    es.addEventListener('done', (e) => {
+      state.data = JSON.parse(e.data);
+      renderResults(state.data.results, true);
+      renderSummary(state.data);
+      finish(es);
+    });
+
+    es.addEventListener('failed', (e) => {
+      const d = JSON.parse(e.data);
+      $('error').hidden = false;
+      $('error').textContent = 'Check failed — ' + d.error;
+      $('results').innerHTML = '';
+      finish(es);
+    });
+
+    es.onerror = () => {
+      if (state.running) {
+        $('error').hidden = false;
+        $('error').textContent = 'Lost connection to the server. Is it still running?';
+      }
+      finish(es);
+    };
+  }
+
+  function finish(es) {
+    es.close();
+    state.running = false;
+    $('loading').hidden = true;
+    $('godemo').disabled = false;
+    updateCount();
+  }
+
+  $('go').addEventListener('click', () => run('search'));
+  $('godemo').addEventListener('click', () => run('demo'));
+
+  // Restore a previous run if the server still has one cached.
+  fetch('/api/results').then((r) => r.json()).then((data) => {
+    if (data && data.results && data.results.length) {
+      state.data = data;
+      $('idle').hidden = true;
+      renderResults(data.results, true);
+      renderSummary(data);
+    }
+  }).catch(() => {});
+
+  updateCount();
+
+  // Inspection hook — lets you render a payload by hand from the console if a
+  // demo ever needs debugging without spending Discogs rate limit.
+  window.__desk = {
+    show(payload) {
+      state.data = payload;
+      $('idle').hidden = true;
+      $('loading').hidden = true;
+      $('error').hidden = true;
+      renderResults(payload.results, true);
+      renderSummary(payload);
+    },
+  };
+})();
+</script>
+</body>
+</html>
