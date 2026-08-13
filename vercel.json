@@ -1,9 +1,22 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "outputDirectory": "public",
-  "functions": {
-    "api/**/*.ts": {
-      "maxDuration": 60
-    }
-  }
+
+  "//": [
+    "Explicit builds, because zero-config auto-detection picks the backends",
+    "builder for this project and demands a server entrypoint. Declaring the",
+    "builds replaces detection entirely: public/ is static, api/ is functions.",
+    "Note: `builds` and `functions` cannot both be set — the per-request",
+    "timeout comes from `export const maxDuration` inside api/stream.ts."
+  ],
+
+  "builds": [
+    { "src": "api/*.ts", "use": "@vercel/node" },
+    { "src": "public/**", "use": "@vercel/static" }
+  ],
+
+  "routes": [
+    { "src": "/api/(.*)", "dest": "/api/$1" },
+    { "src": "/", "dest": "/public/index.html" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
 }
