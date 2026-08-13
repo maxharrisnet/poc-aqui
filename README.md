@@ -35,7 +35,7 @@ so reloading the page doesn't burn Discogs rate limit.
 **CLI** (writes a Markdown digest):
 
 ```bash
-DISCOGS_TOKEN=your_token npm start
+DISCOGS_TOKEN=your_token npm run digest
 ```
 
 Output goes to `output/digest.md`.
@@ -44,8 +44,12 @@ To verify the logic without hitting the Discogs API at all (useful for
 re-checking after any change to the cost math):
 
 ```bash
-npx tsx src/smoketest.ts
+npm run smoketest
 ```
+
+> There is deliberately no `start` script. Vercel's backend detector treats one
+> as a signal that the project is a Node server and tries to deploy it as such,
+> which breaks the static-plus-functions build.
 
 ## Deploying to Vercel
 

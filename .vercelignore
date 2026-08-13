@@ -2,3 +2,11 @@ output/
 dist/
 venv/
 *.log
+
+# Local-only entrypoints. Each has a top-level main() or calls server.listen(),
+# so Vercel's backend detector picks one as "the root entrypoint" and tries to
+# deploy this as a Node server instead of static files + functions. Nothing in
+# api/ imports them — the shared library modules in src/ are untouched.
+src/index.ts
+src/server.ts
+src/smoketest.ts
