@@ -58,6 +58,25 @@ and `api/results.ts` become functions. Streaming runs on the **default Node.js
 runtime** — SSE does not need the edge runtime, and edge would cost us full
 Node APIs for nothing.
 
+### Why vercel.json declares builds explicitly
+
+Zero-config detection picks Vercel's *backends* builder for this project and
+then demands a server entrypoint, which this isn't. Declaring `builds` replaces
+detection outright: `public/**` is static, `api/*.ts` are functions, and the
+routes send `/api/*` to the functions with everything else to `public/`.
+
+Two consequences:
+
+- `builds` and `functions` cannot both be set, so the per-request timeout comes
+  from `export const maxDuration` inside `api/stream.ts` rather than from config.
+- `.vercelignore` excludes `src/index.ts`, `src/server.ts` and `src/smoketest.ts`.
+  Each has a top-level `main()` or calls `server.listen()`, which is what made
+  the detector think this was a server in the first place. Nothing in `api/`
+  imports them. There is deliberately no `start` script for the same reason.
+
+Note that `vercel.json` is strict JSON — no comments, and unknown keys (even a
+`"//"` convention key) fail schema validation.
+
 ```bash
 cd poc
 npx vercel login
