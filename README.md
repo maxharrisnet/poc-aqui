@@ -58,24 +58,31 @@ and `api/results.ts` become functions. Streaming runs on the **default Node.js
 runtime** — SSE does not need the edge runtime, and edge would cost us full
 Node APIs for nothing.
 
-### Why vercel.json declares builds explicitly
+### The Framework Preset must be "Other", not "Node"
 
-Zero-config detection picks Vercel's *backends* builder for this project and
-then demands a server entrypoint, which this isn't. Declaring `builds` replaces
-detection outright: `public/**` is static, `api/*.ts` are functions, and the
-routes send `/api/*` to the functions with everything else to `public/`.
+This cost an afternoon, so it's worth writing down. If the Vercel project's
+**Framework Preset** is set to `Node`, Vercel uses its *backends* builder,
+which expects a long-running server entrypoint. This project isn't one — it's
+static files plus functions — so every deploy either grabbed `src/index.ts` as
+a phantom entrypoint or failed with "No entrypoint found", and the `/api/*`
+routes 404'd while the page itself served fine.
 
-Two consequences:
+`vercel.json` now pins `"framework": null`, which overrides the dashboard, so
+the fix travels with the repo rather than living in someone's browser. Set the
+dashboard preset to **Other** as well, to clear the "Configuration Settings
+differ" warning.
 
-- `builds` and `functions` cannot both be set, so the per-request timeout comes
-  from `export const maxDuration` inside `api/stream.ts` rather than from config.
+Supporting details:
+
 - `.vercelignore` excludes `src/index.ts`, `src/server.ts` and `src/smoketest.ts`.
-  Each has a top-level `main()` or calls `server.listen()`, which is what made
-  the detector think this was a server in the first place. Nothing in `api/`
-  imports them. There is deliberately no `start` script for the same reason.
-
-Note that `vercel.json` is strict JSON — no comments, and unknown keys (even a
-`"//"` convention key) fail schema validation.
+  Each has a top-level `main()` or calls `server.listen()`, which feeds the same
+  misdetection. Nothing in `api/` imports them. There is deliberately no `start`
+  script for the same reason.
+- The functions use the classic Node `(req, res)` handler signature. It works
+  under both zero-config and legacy `builds`, unlike the Web-standard
+  `(Request) => Response` form.
+- `vercel.json` is strict JSON — no comments, and unknown keys (even a `"//"`
+  convention key) fail schema validation.
 
 ```bash
 cd poc
