@@ -170,3 +170,55 @@ export interface MarketplaceStats {
 export async function getMarketplaceStats(discogsId: number): Promise<MarketplaceStats> {
   return discogsFetch<MarketplaceStats>(`/marketplace/stats/${discogsId}?curr_abbr=USD`);
 }
+
+// ----------------------------------------------------------------- master
+
+export interface MasterVersion {
+  id: number;
+  country: string | null;
+  released: string | null;
+  format: string | null;
+  label: string | null;
+  catno: string | null;
+}
+
+interface RawVersionsResponse {
+  pagination?: { items?: number; pages?: number };
+  versions?: {
+    id: number;
+    country?: string;
+    released?: string;
+    format?: string;
+    label?: string;
+    catno?: string;
+    major_formats?: string[];
+  }[];
+}
+
+/**
+ * Vinyl versions of a master. Note that /masters/{id} also exposes
+ * lowest_price, but it ignores curr_abbr and spans every format including CD,
+ * so it must not be used for pricing — see spec v0.2 §4.1.
+ *
+ * Capped at one page (100) deliberately: a master with more pressings than
+ * that is always user-selected, never auto-watched.
+ */
+export async function getMasterVersions(masterId: number): Promise<{
+  total: number;
+  versions: MasterVersion[];
+}> {
+  const data = await discogsFetch<RawVersionsResponse>(
+    `/masters/${masterId}/versions?format=Vinyl&per_page=100`,
+  );
+  return {
+    total: data.pagination?.items ?? 0,
+    versions: (data.versions ?? []).map((v) => ({
+      id: v.id,
+      country: v.country ?? null,
+      released: v.released ?? null,
+      format: v.format ?? null,
+      label: v.label ?? null,
+      catno: v.catno ?? null,
+    })),
+  };
+}
