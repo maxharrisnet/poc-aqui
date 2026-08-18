@@ -33,12 +33,26 @@ export function buildJwt(email: string, privateKey: string, nowSeconds: number):
   const unsigned = `${header}.${claims}`;
   const signer = createSign("RSA-SHA256");
   signer.update(unsigned);
-  return `${unsigned}.${base64url(signer.sign(normalisePrivateKey(privateKey)))}`;
+
+  let signature: Buffer;
+  try {
+    signature = signer.sign(normalisePrivateKey(privateKey));
+  } catch (err) {
+    const message = err instanceof Error ? err.message : String(err);
+    throw new Error(
+      "GOOGLE_PRIVATE_KEY could not be used for signing — check it is the full PEM including " +
+        `BEGIN/END lines, with \\n sequences intact. Underlying error: ${message}`,
+    );
+  }
+
+  return `${unsigned}.${base64url(signature)}`;
 }
 
 const SHEETS_API = "https://sheets.googleapis.com/v4/spreadsheets";
+const FETCH_TIMEOUT_MS = 10_000;
 
-let cachedToken: { value: string; expiresAt: number } | null = null;
+let cachedToken: { promise: Promise<{ value: string; expiresAt: number }>; expiresAt: number } | null =
+  null;
 
 function requireEnv(name: string): string {
   const v = process.env[name];
@@ -51,10 +65,7 @@ function requireEnv(name: string): string {
   return v;
 }
 
-async function getAccessToken(): Promise<string> {
-  const now = Math.floor(Date.now() / 1000);
-  if (cachedToken && cachedToken.expiresAt > now + 60) return cachedToken.value;
-
+async function requestAccessToken(now: number): Promise<{ value: string; expiresAt: number }> {
   const jwt = buildJwt(
     requireEnv("GOOGLE_SERVICE_ACCOUNT_EMAIL"),
     requireEnv("GOOGLE_PRIVATE_KEY"),
@@ -68,34 +79,69 @@ async function getAccessToken(): Promise<string> {
       grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
       assertion: jwt,
     }),
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
   if (!res.ok) {
     throw new Error(`Google token exchange failed (${res.status}): ${(await res.text()).slice(0, 200)}`);
   }
 
-  const body = (await res.json()) as { access_token: string; expires_in: number };
-  cachedToken = { value: body.access_token, expiresAt: now + body.expires_in };
-  return body.access_token;
+  const body = (await res.json()) as { access_token?: unknown; expires_in?: unknown };
+  if (typeof body.access_token !== "string" || typeof body.expires_in !== "number") {
+    throw new Error(
+      "Google token response was malformed — expected access_token and expires_in, got keys: " +
+        Object.keys(body).join(", "),
+    );
+  }
+
+  return { value: body.access_token, expiresAt: now + body.expires_in };
+}
+
+async function getAccessToken(): Promise<string> {
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedToken && cachedToken.expiresAt > now + 60) {
+    return (await cachedToken.promise).value;
+  }
+
+  const promise = requestAccessToken(now).catch((err: unknown) => {
+    cachedToken = null; // never cache a failure
+    throw err;
+  });
+  // Optimistic expiry; corrected below once the real value arrives, so a
+  // second concurrent caller joins this same in-flight exchange instead of
+  // starting its own.
+  cachedToken = { promise, expiresAt: now + 3600 };
+  const resolved = await promise;
+  cachedToken = { promise, expiresAt: resolved.expiresAt };
+  return resolved.value;
 }
 
 async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
   const token = await getAccessToken();
+  const headers = new Headers(init?.headers);
+  headers.set("Authorization", `Bearer ${token}`);
+  headers.set("Content-Type", "application/json");
+
   const res = await fetch(`${SHEETS_API}${path}`, {
     ...init,
-    headers: {
-      ...(init?.headers ?? {}),
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
+    headers,
+    signal: AbortSignal.timeout(FETCH_TIMEOUT_MS),
   });
 
-  if (res.status === 403) {
+  if (res.status === 401) {
+    cachedToken = null;
     throw new Error(
-      "Google returned 403. The service account almost certainly has not been " +
-        "granted access — share the spreadsheet with " +
-        `${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL} as an Editor.`,
+      `Sheets API ${path} -> 401: the access token was rejected. The cache has been cleared — retrying will fetch a fresh token.`,
     );
+  }
+  if (res.status === 403) {
+    const body = await res.text();
+    const isSharingProblem =
+      body.includes("PERMISSION_DENIED") || body.includes("caller does not have permission");
+    const hint = isSharingProblem
+      ? ` The service account most likely has not been granted access — share the spreadsheet with ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL} as an Editor.`
+      : "";
+    throw new Error(`Sheets API ${path} -> 403: ${body.slice(0, 200)}${hint}`);
   }
   if (!res.ok) {
     throw new Error(`Sheets API ${path} -> ${res.status}: ${(await res.text()).slice(0, 200)}`);

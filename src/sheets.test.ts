@@ -1,14 +1,17 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { generateKeyPairSync } from "node:crypto";
+import { createVerify, generateKeyPairSync } from "node:crypto";
 import { base64url, buildJwt, normalisePrivateKey } from "./sheets.js";
 
-test("base64url encodes without padding or url-unsafe characters", () => {
-  const encoded = base64url('{"alg":"RS256","typ":"JWT"}');
-  assert.equal(encoded.includes("="), false);
-  assert.equal(encoded.includes("+"), false);
-  assert.equal(encoded.includes("/"), false);
-  assert.equal(Buffer.from(encoded, "base64url").toString(), '{"alg":"RS256","typ":"JWT"}');
+test("base64url replaces url-unsafe characters and strips padding", () => {
+  // 0xfb 0xff 0xbf is base64 "+/+/" — exercises both substitutions.
+  assert.equal(base64url(Buffer.from([0xfb, 0xff, 0xbf])), "-_-_");
+  // A one-byte input base64s to "+w==" — exercises padding removal too.
+  assert.equal(base64url(Buffer.from([0xfb])), "-w");
+  assert.equal(
+    Buffer.from(base64url('{"alg":"RS256","typ":"JWT"}'), "base64url").toString(),
+    '{"alg":"RS256","typ":"JWT"}',
+  );
 });
 
 test("normalisePrivateKey restores escaped newlines", () => {
@@ -17,7 +20,7 @@ test("normalisePrivateKey restores escaped newlines", () => {
 });
 
 test("buildJwt produces three signed segments with the right claims", () => {
-  const { privateKey } = generateKeyPairSync("rsa", {
+  const { privateKey, publicKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048,
     privateKeyEncoding: { type: "pkcs8", format: "pem" },
     publicKeyEncoding: { type: "spki", format: "pem" },
@@ -26,9 +29,17 @@ test("buildJwt produces three signed segments with the right claims", () => {
   const parts = jwt.split(".");
   assert.equal(parts.length, 3);
 
+  const header = JSON.parse(Buffer.from(parts[0]!, "base64url").toString());
+  assert.equal(header.alg, "RS256");
+  assert.equal(header.typ, "JWT");
+
   const claims = JSON.parse(Buffer.from(parts[1]!, "base64url").toString());
   assert.equal(claims.iss, "svc@proj.iam.gserviceaccount.com");
   assert.equal(claims.aud, "https://oauth2.googleapis.com/token");
   assert.equal(claims.scope, "https://www.googleapis.com/auth/spreadsheets");
   assert.equal(claims.exp - claims.iat, 3600);
+
+  const verifier = createVerify("RSA-SHA256");
+  verifier.update(`${parts[0]}.${parts[1]}`);
+  assert.equal(verifier.verify(publicKey, Buffer.from(parts[2]!, "base64url")), true);
 });
