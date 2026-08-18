@@ -4,6 +4,7 @@ import { fetchFxSnapshot, type FxSnapshot } from "./fx.js";
 import { estimateShippingUsd } from "./shipping.js";
 import { calculateCustoms, CUSTOMS_RULES_2026 } from "./customsRules.js";
 import { resolveOrigin } from "./countries.js";
+import { listWatchItems, updateWatchItem } from "./watchlist.js";
 
 export const MAX_QUERIES = 10;
 
@@ -51,7 +52,7 @@ export interface CheckResult {
 
 export interface RunSummary {
   generatedAt: string;
-  mode: "demo" | "search";
+  mode: "demo" | "search" | "watchlist";
   fx: FxSnapshot;
   results: CheckResult[];
   totals: {
@@ -130,7 +131,11 @@ async function costRelease(
   };
 }
 
-function summarise(mode: "demo" | "search", fx: FxSnapshot, results: CheckResult[]): RunSummary {
+function summarise(
+  mode: "demo" | "search" | "watchlist",
+  fx: FxSnapshot,
+  results: CheckResult[],
+): RunSummary {
   const costed = results.filter((r) => r.cost);
   const recordsUsd = costed.reduce((s, r) => s + r.cost!.recordUsd, 0);
   const shippingUsd = costed.reduce((s, r) => s + r.cost!.shippingUsd, 0);
@@ -230,4 +235,68 @@ export async function runSearch(
   }
 
   return summarise("search", fx, results);
+}
+
+/**
+ * Prices every watched pressing of every active watch item.
+ *
+ * Writes each item's result back to the sheet as it completes rather than at
+ * the end, so a function timeout costs the tail of the sweep instead of all of
+ * it — the sheet doubles as the checkpoint. See spec v0.2 §5.1.
+ */
+export async function runWatchlist(
+  onProgress?: ProgressFn,
+  onResult?: (r: CheckResult) => void,
+): Promise<RunSummary> {
+  const fx = await fetchFxSnapshot();
+  const items = (await listWatchItems()).filter((w) => w.active);
+  const results: CheckResult[] = [];
+
+  for (const [i, item] of items.entries()) {
+    onProgress?.({ index: i + 1, total: items.length, label: `${item.artist} — ${item.album}` });
+
+    let best: CheckResult | null = null;
+
+    for (const releaseId of item.watchedReleaseIds) {
+      try {
+        const result = await costRelease(
+          releaseId,
+          `${item.artist} — ${item.album}`,
+          fx,
+          item.notes || undefined,
+        );
+        if (result.cost && (!best?.cost || result.cost.totalUsd < best.cost.totalUsd)) {
+          best = result;
+        }
+      } catch {
+        // A single unavailable pressing must not abandon the whole item.
+      }
+    }
+
+    const resolved: CheckResult = best ?? {
+      requested: `${item.artist} — ${item.album}`,
+      matched: false,
+      unmatchedReason: "No copies listed for any watched pressing",
+      available: false,
+      numForSale: 0,
+    };
+
+    results.push(resolved);
+    onResult?.(resolved);
+
+    const belowThreshold =
+      resolved.totalMxn != null &&
+      item.maxLandedMxn != null &&
+      resolved.totalMxn <= item.maxLandedMxn;
+
+    await updateWatchItem({
+      ...item,
+      lastCheckedAt: new Date().toISOString(),
+      bestLandedMxn: resolved.totalMxn ?? null,
+      bestReleaseId: resolved.discogsId ?? null,
+      status: belowThreshold ? "alerted" : item.status === "alerted" ? "watching" : item.status,
+    });
+  }
+
+  return summarise("watchlist", fx, results);
 }
