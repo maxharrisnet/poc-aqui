@@ -72,6 +72,12 @@ const server = createServer(async (req, res) => {
     return;
   }
 
+  if (url.pathname === "/api/watchlist") {
+    const { default: watchlistHandler } = await import("../api/watchlist.js");
+    await watchlistHandler(req, res);
+    return;
+  }
+
   res.writeHead(404, { "Content-Type": "text/plain" });
   res.end("Not found");
 });
