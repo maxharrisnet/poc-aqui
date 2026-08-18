@@ -119,10 +119,12 @@ interface RawRelease {
   formats?: { name: string; descriptions?: string[] }[];
   genres?: string[];
   styles?: string[];
+  master_id?: number;
 }
 
 export interface ReleaseMeta {
   id: number;
+  masterId: number | null;
   artist: string;
   title: string;
   year: number | null;
@@ -145,6 +147,7 @@ export async function getRelease(discogsId: number): Promise<ReleaseMeta> {
 
   return {
     id: raw.id,
+    masterId: raw.master_id && raw.master_id > 0 ? raw.master_id : null,
     artist: raw.artists?.map((a) => a.name).join(", ") ?? "Unknown artist",
     title: raw.title,
     year: raw.year ?? null,
