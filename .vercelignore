@@ -10,3 +10,5 @@ venv/
 src/index.ts
 src/server.ts
 src/smoketest.ts
+scripts/
+src/*.test.ts
