@@ -1,3 +1,5 @@
+import { getRows, appendRow, updateRange } from "./sheets.js";
+
 export type PressingScope = "all" | "selected";
 export type WatchStatus = "watching" | "alerted" | "acquired" | "paused";
 export type Priority = "high" | "normal" | "low";
@@ -108,4 +110,44 @@ export function fromRow(row: string[]): WatchItem {
 
 export function newWatchId(): string {
   return `w_${Math.random().toString(36).slice(2, 10)}`;
+}
+
+function sheetId(): string {
+  const id = process.env.WATCHLIST_SHEET_ID;
+  if (!id) throw new Error("WATCHLIST_SHEET_ID is not set");
+  return id;
+}
+
+/** Ensures row 1 holds the header. Safe to call repeatedly. */
+export async function ensureHeaders(): Promise<void> {
+  const rows = await getRows(sheetId(), "A1:Q1");
+  const existing = rows[0] ?? [];
+  if (existing[0] === WATCHLIST_HEADERS[0]) return;
+  await updateRange(sheetId(), "A1:Q1", [[...WATCHLIST_HEADERS]]);
+}
+
+export async function listWatchItems(): Promise<WatchItem[]> {
+  const rows = await getRows(sheetId(), WATCHLIST_RANGE);
+  return rows
+    .slice(1) // header
+    .filter((r) => (r[0] ?? "").trim() !== "")
+    .map(fromRow);
+}
+
+export async function addWatchItem(item: WatchItem): Promise<WatchItem> {
+  await ensureHeaders();
+  await appendRow(sheetId(), WATCHLIST_RANGE, toRow(item));
+  return item;
+}
+
+/**
+ * Rewrites one row in place. Row numbers are 1-based and row 1 is the header,
+ * so the item at index i lives on sheet row i + 2.
+ */
+export async function updateWatchItem(item: WatchItem): Promise<void> {
+  const items = await listWatchItems();
+  const index = items.findIndex((w) => w.id === item.id);
+  if (index === -1) throw new Error(`Watch item ${item.id} not found`);
+  const rowNumber = index + 2;
+  await updateRange(sheetId(), `A${rowNumber}:Q${rowNumber}`, [toRow(item)]);
 }
