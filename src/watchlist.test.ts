@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { WATCHLIST_HEADERS, toRow, fromRow, type WatchItem } from "./watchlist.js";
+import { WATCHLIST_HEADERS, toRow, fromRow, resolveRowNumber, type WatchItem } from "./watchlist.js";
 
 const sample: WatchItem = {
   id: "w_abc123",
@@ -42,4 +42,33 @@ test("tolerates short rows, since Sheets omits trailing empty cells", () => {
   assert.equal(item.notes, "");
   assert.equal(item.active, false);
   assert.deepEqual(item.watchedReleaseIds, []);
+});
+
+test("resolveRowNumber returns the true sheet row, not the filtered index", () => {
+  // Header, then a, b, BLANK, d, e. Sheets rows are 1-based.
+  const grid = [
+    ["id", "artist"],
+    ["a", "A"],
+    ["b", "B"],
+    ["", ""],
+    ["d", "D"],
+    ["e", "E"],
+  ];
+  assert.equal(resolveRowNumber(grid, "a"), 2);
+  assert.equal(resolveRowNumber(grid, "b"), 3);
+  // The regression: filtering would put d at index 2 and e at index 3,
+  // yielding rows 4 and 5 — d's row and, fatally, d's row again for e.
+  assert.equal(resolveRowNumber(grid, "d"), 5);
+  assert.equal(resolveRowNumber(grid, "e"), 6);
+});
+
+test("resolveRowNumber returns null for an unknown id and never matches the header", () => {
+  const grid = [["id"], ["a"], ["b"]];
+  assert.equal(resolveRowNumber(grid, "zzz"), null);
+  assert.equal(resolveRowNumber(grid, "id"), null);
+});
+
+test("resolveRowNumber tolerates ragged rows", () => {
+  const grid = [["id"], [], ["b"]];
+  assert.equal(resolveRowNumber(grid, "b"), 3);
 });

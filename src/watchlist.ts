@@ -112,6 +112,21 @@ export function newWatchId(): string {
   return `w_${Math.random().toString(36).slice(2, 10)}`;
 }
 
+/**
+ * Finds the 1-based sheet row holding `id`.
+ *
+ * Sheet row numbers must be resolved from the raw grid, never from the index
+ * of a filtered array: a blank row anywhere above the target shifts the two
+ * apart and the write lands on the wrong record. `rows` must be the full
+ * response from getRows, header included.
+ */
+export function resolveRowNumber(rows: string[][], id: string): number | null {
+  for (let i = 1; i < rows.length; i += 1) {
+    if ((rows[i]?.[0] ?? "").trim() === id) return i + 1;
+  }
+  return null;
+}
+
 function sheetId(): string {
   const id = process.env.WATCHLIST_SHEET_ID;
   if (!id) throw new Error("WATCHLIST_SHEET_ID is not set");
@@ -126,8 +141,12 @@ export async function ensureHeaders(): Promise<void> {
   await updateRange(sheetId(), "A1:Q1", [[...WATCHLIST_HEADERS]]);
 }
 
+async function fetchGrid(): Promise<string[][]> {
+  return getRows(sheetId(), WATCHLIST_RANGE);
+}
+
 export async function listWatchItems(): Promise<WatchItem[]> {
-  const rows = await getRows(sheetId(), WATCHLIST_RANGE);
+  const rows = await fetchGrid();
   return rows
     .slice(1) // header
     .filter((r) => (r[0] ?? "").trim() !== "")
@@ -140,14 +159,10 @@ export async function addWatchItem(item: WatchItem): Promise<WatchItem> {
   return item;
 }
 
-/**
- * Rewrites one row in place. Row numbers are 1-based and row 1 is the header,
- * so the item at index i lives on sheet row i + 2.
- */
+/** Rewrites one row in place, locating it via `resolveRowNumber`. */
 export async function updateWatchItem(item: WatchItem): Promise<void> {
-  const items = await listWatchItems();
-  const index = items.findIndex((w) => w.id === item.id);
-  if (index === -1) throw new Error(`Watch item ${item.id} not found`);
-  const rowNumber = index + 2;
+  const rows = await fetchGrid();
+  const rowNumber = resolveRowNumber(rows, item.id);
+  if (rowNumber === null) throw new Error(`Watch item ${item.id} not found`);
   await updateRange(sheetId(), `A${rowNumber}:Q${rowNumber}`, [toRow(item)]);
 }
