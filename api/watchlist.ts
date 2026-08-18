@@ -14,11 +14,17 @@ function json(res: ServerResponse, status: number, body: unknown): void {
   res.end(JSON.stringify(body));
 }
 
+class MalformedBodyError extends Error {}
+
 async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> {
   const chunks: Buffer[] = [];
   for await (const chunk of req) chunks.push(chunk as Buffer);
   if (chunks.length === 0) return {};
-  return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, unknown>;
+  try {
+    return JSON.parse(Buffer.concat(chunks).toString()) as Record<string, unknown>;
+  } catch {
+    throw new MalformedBodyError("Malformed JSON body");
+  }
 }
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
@@ -85,7 +91,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
               ? null
               : existing.maxLandedMxn,
         watchedReleaseIds: Array.isArray(body.watchedReleaseIds)
-          ? (body.watchedReleaseIds as number[])
+          ? body.watchedReleaseIds.map(Number).filter((n) => Number.isFinite(n) && n > 0)
           : existing.watchedReleaseIds,
       };
       await updateWatchItem(updated);
@@ -95,6 +101,10 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     json(res, 405, { error: "Method not allowed" });
   } catch (err) {
+    if (err instanceof MalformedBodyError) {
+      json(res, 400, { error: err.message });
+      return;
+    }
     json(res, 500, { error: (err as Error).message });
   }
 }

@@ -1,4 +1,4 @@
-import { getRows, appendRow, updateRange } from "./sheets.js";
+import { getRows, appendRow, updateRange, rowRange } from "./sheets.js";
 
 export type PressingScope = "all" | "selected";
 export type WatchStatus = "watching" | "alerted" | "acquired" | "paused";
@@ -155,7 +155,18 @@ export async function listWatchItems(): Promise<WatchItem[]> {
 
 export async function addWatchItem(item: WatchItem): Promise<WatchItem> {
   await ensureHeaders();
-  await appendRow(sheetId(), WATCHLIST_RANGE, toRow(item));
+  const rowNumber = await appendRow(sheetId(), WATCHLIST_RANGE, toRow(item));
+
+  // Read back what actually landed. Sheets has silently mangled writes before;
+  // a wrong row is far worse than a failed one.
+  const written = await getRows(sheetId(), rowRange(WATCHLIST_RANGE, rowNumber));
+  const id = written[0]?.[0] ?? "";
+  if (id !== item.id) {
+    throw new Error(
+      `Watchlist write verification failed: expected id "${item.id}" at row ${rowNumber}, ` +
+        `found "${id}". The sheet may be in an inconsistent state — check it before retrying.`,
+    );
+  }
   return item;
 }
 

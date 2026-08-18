@@ -1,7 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { createVerify, generateKeyPairSync } from "node:crypto";
-import { base64url, buildJwt, normalisePrivateKey } from "./sheets.js";
+import { base64url, buildJwt, normalisePrivateKey, nextFreeRow, rowRange } from "./sheets.js";
 
 test("base64url replaces url-unsafe characters and strips padding", () => {
   // 0xfb 0xff 0xbf is base64 "+/+/" — exercises both substitutions.
@@ -42,4 +42,22 @@ test("buildJwt produces three signed segments with the right claims", () => {
   const verifier = createVerify("RSA-SHA256");
   verifier.update(`${parts[0]}.${parts[1]}`);
   assert.equal(verifier.verify(publicKey, Buffer.from(parts[2]!, "base64url")), true);
+});
+
+test("nextFreeRow returns the row below all data, ignoring interior blanks", () => {
+  assert.equal(nextFreeRow([]), 1);
+  assert.equal(nextFreeRow([["header"]]), 2);
+  // Header, two rows, a blank, another row — next free is 6, not 5.
+  assert.equal(nextFreeRow([["h"], ["a"], ["b"], [], ["d"]]), 6);
+});
+
+test("rowRange builds an A1 range for a single row", () => {
+  assert.equal(rowRange("A:Q", 8), "A8:Q8");
+  assert.equal(rowRange("A:C", 1), "A1:C1");
+});
+
+test("rowRange rejects anything that is not a plain column range", () => {
+  assert.throws(() => rowRange("A1:Q9", 2), /Expected a column range/);
+  assert.throws(() => rowRange("A", 2), /Expected a column range/);
+  assert.throws(() => rowRange("", 2), /Expected a column range/);
 });

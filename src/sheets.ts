@@ -157,15 +157,44 @@ export async function getRows(spreadsheetId: string, range: string): Promise<str
   return data.values ?? [];
 }
 
+/**
+ * The first row below all existing data. getRows omits trailing empty rows,
+ * so grid.length + 1 is always free — blank rows *within* the data are left
+ * alone rather than reused, which keeps this deterministic.
+ */
+export function nextFreeRow(grid: string[][]): number {
+  return grid.length + 1;
+}
+
+/** Turns a column range and a row number into an A1 range: ("A:Q", 8) -> "A8:Q8". */
+export function rowRange(columnRange: string, rowNumber: number): string {
+  const parts = columnRange.split(":");
+  const start = parts[0];
+  const end = parts[1];
+  if (parts.length !== 2 || !start || !end || !/^[A-Z]+$/.test(start) || !/^[A-Z]+$/.test(end)) {
+    throw new Error(`Expected a column range like "A:Q", got "${columnRange}"`);
+  }
+  return `${start}${rowNumber}:${end}${rowNumber}`;
+}
+
+/**
+ * Appends a row by computing the next free row and writing to it explicitly.
+ *
+ * Deliberately does NOT use Sheets' values.append. With an open-ended range and
+ * a blank row anywhere in the table, append's table detection silently writes
+ * only part of the row and shifts it into the wrong columns — verified
+ * reproducibly: a 17-column row landed as 2 values in columns P and Q, and the
+ * API still returned 200. Explicit addressing is the only reliable option.
+ */
 export async function appendRow(
   spreadsheetId: string,
-  range: string,
+  columnRange: string,
   row: (string | number)[],
-): Promise<void> {
-  await sheetsFetch(
-    `/${spreadsheetId}/values/${encodeURIComponent(range)}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`,
-    { method: "POST", body: JSON.stringify({ values: [row] }) },
-  );
+): Promise<number> {
+  const grid = await getRows(spreadsheetId, columnRange);
+  const target = nextFreeRow(grid);
+  await updateRange(spreadsheetId, rowRange(columnRange, target), [row]);
+  return target;
 }
 
 export async function updateRange(
