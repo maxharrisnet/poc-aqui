@@ -129,6 +129,13 @@ Both were found the hard way and are worth knowing before touching `src/sheets.t
 The common thread: Sheets' convenience features guess, and guesses corrupt data.
 Address rows explicitly.
 
+**And when you clean up after a corruption, look wider than the app does.** The
+append bug wrote rows starting one column *past* the end of `A:Q`. Every cleanup
+and every verification used `A:Q`, so the wreckage was invisible for an entire
+session while the checks reported a clean sheet — the damage was being measured
+through the same window it had escaped. `npm run check-sheets` now reads
+`A1:BZ200` and fails if anything sits outside the app's range.
+
 ### The dev server holds no logic
 
 `src/server.ts` delegates every `/api/*` route to the same handler Vercel runs.
