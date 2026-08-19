@@ -43,7 +43,9 @@ function isValidThreshold(v: number): boolean {
 function publicErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   console.error(`Watchlist API error: ${message}`);
-  if (message.startsWith("DISCOGS_TOKEN") || message.startsWith("GOOGLE_")) return message;
+  // Config guidance carries no secrets and is how an operator diagnoses a
+  // broken deploy — pass it through rather than hiding it behind the log.
+  if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
   return "Request failed. Check the server logs.";
 }
 
