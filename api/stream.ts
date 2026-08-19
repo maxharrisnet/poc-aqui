@@ -36,6 +36,16 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
+  /** Config-guidance messages (missing env vars) carry no secret and are how
+   *  an operator diagnoses a broken deploy, so they pass through verbatim.
+   *  Every other error is replaced with a generic body after being logged. */
+  const publicErrorMessage = (err: unknown): string => {
+    const message = err instanceof Error ? err.message : String(err);
+    console.error(`Stream run failed: ${message}`);
+    if (message.startsWith("DISCOGS_TOKEN") || message.startsWith("GOOGLE_")) return message;
+    return "Request failed. Check the server logs.";
+  };
+
   try {
     if (mode === "search" && queries.length === 0) {
       throw new Error("No search terms provided");
@@ -60,7 +70,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
 
     send("done", summary);
   } catch (err) {
-    send("failed", { error: (err as Error).message });
+    send("failed", { error: publicErrorMessage(err) });
   } finally {
     res.end();
   }

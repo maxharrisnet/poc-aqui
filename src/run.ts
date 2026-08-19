@@ -4,9 +4,13 @@ import { fetchFxSnapshot, type FxSnapshot } from "./fx.js";
 import { estimateShippingUsd } from "./shipping.js";
 import { calculateCustoms, CUSTOMS_RULES_2026 } from "./customsRules.js";
 import { resolveOrigin } from "./countries.js";
-import { listWatchItems, updateWatchItem } from "./watchlist.js";
+import { listWatchItems, patchWatchItem, type WatchItem } from "./watchlist.js";
 
 export const MAX_QUERIES = 10;
+
+/** Items per sweep. At ~2 Discogs calls per pressing and 1.1s pacing, this
+ *  keeps a run inside the 300s function ceiling with headroom. */
+export const MAX_SWEEP_ITEMS = Number(process.env.MAX_SWEEP_ITEMS ?? 12);
 
 export interface CostBreakdown {
   recordUsd: number;
@@ -67,6 +71,15 @@ export interface RunSummary {
 }
 
 export type ProgressFn = (event: { index: number; total: number; label: string }) => void;
+
+/** A sheet write failing must not discard results we already paid Discogs for. */
+async function safePatch(id: string, patch: Partial<WatchItem>): Promise<void> {
+  try {
+    await patchWatchItem(id, patch);
+  } catch (err) {
+    console.error(`Watchlist write failed for ${id}: ${(err as Error).message}`);
+  }
+}
 
 /** Turns a resolved release id into a fully costed result. */
 async function costRelease(
@@ -249,13 +262,19 @@ export async function runWatchlist(
   onResult?: (r: CheckResult) => void,
 ): Promise<RunSummary> {
   const fx = await fetchFxSnapshot();
-  const items = (await listWatchItems()).filter((w) => w.active);
+  const active = (await listWatchItems()).filter((w) => w.active);
+  // Oldest-checked first, never-checked before that, so a capped run always
+  // makes progress on the tail instead of re-sweeping the same prefix.
+  active.sort((a, b) => (a.lastCheckedAt ?? "").localeCompare(b.lastCheckedAt ?? ""));
+  const items = active.slice(0, MAX_SWEEP_ITEMS);
+  const skipped = active.length - items.length;
   const results: CheckResult[] = [];
 
   for (const [i, item] of items.entries()) {
     onProgress?.({ index: i + 1, total: items.length, label: `${item.artist} — ${item.album}` });
 
     let best: CheckResult | null = null;
+    let checkError: string | null = null;
 
     for (const releaseId of item.watchedReleaseIds) {
       try {
@@ -268,34 +287,68 @@ export async function runWatchlist(
         if (result.cost && (!best?.cost || result.cost.totalUsd < best.cost.totalUsd)) {
           best = result;
         }
-      } catch {
-        // A single unavailable pressing must not abandon the whole item.
+      } catch (err) {
+        // Remember why, but keep trying the other pressings.
+        checkError = (err as Error).message;
       }
     }
 
-    const resolved: CheckResult = best ?? {
-      requested: `${item.artist} — ${item.album}`,
+    if (best) {
+      results.push(best);
+      onResult?.(best);
+      const belowThreshold =
+        best.totalMxn != null && item.maxLandedMxn != null && best.totalMxn <= item.maxLandedMxn;
+      await safePatch(item.id, {
+        lastCheckedAt: new Date().toISOString(),
+        bestLandedMxn: best.totalMxn ?? null,
+        bestReleaseId: best.discogsId ?? null,
+        status: belowThreshold ? "alerted" : item.status === "alerted" ? "watching" : item.status,
+      });
+    } else if (checkError) {
+      // Could not reach Discogs. Record that we tried; change nothing else.
+      // Nulling the stored best price here would destroy a real alert.
+      const failed: CheckResult = {
+        requested: `${item.artist} — ${item.album}`,
+        matched: false,
+        unmatchedReason: checkError,
+        available: false,
+        numForSale: 0,
+      };
+      results.push(failed);
+      onResult?.(failed);
+      await safePatch(item.id, { lastCheckedAt: new Date().toISOString() });
+    } else {
+      // Genuinely checked, genuinely nothing listed.
+      const none: CheckResult = {
+        requested: `${item.artist} — ${item.album}`,
+        matched: false,
+        unmatchedReason: "No copies listed for any watched pressing",
+        available: false,
+        numForSale: 0,
+      };
+      results.push(none);
+      onResult?.(none);
+      await safePatch(item.id, {
+        lastCheckedAt: new Date().toISOString(),
+        bestLandedMxn: null,
+        bestReleaseId: null,
+        status: item.status === "alerted" ? "watching" : item.status,
+      });
+    }
+  }
+
+  if (skipped > 0) {
+    const notice: CheckResult = {
+      requested: `${skipped} more record${skipped === 1 ? "" : "s"} not checked this run`,
       matched: false,
-      unmatchedReason: "No copies listed for any watched pressing",
+      unmatchedReason:
+        `A sweep is capped at ${MAX_SWEEP_ITEMS} records to stay inside the time limit. ` +
+        `The least recently checked are done first, so run it again to continue.`,
       available: false,
       numForSale: 0,
     };
-
-    results.push(resolved);
-    onResult?.(resolved);
-
-    const belowThreshold =
-      resolved.totalMxn != null &&
-      item.maxLandedMxn != null &&
-      resolved.totalMxn <= item.maxLandedMxn;
-
-    await updateWatchItem({
-      ...item,
-      lastCheckedAt: new Date().toISOString(),
-      bestLandedMxn: resolved.totalMxn ?? null,
-      bestReleaseId: resolved.discogsId ?? null,
-      status: belowThreshold ? "alerted" : item.status === "alerted" ? "watching" : item.status,
-    });
+    results.push(notice);
+    onResult?.(notice);
   }
 
   return summarise("watchlist", fx, results);

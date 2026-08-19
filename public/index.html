@@ -887,6 +887,17 @@
         const data = await res.json();
         if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
         (data.item.watchedReleaseIds || []).forEach((rid) => state.watched.set(rid, data.item.id));
+        if (data.plan && data.plan.needsUserSelection) {
+          const row = btn.closest('.row');
+          const metaEl = row ? row.querySelector('.row-meta') : null;
+          if (metaEl) {
+            const note = document.createElement('span');
+            note.className = 'tag-approx';
+            note.textContent =
+              'Watching 1 of ' + data.plan.totalVinylVersions + ' pressings — picker coming in the next version';
+            metaEl.appendChild(note);
+          }
+        }
       }
       // Clear before repainting: refreshWatchControls skips anything still in
       // pendingWatch, and this request's own entry must not make it skip the

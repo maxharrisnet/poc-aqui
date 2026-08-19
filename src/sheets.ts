@@ -149,10 +149,45 @@ async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+const tabNameCache = new Map<string, string>();
+
+/** The first tab's actual title. Cached per instance. Never assume "Sheet1" —
+ *  a Spanish-locale spreadsheet calls it "Hoja 1". */
+export async function firstTabName(spreadsheetId: string): Promise<string> {
+  const cached = tabNameCache.get(spreadsheetId);
+  if (cached !== undefined) return cached;
+
+  const data = await sheetsFetch<{ sheets?: { properties?: { title?: string } }[] }>(
+    `/${spreadsheetId}?fields=sheets.properties.title`,
+  );
+  const title = data.sheets?.[0]?.properties?.title;
+  if (!title) throw new Error(`Could not read the tab name for spreadsheet ${spreadsheetId}`);
+  tabNameCache.set(spreadsheetId, title);
+  return title;
+}
+
+/** Sheets needs quotes around a tab name containing spaces. */
+export function qualifyRange(tabName: string, range: string): string {
+  return `'${tabName.replace(/'/g, "''")}'!${range}`;
+}
+
+/**
+ * Qualifies a bare column/cell range with the spreadsheet's real first-tab
+ * name, so a tab reorder in the UI can never silently redirect a read or
+ * write to the wrong sheet. Ranges that already carry a tab (contain "!")
+ * are left alone.
+ */
+async function qualifyIfNeeded(spreadsheetId: string, range: string): Promise<string> {
+  if (range.includes("!")) return range;
+  const tabName = await firstTabName(spreadsheetId);
+  return qualifyRange(tabName, range);
+}
+
 /** Returns raw cell values. Trailing empty cells are omitted by the API. */
 export async function getRows(spreadsheetId: string, range: string): Promise<string[][]> {
+  const qualified = await qualifyIfNeeded(spreadsheetId, range);
   const data = await sheetsFetch<{ values?: string[][] }>(
-    `/${spreadsheetId}/values/${encodeURIComponent(range)}`,
+    `/${spreadsheetId}/values/${encodeURIComponent(qualified)}`,
   );
   return data.values ?? [];
 }
@@ -185,15 +220,30 @@ export function rowRange(columnRange: string, rowNumber: number): string {
  * only part of the row and shifts it into the wrong columns — verified
  * reproducibly: a 17-column row landed as 2 values in columns P and Q, and the
  * API still returned 200. Explicit addressing is the only reliable option.
+ *
+ * That same explicit addressing creates its own race: two concurrent callers
+ * can both read the same "next free row" and both write there, and the second
+ * write wins, silently discarding the first record. Read back what actually
+ * landed and retry on a different row (twice, to survive a third writer
+ * arriving during the retry) rather than trust the read.
  */
 export async function appendRow(
   spreadsheetId: string,
   columnRange: string,
   row: (string | number)[],
+  attempt = 0,
 ): Promise<number> {
   const grid = await getRows(spreadsheetId, columnRange);
   const target = nextFreeRow(grid);
   await updateRange(spreadsheetId, rowRange(columnRange, target), [row]);
+
+  // Another writer may have claimed this row between our read and write.
+  const check = await getRows(spreadsheetId, rowRange(columnRange, target));
+  const landed = check[0]?.[0] ?? "";
+  const expected = String(row[0] ?? "");
+  if (landed !== expected && attempt < 2) {
+    return appendRow(spreadsheetId, columnRange, row, attempt + 1);
+  }
   return target;
 }
 
@@ -202,7 +252,8 @@ export async function updateRange(
   range: string,
   values: (string | number)[][],
 ): Promise<void> {
-  await sheetsFetch(`/${spreadsheetId}/values/${encodeURIComponent(range)}?valueInputOption=RAW`, {
+  const qualified = await qualifyIfNeeded(spreadsheetId, range);
+  await sheetsFetch(`/${spreadsheetId}/values/${encodeURIComponent(qualified)}?valueInputOption=RAW`, {
     method: "PUT",
     body: JSON.stringify({ values }),
   });

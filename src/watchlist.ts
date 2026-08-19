@@ -133,11 +133,26 @@ function sheetId(): string {
   return id;
 }
 
-/** Ensures row 1 holds the header. Safe to call repeatedly. */
+/**
+ * Ensures row 1 holds the header. Safe to call repeatedly.
+ *
+ * Refuses to touch a row 1 that holds something other than the expected
+ * header — if it were blindly overwritten, a deleted header row or a row
+ * inserted above it would cause the next write to permanently destroy a
+ * real record.
+ */
 export async function ensureHeaders(): Promise<void> {
   const rows = await getRows(sheetId(), "A1:Q1");
   const existing = rows[0] ?? [];
   if (existing[0] === WATCHLIST_HEADERS[0]) return;
+
+  const isEmpty = existing.every((c) => (c ?? "").trim() === "");
+  if (!isEmpty) {
+    throw new Error(
+      `Row 1 of the watchlist sheet holds "${existing[0]}" instead of the expected header. ` +
+        `Refusing to overwrite it — restore the header row, or clear row 1, before adding records.`,
+    );
+  }
   await updateRange(sheetId(), "A1:Q1", [[...WATCHLIST_HEADERS]]);
 }
 
@@ -170,10 +185,25 @@ export async function addWatchItem(item: WatchItem): Promise<WatchItem> {
   return item;
 }
 
-/** Rewrites one row in place, locating it via `resolveRowNumber`. */
-export async function updateWatchItem(item: WatchItem): Promise<void> {
+/**
+ * Merges `patch` onto whatever is currently in the sheet for `id`.
+ *
+ * Deliberately re-reads rather than writing a caller-held snapshot: a sweep can
+ * take minutes, and PUTting a stale row silently reverts anything the user
+ * changed in the meantime. Sheets has no compare-and-swap, so this narrows the
+ * race to the read-write gap rather than closing it.
+ */
+export async function patchWatchItem(id: string, patch: Partial<WatchItem>): Promise<void> {
   const rows = await fetchGrid();
-  const rowNumber = resolveRowNumber(rows, item.id);
-  if (rowNumber === null) throw new Error(`Watch item ${item.id} not found`);
-  await updateRange(sheetId(), `A${rowNumber}:Q${rowNumber}`, [toRow(item)]);
+  const rowNumber = resolveRowNumber(rows, id);
+  if (rowNumber === null) throw new Error(`Watch item ${id} not found`);
+
+  const current = fromRow(rows[rowNumber - 1] ?? []);
+  await updateRange(sheetId(), rowRange(WATCHLIST_RANGE, rowNumber), [toRow({ ...current, ...patch })]);
+}
+
+/** Rewrites one row in place. Kept for callers that hold a full item; routes
+ *  through `patchWatchItem` so there is a single write path. */
+export async function updateWatchItem(item: WatchItem): Promise<void> {
+  await patchWatchItem(item.id, item);
 }
