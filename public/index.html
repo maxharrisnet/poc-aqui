@@ -257,10 +257,10 @@
      the header + bar + meta block. The detail panel sits on its own track. */
   .row {
     display: grid;
-    grid-template-columns: 2.2rem 86px minmax(0, 1fr);
+    grid-template-columns: 2.2rem 86px minmax(0, 1fr) auto;
     grid-template-areas:
-      "rank thumb main"
-      ".    .     detail";
+      "rank thumb main   watch"
+      ".    .     detail detail";
     column-gap: 14px;
     border-top: 1px solid var(--kraft-deep);
     padding: 17px 0 15px;
@@ -270,6 +270,60 @@
 
   .row-rank { grid-area: rank; align-self: start; padding-top: 3px; }
   .row-main { grid-area: main; min-width: 0; }
+
+  .watch-btn {
+    grid-area: watch;
+    align-self: start;
+    font-family: var(--mono);
+    font-size: 0.62rem;
+    font-weight: 600;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+    padding: 6px 10px;
+    border: 1.5px solid var(--kraft-deep);
+    border-radius: 2px;
+    background: transparent;
+    color: var(--carbon);
+    cursor: pointer;
+    white-space: nowrap;
+    min-width: 6.5rem;
+    text-align: center;
+  }
+  .watch-btn:hover:not([disabled]) { border-color: var(--ink); color: var(--ink); }
+  .watch-btn:focus-visible { outline: 2px solid var(--c-record); outline-offset: 2px; }
+  .watch-btn[aria-pressed="true"] {
+    background: var(--c-record);
+    border-color: var(--c-record);
+    color: #fff;
+  }
+  .watch-btn[disabled] { opacity: 0.55; cursor: progress; }
+  .watch-btn.is-error { border-color: var(--c-iva); color: var(--c-iva); }
+
+  .threshold {
+    margin: 9px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--carbon);
+  }
+  .threshold[hidden] { display: none; }
+  .threshold input {
+    width: 8rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    padding: 5px 8px;
+    border: 1.5px solid var(--kraft-deep);
+    border-radius: 2px;
+    background: #fff;
+    color: var(--ink);
+  }
+  .threshold input:focus { outline: 2px solid var(--c-record); outline-offset: -1px; }
+  .threshold .saved { color: var(--c-record); font-weight: 600; }
+  .threshold .saved.is-error { color: var(--c-iva); }
 
   .row-thumb, .row-thumb-none {
     grid-area: thumb;
@@ -328,9 +382,11 @@
       grid-template-columns: 64px minmax(0, 1fr);
       grid-template-areas:
         "thumb main"
+        "thumb watch"
         ".     detail";
       column-gap: 12px;
     }
+    .watch-btn { justify-self: start; margin-top: 8px; }
     .row-rank { display: none; }
     /* Content stacks taller here, so a full-height sleeve would crop to a
        narrow vertical strip. Keep it square and top-aligned instead. */
@@ -530,6 +586,7 @@
         <button class="btn" id="go" type="button">Check these records</button>
         <span class="or">or</span>
         <button class="btn btn-ghost" id="godemo" type="button">Use the demo list</button>
+        <button class="btn btn-ghost" id="gowatch" type="button">Check my watchlist</button>
       </div>
     </section>
 
@@ -681,6 +738,10 @@
     data: null,
     live: [],      // results as they stream in
     running: false,
+    watched: new Map(),     // releaseId -> watch item id
+    thresholds: new Map(),  // releaseId -> max landed MXN
+    pendingWatch: new Set(),// releaseIds with an in-flight request
+    pendingThresholds: new Set(), // watch item ids with an unsaved threshold
   };
 
   // ------------------------------------------------ formatting
@@ -777,6 +838,99 @@
 
   $('addrow').addEventListener('click', () => addRow(''));
   addRow(''); addRow(''); addRow('');
+
+  // ------------------------------------------------ watchlist
+
+  async function loadWatchlist() {
+    try {
+      const res = await fetch('/api/watchlist');
+      const data = await res.json();
+      state.watched.clear();
+      state.thresholds.clear();
+      (data.items || []).forEach((item) => {
+        if (item.active === false) return;
+        (item.watchedReleaseIds || []).forEach((rid) => {
+          state.watched.set(rid, item.id);
+          if (item.maxLandedMxn != null) state.thresholds.set(rid, item.maxLandedMxn);
+        });
+      });
+    } catch {
+      // A watchlist that will not load must never break pricing.
+    }
+  }
+
+  async function toggleWatch(btn, releaseId) {
+    if (state.pendingWatch.has(releaseId)) return;   // in flight — ignore
+    state.pendingWatch.add(releaseId);
+
+    const wasWatched = state.watched.has(releaseId);
+    btn.disabled = true;
+    btn.classList.remove('is-error');
+    btn.textContent = wasWatched ? 'Removing…' : 'Adding…';
+
+    try {
+      if (wasWatched) {
+        const res = await fetch('/api/watchlist', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: state.watched.get(releaseId), active: false }),
+        });
+        if (!res.ok) throw new Error('Could not remove');
+        state.watched.delete(releaseId);
+        state.thresholds.delete(releaseId);
+      } else {
+        const res = await fetch('/api/watchlist', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ releaseId }),
+        });
+        const data = await res.json();
+        if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
+        (data.item.watchedReleaseIds || []).forEach((rid) => state.watched.set(rid, data.item.id));
+        if (data.plan && data.plan.needsUserSelection) {
+          const row = btn.closest('.row');
+          const metaEl = row ? row.querySelector('.row-meta') : null;
+          if (metaEl) {
+            const note = document.createElement('span');
+            note.className = 'tag-approx';
+            note.textContent =
+              'Watching 1 of ' + data.plan.totalVinylVersions + ' pressings — picker coming in the next version';
+            metaEl.appendChild(note);
+          }
+        }
+      }
+      // Clear before repainting: refreshWatchControls skips anything still in
+      // pendingWatch, and this request's own entry must not make it skip the
+      // very button whose result it's reporting.
+      state.pendingWatch.delete(releaseId);
+      refreshWatchControls();
+    } catch (err) {
+      btn.classList.add('is-error');
+      btn.textContent = 'Failed';
+      setTimeout(() => { btn.classList.remove('is-error'); refreshWatchControls(); }, 2500);
+    } finally {
+      state.pendingWatch.delete(releaseId);
+      btn.disabled = false;
+    }
+  }
+
+  /**
+   * Repaints every visible watch control from state. Watching one pressing can
+   * add several release ids at once (all pressings of a master), so the clicked
+   * button is never the only one that needs updating.
+   */
+  function refreshWatchControls(root) {
+    (root || document).querySelectorAll('.watch-btn').forEach((btn) => {
+      const releaseId = Number(btn.dataset.release);
+      if (state.pendingWatch.has(releaseId)) return;   // mid-flight, leave its label alone
+      const watched = state.watched.has(releaseId);
+      btn.setAttribute('aria-pressed', String(watched));
+      btn.textContent = watched ? 'Watching' : 'Watch';
+      const row = btn.closest('.row');
+      const field = row ? row.querySelector('.threshold') : null;
+      if (field) field.hidden = !watched;
+    });
+  }
 
   // ------------------------------------------------ rendering
 
@@ -907,7 +1061,19 @@
           SEGMENTS.map((s) => '<span class="bar-seg ' + s.cls + '" data-pct="' + (r.cost[s.key] / total * 100) + '"></span>').join('') +
         '</div>' +
         '<div class="row-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
+        '<div class="threshold"' + (state.watched.has(r.discogsId) ? '' : ' hidden') + '>' +
+          '<label for="th-' + id + '">Alert under</label>' +
+          '<input id="th-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
+            'placeholder="MXN" data-release="' + r.discogsId + '" ' +
+            'value="' + (state.thresholds.get(r.discogsId) ?? '') + '">' +
+          '<span class="saved" data-saved="' + r.discogsId + '"></span>' +
+        '</div>' +
       '</div>' +
+      (r.discogsId
+        ? '<button class="watch-btn" type="button" data-release="' + r.discogsId + '" ' +
+          'aria-pressed="' + (state.watched.has(r.discogsId) ? 'true' : 'false') + '">' +
+          (state.watched.has(r.discogsId) ? 'Watching' : 'Watch') + '</button>'
+        : '') +
       detailHtml(r, id) + '</article>';
   }
 
@@ -923,6 +1089,48 @@
         if (caret) caret.textContent = open ? '+' : '–';
       });
     });
+    root.querySelectorAll('.watch-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        toggleWatch(btn, Number(btn.dataset.release));
+      });
+    });
+    root.querySelectorAll('.threshold input').forEach((input) => {
+      input.addEventListener('click', (e) => e.stopPropagation());
+      input.addEventListener('change', async () => {
+        const releaseId = Number(input.dataset.release);
+        const watchId = state.watched.get(releaseId);
+        const flag = root.querySelector('[data-saved="' + releaseId + '"]');
+        if (!watchId) return;
+        const raw = input.value.trim();
+        const value = raw === '' ? null : Number(raw);
+        if (value !== null && (!Number.isFinite(value) || value < 0)) {
+          if (flag) { flag.classList.add('is-error'); flag.textContent = 'Invalid'; }
+          return;
+        }
+        state.pendingThresholds.add(watchId);
+        try {
+          const res = await fetch('/api/watchlist', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: watchId, maxLandedMxn: value }),
+          });
+          if (!res.ok) throw new Error('save failed');
+          if (value === null) state.thresholds.delete(releaseId);
+          else state.thresholds.set(releaseId, value);
+          if (flag) {
+            flag.classList.remove('is-error');
+            flag.textContent = 'Saved';
+            setTimeout(() => { flag.textContent = ''; }, 1500);
+          }
+        } catch {
+          if (flag) { flag.classList.add('is-error'); flag.textContent = 'Failed'; }
+        } finally {
+          state.pendingThresholds.delete(watchId);
+        }
+      });
+    });
+    refreshWatchControls(root);
     requestAnimationFrame(() => {
       root.querySelectorAll('.bar-seg').forEach((el) => { el.style.width = el.dataset.pct + '%'; });
     });
@@ -964,8 +1172,17 @@
 
   // ------------------------------------------------ run
 
-  function run(mode) {
+  /** Waits for in-flight threshold saves so a sweep never reads a stale value. */
+  async function settleThresholds(timeoutMs = 3000) {
+    const started = Date.now();
+    while (state.pendingThresholds.size > 0 && Date.now() - started < timeoutMs) {
+      await new Promise((r) => setTimeout(r, 50));
+    }
+  }
+
+  async function run(mode) {
     if (state.running) return;
+    if (mode === 'watchlist') await settleThresholds();
 
     let params;
     if (mode === 'search') {
@@ -973,6 +1190,8 @@
       if (!queries.length) return;
       params = new URLSearchParams({ mode: 'search' });
       queries.forEach((q) => params.append('q', q));
+    } else if (mode === 'watchlist') {
+      params = new URLSearchParams({ mode: 'watchlist' });
     } else {
       params = new URLSearchParams({ mode: 'demo' });
     }
@@ -981,12 +1200,16 @@
     state.live = [];
     $('go').disabled = true;
     $('godemo').disabled = true;
+    $('gowatch').disabled = true;
     $('idle').hidden = true;
     $('error').hidden = true;
     $('summary').hidden = true;
     $('results').innerHTML = '';
     $('loading').hidden = false;
-    $('loading-label').textContent = mode === 'demo' ? 'Checking the demo list…' : 'Checking Discogs…';
+    $('loading-label').textContent =
+      mode === 'demo' ? 'Checking the demo list…'
+      : mode === 'watchlist' ? 'Checking your watchlist…'
+      : 'Checking Discogs…';
     $('progress').textContent = '';
 
     const es = new EventSource('/api/stream?' + params.toString());
@@ -1032,21 +1255,25 @@
     state.running = false;
     $('loading').hidden = true;
     $('godemo').disabled = false;
+    $('gowatch').disabled = false;
     updateCount();
   }
 
   $('go').addEventListener('click', () => run('search'));
   $('godemo').addEventListener('click', () => run('demo'));
+  $('gowatch').addEventListener('click', () => run('watchlist'));
 
   // Restore a previous run if the server still has one cached.
-  fetch('/api/results').then((r) => r.json()).then((data) => {
-    if (data && data.results && data.results.length) {
-      state.data = data;
-      $('idle').hidden = true;
-      renderResults(data.results, true);
-      renderSummary(data);
-    }
-  }).catch(() => {});
+  loadWatchlist().then(() =>
+    fetch('/api/results').then((r) => r.json()).then((data) => {
+      if (data && data.results && data.results.length) {
+        state.data = data;
+        $('idle').hidden = true;
+        renderResults(data.results, true);
+        renderSummary(data);
+      }
+    }).catch(() => {}),
+  );
 
   updateCount();
 

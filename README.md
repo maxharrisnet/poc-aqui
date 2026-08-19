@@ -51,6 +51,91 @@ npm run smoketest
 > as a signal that the project is a Node server and tries to deploy it as such,
 > which breaks the static-plus-functions build.
 
+## Watchlist (v0.2a)
+
+State now lives in Google Sheets rather than memory. Two sheets, deliberately
+separate because they hold different things: **Watchlist** is one row per album
+you want; **Inventory** (v0.2b) will be one row per physical copy you own.
+
+### Setup
+
+Beyond `DISCOGS_TOKEN`, four environment variables are required:
+
+```
+GOOGLE_SERVICE_ACCOUNT_EMAIL=...@....iam.gserviceaccount.com
+GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
+WATCHLIST_SHEET_ID=...
+INVENTORY_SHEET_ID=...
+```
+
+Locally these go in `.env.local` (gitignored); on Vercel, in the project's
+environment variables.
+
+**Run this first, before anything else:**
+
+```bash
+npm run check-sheets
+```
+
+It reads one cell from each sheet and reports precisely what is wrong. The
+overwhelmingly common failure is a 403, which is almost never a bad key — it
+means the spreadsheets have not been shared with the service account's email
+address as an Editor. Two other things that bite: `GOOGLE_PRIVATE_KEY` must keep
+its literal `\n` sequences and stay quoted, and the Sheets API must be enabled
+on the Cloud project.
+
+### Using it
+
+- **Watch** on any result adds the record. A POST takes 2–3 seconds because it
+  makes two or three rate-limited Discogs calls; the button disables itself
+  meanwhile, so a double-click cannot create duplicate rows.
+- **Alert under** sets a per-record threshold in pesos, saved on blur.
+- **Check my watchlist** sweeps every watched pressing and writes results back
+  to the sheet as it goes.
+
+The sweep only covers rows where `active` is `TRUE`. That column is the lever
+for keeping a growing watchlist inside the time budget — paused rows cost
+nothing.
+
+### Watching albums, not pressings
+
+Adding a record watches *every vinyl pressing of that album* when the master has
+ten or fewer, and asks you to pick when it has more. Basic Channel's *Q 1.1* has
+6, so all are watched; Kraftwerk's *Autobahn* has 143, so you choose. The
+threshold is `PRESSING_AUTO_WATCH_LIMIT`, defaulting to 10.
+
+This is why a sweep can return a cheaper pressing than the one you added.
+
+**`/masters/{id}` exposes a `lowest_price` — never use it for pricing.** It
+ignores `curr_abbr` (identical figure for USD and EUR) and spans every format,
+so its "cheapest copy" may be a CD. All pricing goes through
+`/marketplace/stats/{release_id}?curr_abbr=USD`. Master data enumerates versions
+and nothing else.
+
+### Two Sheets behaviours that cost real time
+
+Both were found the hard way and are worth knowing before touching `src/sheets.ts`:
+
+- **`values.append` silently corrupts writes.** With an open-ended range and a
+  blank row anywhere in the data, its table detection misfires: a 17-column row
+  landed as 2 values in columns P and Q, fifteen fields discarded, HTTP 200.
+  `appendRow` therefore computes the target row and writes to it explicitly, and
+  `addWatchItem` reads the row back to confirm what landed.
+- **Never derive a sheet row from an array index.** `listWatchItems` filters out
+  blank rows, so position in that array and true row number drift apart the
+  moment a blank row exists above the target — updates then overwrite an
+  unrelated record. Use `resolveRowNumber`, which scans the raw grid.
+
+The common thread: Sheets' convenience features guess, and guesses corrupt data.
+Address rows explicitly.
+
+### The dev server holds no logic
+
+`src/server.ts` delegates every `/api/*` route to the same handler Vercel runs.
+An earlier version reimplemented the SSE stream inline and drifted — `mode=watchlist`
+was added to `api/stream.ts` but not to the server's private copy, so local
+sweeps silently ran the demo list instead. Add a route to `ROUTES`, never logic.
+
 ## Deploying to Vercel
 
 The project is deploy-ready: `public/` is served statically, `api/stream.ts`
@@ -97,6 +182,12 @@ locally. Without it the site loads fine but every check returns a clear
 "DISCOGS_TOKEN is not configured on the server" message.
 
 ### Three things to know before sharing the URL
+
+**The link now writes to the sheets, not just reads.** v0.1 was read-only, so an
+open URL cost only rate limit. From v0.2a, anyone holding the link can add to
+and edit the watchlist. **Keep Vercel's deployment protection enabled**, or put
+a shared passphrase in front of the mutating endpoints. Do not ship open write
+access on a link that gets forwarded.
 
 **The link spends your Discogs quota.** Anyone who has it can run checks
 against your token. For a demo shared with two or three people that's fine.

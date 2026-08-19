@@ -5,9 +5,11 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "serve": "tsx src/server.ts",
-    "digest": "tsx src/index.ts",
+    "serve": "tsx --env-file-if-exists=.env.local src/server.ts",
+    "digest": "tsx --env-file-if-exists=.env.local src/index.ts",
     "smoketest": "tsx src/smoketest.ts",
+    "test": "tsx --test src/*.test.ts",
+    "check-sheets": "tsx --env-file-if-exists=.env.local scripts/check-sheets.ts",
     "typecheck": "tsc --noEmit"
   },
   "author": "",
