@@ -1,16 +1,25 @@
-import { createServer, type ServerResponse } from "node:http";
+import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
-import { runDemo, runSearch, MAX_QUERIES, type RunSummary } from "./run.js";
 
 const PORT = Number(process.env.PORT ?? 4173);
 
-/** Last completed run, so a page reload doesn't re-spend Discogs rate limit. */
-let cached: RunSummary | null = null;
-let streaming = false;
+/**
+ * Local dev server. Serves the static page and delegates every /api/* route to
+ * the same handler Vercel runs in production.
+ *
+ * It deliberately holds NO logic of its own. An earlier version reimplemented
+ * the SSE stream inline, which silently drifted: `mode=watchlist` was added to
+ * api/stream.ts but not here, so local sweeps quietly ran the demo list
+ * instead. Delegating is the only way local and deployed stay honest.
+ */
 
-function sse(res: ServerResponse, event: string, data: unknown) {
-  res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
-}
+type ApiHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void> | void;
+
+const ROUTES: Record<string, () => Promise<{ default: ApiHandler }>> = {
+  "/api/stream": () => import("../api/stream.js"),
+  "/api/results": () => import("../api/results.js"),
+  "/api/watchlist": () => import("../api/watchlist.js"),
+};
 
 const server = createServer(async (req, res) => {
   const url = new URL(req.url ?? "/", `http://localhost:${PORT}`);
@@ -27,54 +36,17 @@ const server = createServer(async (req, res) => {
     return;
   }
 
-  if (url.pathname === "/api/results") {
-    res.writeHead(200, { "Content-Type": "application/json" });
-    res.end(JSON.stringify(cached));
-    return;
-  }
-
-  if (url.pathname === "/api/stream") {
-    if (streaming) {
-      res.writeHead(409, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "A check is already running" }));
-      return;
-    }
-
-    res.writeHead(200, {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      Connection: "keep-alive",
-    });
-
-    streaming = true;
-    const mode = url.searchParams.get("mode") === "search" ? "search" : "demo";
-    const queries = url.searchParams.getAll("q").slice(0, MAX_QUERIES);
-
+  const load = ROUTES[url.pathname];
+  if (load) {
     try {
-      if (mode === "search" && queries.length === 0) {
-        throw new Error("No search terms provided");
-      }
-
-      const onProgress = (e: { index: number; total: number; label: string }) => sse(res, "progress", e);
-      const onResult = (r: unknown) => sse(res, "result", r);
-
-      const summary =
-        mode === "search" ? await runSearch(queries, onProgress, onResult) : await runDemo(onProgress, onResult);
-
-      cached = summary;
-      sse(res, "done", summary);
+      const { default: handler } = await load();
+      await handler(req, res);
     } catch (err) {
-      sse(res, "failed", { error: (err as Error).message });
-    } finally {
-      streaming = false;
-      res.end();
+      if (!res.headersSent) {
+        res.writeHead(500, { "Content-Type": "application/json" });
+      }
+      res.end(JSON.stringify({ error: (err as Error).message }));
     }
-    return;
-  }
-
-  if (url.pathname === "/api/watchlist") {
-    const { default: watchlistHandler } = await import("../api/watchlist.js");
-    await watchlistHandler(req, res);
     return;
   }
 

@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { runDemo, runSearch, MAX_QUERIES } from "../src/run.js";
+import { runDemo, runSearch, runWatchlist, MAX_QUERIES } from "../src/run.js";
 
 /**
  * Server-Sent Events endpoint.
@@ -15,11 +15,12 @@ import { runDemo, runSearch, MAX_QUERIES } from "../src/run.js";
  * A ten-record search is ~30 Discogs calls paced at 1.1s, so roughly 35
  * seconds; the demo list is ~18.
  */
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
-  const mode = url.searchParams.get("mode") === "search" ? "search" : "demo";
+  const rawMode = url.searchParams.get("mode");
+  const mode = rawMode === "search" || rawMode === "watchlist" ? rawMode : "demo";
   const queries = url.searchParams.getAll("q").slice(0, MAX_QUERIES);
 
   res.writeHead(200, {
@@ -47,10 +48,15 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             (e) => send("progress", e),
             (r) => send("result", r),
           )
-        : await runDemo(
-            (e) => send("progress", e),
-            (r) => send("result", r),
-          );
+        : mode === "watchlist"
+          ? await runWatchlist(
+              (e) => send("progress", e),
+              (r) => send("result", r),
+            )
+          : await runDemo(
+              (e) => send("progress", e),
+              (r) => send("result", r),
+            );
 
     send("done", summary);
   } catch (err) {
