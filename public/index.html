@@ -177,6 +177,13 @@
   .qrow-x:focus-visible { outline: 2px solid var(--c-record); outline-offset: 2px; }
 
   .search-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
+  /* Pushes the currency toggle to the right edge of the actions row. */
+  .search-actions .ccy { margin-left: auto; }
+  /* Once the row wraps, the auto margin would strand the toggle right-aligned
+     on a line of its own; line it up with the stacked buttons instead. */
+  @media (max-width: 560px) {
+    .search-actions .ccy { margin-left: 0; }
+  }
   .or { font-family: var(--mono); font-size: 0.68rem; color: var(--carbon); letter-spacing: 0.08em; text-transform: uppercase; }
 
   .btn {
@@ -556,10 +563,6 @@
 
   <header class="topbar">
     <div class="wordmark">Aqui Ahora <span>/ Buying Desk</span></div>
-    <div class="ccy" role="group" aria-label="Display currency">
-      <button id="ccy-mxn" aria-pressed="true">MXN</button>
-      <button id="ccy-usd" aria-pressed="false">USD</button>
-    </div>
   </header>
 
   <div class="tabs" role="tablist">
@@ -587,6 +590,10 @@
         <span class="or">or</span>
         <button class="btn btn-ghost" id="godemo" type="button">Use the demo list</button>
         <button class="btn btn-ghost" id="gowatch" type="button">Check my watchlist</button>
+        <div class="ccy" role="group" aria-label="Display currency">
+          <button id="ccy-mxn" aria-pressed="true">MXN</button>
+          <button id="ccy-usd" aria-pressed="false">USD</button>
+        </div>
       </div>
     </section>
 
@@ -733,8 +740,21 @@
   const $ = (id) => document.getElementById(id);
   const MAX = 10;
 
+  const CURRENCY_KEY = 'aqui-ahora:currency';
+
+  /** localStorage throws outright in private mode or with storage disabled,
+   *  so every access is guarded and falls back to the peso default. */
+  function loadCurrency() {
+    try {
+      const saved = localStorage.getItem(CURRENCY_KEY);
+      return saved === 'USD' || saved === 'MXN' ? saved : 'MXN';
+    } catch {
+      return 'MXN';
+    }
+  }
+
   const state = {
-    currency: 'MXN',
+    currency: loadCurrency(),
     data: null,
     live: [],      // results as they stream in
     running: false,
@@ -783,6 +803,11 @@
 
   function setCurrency(c) {
     state.currency = c;
+    try {
+      localStorage.setItem(CURRENCY_KEY, c);
+    } catch {
+      // Storage unavailable — the choice just won't survive a reload.
+    }
     $('ccy-mxn').setAttribute('aria-pressed', String(c === 'MXN'));
     $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
     if (state.data) renderResults(state.data.results, true);
@@ -790,6 +815,9 @@
   }
   $('ccy-mxn').addEventListener('click', () => setCurrency('MXN'));
   $('ccy-usd').addEventListener('click', () => setCurrency('USD'));
+
+  // The markup hardcodes MXN as pressed; sync the buttons to the stored choice.
+  setCurrency(state.currency);
 
   // ------------------------------------------------ search rows
 
