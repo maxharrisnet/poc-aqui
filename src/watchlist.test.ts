@@ -20,6 +20,7 @@ const sample: WatchItem = {
   bestReleaseId: null,
   status: "watching",
   notes: "",
+  alertSms: true,
 };
 
 test("header count matches row width", () => {
@@ -28,6 +29,11 @@ test("header count matches row width", () => {
 
 test("round-trips through the sheet representation", () => {
   assert.deepEqual(fromRow(toRow(sample)), sample);
+});
+
+test("a row written before alert_sms existed reads as alerting off", () => {
+  const legacy = toRow(sample).slice(0, 17);
+  assert.equal(fromRow(legacy).alertSms, false);
 });
 
 test("blank optional cells become null, not NaN or empty string", () => {

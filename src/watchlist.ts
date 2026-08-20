@@ -22,6 +22,9 @@ export interface WatchItem {
   bestReleaseId: number | null;
   status: WatchStatus;
   notes: string;
+  /** Send the team an SMS when this record drops under its threshold.
+   *  v0.3 simulates the send in the interface — see docs/data-source-limitations.md. */
+  alertSms: boolean;
 }
 
 /** Column order is the sheet contract. Append only — never reorder. */
@@ -43,10 +46,12 @@ export const WATCHLIST_HEADERS = [
   "best_release_id",
   "status",
   "notes",
+  "alert_sms",
 ] as const;
 
-/** A:Q — seventeen columns. Update if headers are appended. */
-export const WATCHLIST_RANGE = "A:Q";
+/** A:R — eighteen columns. Update if headers are appended. */
+export const WATCHLIST_RANGE = "A:R";
+const HEADER_RANGE = "A1:R1";
 
 const str = (v: string | undefined): string => v ?? "";
 const numOrNull = (v: string | undefined): number | null => {
@@ -74,6 +79,7 @@ export function toRow(item: WatchItem): string[] {
     item.bestReleaseId === null ? "" : String(item.bestReleaseId),
     item.status,
     item.notes,
+    item.alertSms ? "TRUE" : "FALSE",
   ];
 }
 
@@ -105,6 +111,7 @@ export function fromRow(row: string[]): WatchItem {
       ? (str(row[15]) as WatchStatus)
       : "watching",
     notes: str(row[16]),
+    alertSms: str(row[17]).toUpperCase() === "TRUE",
   };
 }
 
@@ -142,9 +149,17 @@ function sheetId(): string {
  * real record.
  */
 export async function ensureHeaders(): Promise<void> {
-  const rows = await getRows(sheetId(), "A1:Q1");
+  const rows = await getRows(sheetId(), HEADER_RANGE);
   const existing = rows[0] ?? [];
-  if (existing[0] === WATCHLIST_HEADERS[0]) return;
+  if (existing[0] === WATCHLIST_HEADERS[0]) {
+    // A sheet created before a column was appended still carries the older,
+    // shorter header. Extending it is safe — the columns it names are blank —
+    // and without this the new column stays permanently unlabelled.
+    if (existing.length < WATCHLIST_HEADERS.length) {
+      await updateRange(sheetId(), HEADER_RANGE, [[...WATCHLIST_HEADERS]]);
+    }
+    return;
+  }
 
   const isEmpty = existing.every((c) => (c ?? "").trim() === "");
   if (!isEmpty) {
@@ -153,7 +168,7 @@ export async function ensureHeaders(): Promise<void> {
         `Refusing to overwrite it — restore the header row, or clear row 1, before adding records.`,
     );
   }
-  await updateRange(sheetId(), "A1:Q1", [[...WATCHLIST_HEADERS]]);
+  await updateRange(sheetId(), HEADER_RANGE, [[...WATCHLIST_HEADERS]]);
 }
 
 async function fetchGrid(): Promise<string[][]> {

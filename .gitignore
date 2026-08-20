@@ -6,3 +6,4 @@ output/
 .env*
 *.log
 .vercel
+.DS_Store

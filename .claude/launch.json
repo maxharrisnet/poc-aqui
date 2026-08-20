@@ -4,8 +4,12 @@
     {
       "name": "buying-desk",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "serve"],
-      "port": 4173
+      "runtimeArgs": [
+        "run",
+        "serve"
+      ],
+      "port": 4173,
+      "autoPort": true
     }
   ]
 }

@@ -52,6 +52,12 @@ export interface CheckResult {
   requiresFormalEntry?: boolean;
   shippingConfidence?: "low" | "medium" | "high";
   shippingNote?: string;
+
+  /** Present when this sweep crossed the record's threshold and SMS alerting
+   *  is switched on for it. v0.3 does not send anything — the interface shows
+   *  the message that would go out, so the team can see and agree the wording
+   *  before a real gateway is wired in. */
+  alert?: { channel: "sms"; to: string; message: string };
 }
 
 export interface RunSummary {
@@ -79,6 +85,20 @@ async function safePatch(id: string, patch: Partial<WatchItem>): Promise<void> {
   } catch (err) {
     console.error(`Watchlist write failed for ${id}: ${(err as Error).message}`);
   }
+}
+
+/** Who a simulated alert is addressed to. A real gateway would read the team's
+ *  numbers from configuration; the demo needs something to show on screen. */
+const ALERT_RECIPIENT = process.env.ALERT_SMS_TO ?? "the buying desk";
+
+function composeAlert(item: WatchItem, best: CheckResult): NonNullable<CheckResult["alert"]> {
+  const price = best.totalMxn == null ? "" : ` at ${Math.round(best.totalMxn).toLocaleString("en-US")} MXN landed`;
+  const limit = item.maxLandedMxn == null ? "" : ` (under your ${Math.round(item.maxLandedMxn).toLocaleString("en-US")} limit)`;
+  return {
+    channel: "sms",
+    to: ALERT_RECIPIENT,
+    message: `Aqui Ahora: ${item.artist} — ${item.album}${price}${limit}.`,
+  };
 }
 
 /** Turns a resolved release id into a fully costed result. */
@@ -298,6 +318,12 @@ export async function runWatchlist(
       onResult?.(best);
       const belowThreshold =
         best.totalMxn != null && item.maxLandedMxn != null && best.totalMxn <= item.maxLandedMxn;
+      // Only on the crossing, not on every sweep of an already-alerted record —
+      // a nightly re-alert for the same copy is how a team learns to ignore the
+      // channel.
+      if (belowThreshold && item.alertSms && item.status !== "alerted") {
+        best.alert = composeAlert(item, best);
+      }
       await safePatch(item.id, {
         lastCheckedAt: new Date().toISOString(),
         bestLandedMxn: best.totalMxn ?? null,

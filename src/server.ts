@@ -1,5 +1,7 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
 
 const PORT = Number(process.env.PORT ?? 4173);
 
@@ -48,6 +50,34 @@ const server = createServer(async (req, res) => {
       res.end(JSON.stringify({ error: (err as Error).message }));
     }
     return;
+  }
+
+  // Anything else: try public/ as a static asset, the way Vercel serves it in
+  // production. Resolved path is checked to stay inside public/ so a crafted
+  // ../ URL can't read outside it.
+  const publicDir = fileURLToPath(new URL("../public/", import.meta.url));
+  const resolved = path.resolve(publicDir, "." + path.posix.normalize(url.pathname));
+  if (resolved.startsWith(publicDir)) {
+    try {
+      const body = await readFile(resolved);
+      const mime: Record<string, string> = {
+        ".png": "image/png",
+        ".jpg": "image/jpeg",
+        ".jpeg": "image/jpeg",
+        ".webp": "image/webp",
+        ".svg": "image/svg+xml",
+        ".ico": "image/x-icon",
+        ".css": "text/css; charset=utf-8",
+        ".js": "text/javascript; charset=utf-8",
+      };
+      res.writeHead(200, {
+        "Content-Type": mime[path.extname(resolved).toLowerCase()] ?? "application/octet-stream",
+      });
+      res.end(body);
+      return;
+    } catch {
+      // fall through to 404
+    }
   }
 
   res.writeHead(404, { "Content-Type": "text/plain" });

@@ -1,1141 +1,2440 @@
 <!doctype html>
 <html lang="en">
+
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Aqui Ahora — Buying Desk</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --kraft:      #EBE1CF;
-    --kraft-deep: #D9CCB1;
-    --paper:      #FAF6EE;
-    --ink:        #1B1916;
-    --carbon:     #5A5147;
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Aquí Ahora — Buying Desk</title>
+  <!-- DARK MODE DISABLED — to re-enable, restore this script, the two dark
+       :root blocks in the stylesheet, the .theme button in the top bar, and
+       the theme block in the main script. Nothing else was removed.
+  <script>
+    // Applied before first paint so a saved dark theme doesn't flash light.
+    // No saved choice yet: start from the system preference.
+    try {
+      var t = localStorage.getItem('aqui-ahora:theme');
+      if (t !== 'light' && t !== 'dark') {
+        t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      }
+      document.documentElement.setAttribute('data-theme', t);
+    } catch (e) { }
+  </script>
+  -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Bowlby+One&family=Atkinson+Hyperlegible+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Monochrome brand palette. The old duotone token names are kept so the
+     component CSS below stays untouched:
+       --kraft = page background, --paper = raised surface,
+       --kraft-deep = hairline, --ink = foreground, --carbon = muted text.
+     The page stays monochrome; the cost bar is the one place colour is spent,
+     because there it carries meaning. The record itself is neutral ink and
+     every import cost stacked on top of it is coloured, so the coloured run
+     of the bar IS the overhead the summary figure quotes. */
+    :root {
+      --kraft: #FFFFFF;
+      --kraft-deep: #D6D6D6;
+      --paper: #F7F7F7;
+      --ink: #0A0A0A;
+      --carbon: #595959;
 
-    --c-record:   #2F6B4F;
-    --c-shipping: #7A6A52;
-    --c-duty:     #C67A16;
-    --c-iva:      #8C1F16;
-    /* Amber is fine as a bar fill but fails contrast as small text — this is
-       the darkened variant for anywhere it has to be read. */
-    --c-duty-text: #8A5410;
+      /* Cost bar palette — the one place colour is spent. Emerald is the
+         record you actually want; yellow, pink and blue are the three costs
+         stacked on top of it, so the non-emerald run of the bar is the
+         overhead the summary figure quotes. These are fills, never text:
+         --c-duty-text and --c-alert are the readable label variants. */
+      --c-record: #06D6A0;
+      --c-shipping: #FFD166;
+      --c-duty: #EF476F;
+      --c-iva: #118AB2;
+      /* Emerald and yellow are unreadable as small text; labels use these. */
+      --c-duty-text: #073B4C;
+      --c-alert: #D62B54;
+      --wash: rgba(10, 10, 10, 0.06);
+      --logo-invert: 0;
 
-    --sans: 'Archivo', system-ui, sans-serif;
-    --mono: 'IBM Plex Mono', ui-monospace, monospace;
-  }
+      --sans: 'Manrope', system-ui, sans-serif;
+      --display: 'Bowlby One', system-ui, sans-serif;
+      --mono: 'Atkinson Hyperlegible Mono', ui-monospace, monospace;
+    }
 
-  * { box-sizing: border-box; }
+    /* DARK MODE DISABLED — palettes kept verbatim for when it comes back.
+    @media (prefers-color-scheme: dark) {
+      :root:not([data-theme="light"]) {
+        --kraft: #0D0D0D;
+        --kraft-deep: #3A3A3A;
+        --paper: #1A1A1A;
+        --ink: #F5F5F5;
+        --carbon: #A6A6A6;
+        --c-record: #F5F5F5;
+        --c-shipping: #29A8D4;
+        --c-duty: #06D6A0;
+        --c-iva: #FFD166;
+        --c-duty-text: #06D6A0;
+        --c-alert: #EF476F;
+        --wash: rgba(245, 245, 245, 0.08);
+        --logo-invert: 1;
+      }
+    }
 
-  body {
-    margin: 0;
-    background: var(--kraft);
-    color: var(--ink);
-    font-family: var(--sans);
-    font-size: 16px;
-    line-height: 1.5;
-    -webkit-font-smoothing: antialiased;
-  }
+    :root[data-theme="dark"] {
+      --kraft: #0D0D0D;
+      --kraft-deep: #3A3A3A;
+      --paper: #1A1A1A;
+      --ink: #F5F5F5;
+      --carbon: #A6A6A6;
+      --c-record: #F5F5F5;
+      --c-shipping: #29A8D4;
+      --c-duty: #06D6A0;
+      --c-iva: #FFD166;
+      --c-duty-text: #06D6A0;
+      --c-alert: #EF476F;
+      --wash: rgba(245, 245, 245, 0.08);
+      --logo-invert: 1;
+    }
+    */
 
-  .shell { max-width: 1060px; margin: 0 auto; padding: 0 24px 90px; }
+    * {
+      box-sizing: border-box;
+    }
 
-  h1, h2, h3 { margin: 0; }
-  p { margin: 0 0 14px; }
+    body {
+      margin: 0;
+      background: var(--kraft);
+      color: var(--ink);
+      font-family: var(--sans);
+      font-size: 18px;
+      font-weight: 500;
+      line-height: 1.55;
+      -webkit-font-smoothing: antialiased;
+    }
 
-  /* ---------------------------------------------------- top bar */
+    .shell {
+      max-width: 1060px;
+      margin: 0 auto;
+      padding: 0 24px 90px;
+    }
 
-  .topbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 14px;
-    flex-wrap: wrap;
-    padding: 14px 0 12px;
-  }
-  .wordmark {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-  }
-  .wordmark span { color: var(--carbon); }
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+    }
 
-  .ccy { display: flex; border: 1.5px solid var(--ink); border-radius: 2px; overflow: hidden; }
-  .ccy button {
-    font-family: var(--mono);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.1em;
-    padding: 6px 13px;
-    border: 0;
-    background: transparent;
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .ccy button[aria-pressed="true"] { background: var(--ink); color: var(--kraft); }
-  .ccy button:focus-visible { outline: 2px solid var(--c-record); outline-offset: -3px; }
+    p {
+      margin: 0 0 14px;
+    }
 
-  /* ---------------------------------------------------- tabs */
+    /* ---------------------------------------------------- top bar */
 
-  .tabs { display: flex; gap: 26px; border-bottom: 1.5px solid var(--ink); }
-  .tab {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0 0 11px;
-    margin-bottom: -1.5px;
-    border: 0;
-    border-bottom: 3px solid transparent;
-    background: none;
-    color: var(--carbon);
-    cursor: pointer;
-  }
-  .tab[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--ink); }
-  .tab:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 14px 0 12px;
+    }
 
-  .panel { padding-top: 8px; }
-  .panel[hidden] { display: none; }
+    .wordmark span {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
 
-  /* ---------------------------------------------------- hero */
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-  .hero { padding: 56px 0 34px; }
-  .hero h1 {
-    font-size: clamp(2.1rem, 5.6vw, 3.7rem);
-    font-weight: 800;
-    line-height: 0.98;
-    letter-spacing: -0.032em;
-    margin-bottom: 20px;
-    text-wrap: balance;
-    max-width: 20ch;
-  }
-  .hero .lede { max-width: 58ch; color: var(--carbon); font-size: 1.04rem; margin: 0; }
+    .theme {
+      width: 38px;
+      height: 38px;
+      display: grid;
+      place-items: center;
+      padding: 0;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+    }
 
-  /* ---------------------------------------------------- search */
+    .theme svg {
+      width: 19px;
+      height: 19px;
+      display: block;
+    }
 
-  .search {
-    margin-top: 34px;
-    border: 1.5px solid var(--ink);
-    border-radius: 3px;
-    background: var(--paper);
-    padding: 22px 22px 20px;
-  }
-  .search-head {
-    display: flex;
-    align-items: baseline;
-    justify-content: space-between;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-bottom: 16px;
-  }
-  .search-head h2 {
-    font-family: var(--mono);
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-  }
-  .search-count { font-family: var(--mono); font-size: 0.68rem; color: var(--carbon); letter-spacing: 0.06em; }
+    .theme:hover {
+      background: var(--ink);
+      color: var(--kraft);
+    }
 
-  .qrow { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
-  .qrow-n {
-    font-family: var(--mono);
-    font-size: 0.7rem;
-    color: var(--carbon);
-    width: 1.6rem;
-    flex: none;
-    font-variant-numeric: tabular-nums;
-  }
-  .qrow input {
-    flex: 1;
-    min-width: 0;
-    font-family: var(--sans);
-    font-size: 0.95rem;
-    padding: 9px 11px;
-    border: 1.5px solid var(--kraft-deep);
-    border-radius: 2px;
-    background: #fff;
-    color: var(--ink);
-  }
-  .qrow input:focus { outline: 2px solid var(--c-record); outline-offset: -1px; border-color: var(--c-record); }
-  .qrow-x {
-    flex: none;
-    width: 30px; height: 30px;
-    border: 1.5px solid var(--kraft-deep);
-    border-radius: 2px;
-    background: transparent;
-    color: var(--carbon);
-    font-size: 1rem;
-    line-height: 1;
-    cursor: pointer;
-  }
-  .qrow-x:hover { border-color: var(--c-iva); color: var(--c-iva); }
-  .qrow-x:focus-visible { outline: 2px solid var(--c-record); outline-offset: 2px; }
+    .theme:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
 
-  .search-actions { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 15px; }
-  /* Pushes the currency toggle to the right edge of the actions row. */
-  .search-actions .ccy { margin-left: auto; }
-  /* Once the row wraps, the auto margin would strand the toggle right-aligned
-     on a line of its own; line it up with the stacked buttons instead. */
-  @media (max-width: 560px) {
-    .search-actions .ccy { margin-left: 0; }
-  }
-  .or { font-family: var(--mono); font-size: 0.68rem; color: var(--carbon); letter-spacing: 0.08em; text-transform: uppercase; }
+    /* One icon shows at a time: the mode the button switches to.
+    .theme .i-sun {
+      display: none;
+    }
 
-  .btn {
-    font-family: var(--mono);
-    font-size: 0.71rem;
-    font-weight: 600;
-    letter-spacing: 0.11em;
-    text-transform: uppercase;
-    padding: 10px 18px;
-    border: 1.5px solid var(--ink);
-    border-radius: 2px;
-    background: var(--ink);
-    color: var(--kraft);
-    cursor: pointer;
-    transition: background 120ms ease, color 120ms ease;
-  }
-  .btn:hover:not(:disabled) { background: transparent; color: var(--ink); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
-  .btn:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
-  .btn-ghost { background: transparent; color: var(--ink); }
-  .btn-ghost:hover:not(:disabled) { background: var(--ink); color: var(--kraft); }
-  .btn-link {
-    border: 0; background: none; padding: 4px 0;
-    font-family: var(--mono); font-size: 0.68rem; font-weight: 500;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--c-record); cursor: pointer; text-decoration: underline;
-    text-underline-offset: 3px;
-  }
-  .btn-link:disabled { color: var(--carbon); text-decoration: none; cursor: not-allowed; }
-  .btn-link:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
+    :root[data-theme="dark"] .theme .i-sun {
+      display: block;
+    }
 
-  /* ---------------------------------------------------- summary */
+    :root[data-theme="dark"] .theme .i-moon {
+      display: none;
+    }
+    */
 
-  .summary {
-    margin: 42px 0 0;
-    padding: 26px 0 0;
-    border-top: 1.5px solid var(--ink);
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
-    gap: 30px;
-    align-items: start;
-  }
-  .summary[hidden] { display: none; }
-  @media (max-width: 720px) { .summary { grid-template-columns: 1fr; gap: 18px; } }
+    /* Sits beside the theme toggle in the top bar, so it matches its height. */
+    .ccy {
+      display: flex;
+      height: 38px;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      overflow: hidden;
+    }
 
-  .summary-figure {
-    font-size: clamp(3rem, 10vw, 5rem);
-    font-weight: 800;
-    letter-spacing: -0.04em;
-    line-height: 0.9;
-    font-variant-numeric: tabular-nums;
-  }
-  .summary-label {
-    font-family: var(--mono);
-    font-size: 0.69rem;
-    letter-spacing: 0.13em;
-    text-transform: uppercase;
-    color: var(--carbon);
-    margin-top: 9px;
-  }
-  .summary-note { font-size: 0.94rem; color: var(--carbon); margin: 0; }
-  .summary-note strong { color: var(--ink); font-weight: 600; }
-  .summary-note code { font-family: var(--mono); font-size: 0.86em; }
+    .ccy button {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      padding: 0 13px;
+      border: 0;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+    }
 
-  .legend {
-    display: flex; flex-wrap: wrap; gap: 6px 18px;
-    margin-top: 15px;
-    font-family: var(--mono); font-size: 0.66rem;
-    letter-spacing: 0.08em; text-transform: uppercase; color: var(--carbon);
-  }
-  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 1px; margin-right: 6px; vertical-align: -1px; }
+    .ccy button[aria-pressed="true"] {
+      background: var(--ink);
+      color: var(--kraft);
+    }
 
-  /* ---------------------------------------------------- rows */
+    .ccy button:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: -3px;
+    }
 
-  .results { margin-top: 40px; }
+    /* ---------------------------------------------------- tabs */
 
-  /* The row itself is the grid, so the sleeve can stretch the full height of
+    .tabs {
+      display: flex;
+      gap: 26px;
+      border-bottom: 1.5px solid var(--ink);
+    }
+
+    .tab {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      padding: 0 0 11px;
+      margin-bottom: -1.5px;
+      border: 0;
+      border-bottom: 3px solid transparent;
+      background: none;
+      color: var(--carbon);
+      cursor: pointer;
+    }
+
+    .tab[aria-selected="true"] {
+      color: var(--ink);
+      border-bottom-color: var(--ink);
+    }
+
+    .tab:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .panel {
+      padding-top: 8px;
+    }
+
+    .panel[hidden] {
+      display: none;
+    }
+
+    /* ---------------------------------------------------- hero */
+
+    .hero {
+      padding: 48px 0 30px;
+    }
+
+    /* Desk hero: logo left, copy right. The "How it works" hero has no logo
+     and keeps the plain single-column flow. */
+    .hero:has(.hero-logo) {
+      display: grid;
+      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+      gap: 44px;
+      align-items: center;
+    }
+
+    .hero-logo {
+      margin: 0;
+    }
+
+    .hero-logo img {
+      display: block;
+      width: 100%;
+      max-width: 440px;
+      height: auto;
+      filter: invert(var(--logo-invert));
+    }
+
+    @media (max-width: 720px) {
+      .hero:has(.hero-logo) {
+        grid-template-columns: 1fr;
+        gap: 26px;
+      }
+
+      .hero-logo img {
+        width: min(380px, 82vw);
+      }
+    }
+
+    .hero .lede {
+      max-width: 58ch;
+      color: var(--carbon);
+      font-size: 1.13rem;
+      font-weight: 500;
+      margin: 0 0 16px;
+    }
+
+    .hero .lede:last-child {
+      margin-bottom: 0;
+    }
+
+    .hero .lede strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    /* "How it works" still uses a text headline. */
+    .hero h1:not(.hero-logo) {
+      font-family: var(--display);
+      font-size: clamp(2.3rem, 6vw, 3.8rem);
+      font-weight: 400;
+      /* Bowlby One has a single weight */
+      line-height: 0.96;
+      letter-spacing: -0.015em;
+      text-transform: uppercase;
+      margin-bottom: 22px;
+      text-wrap: balance;
+      max-width: 18ch;
+    }
+
+    /* ---------------------------------------------------- search */
+
+    .search {
+      margin-top: 34px;
+      border: 1.5px solid var(--ink);
+      border-radius: 3px;
+      background: var(--paper);
+      padding: 22px 22px 20px;
+    }
+
+    .search-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .search-head h2 {
+      font-family: var(--mono);
+      font-size: 1.1rem;
+      font-weight: 600;
+      letter-spacing: 0.13em;
+      text-transform: uppercase;
+    }
+
+    .search-count {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--carbon);
+      letter-spacing: 0.06em;
+    }
+
+    .qrow {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 8px;
+    }
+
+    .qrow-n {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--carbon);
+      width: 1.6rem;
+      flex: none;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .qrow input {
+      flex: 1;
+      min-width: 0;
+      font-family: var(--sans);
+      font-size: 1rem;
+      padding: 10px 12px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: var(--kraft);
+      color: var(--ink);
+    }
+
+    .qrow input:focus {
+      outline: 2px solid var(--ink);
+      outline-offset: -1px;
+      border-color: var(--ink);
+    }
+
+    /* Per-row outcome of an add: "Added", "Already watching", or why not. */
+    .qrow-status {
+      flex: none;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      max-width: 9rem;
+      text-align: right;
+    }
+
+    .qrow-status:empty {
+      display: none;
+    }
+
+    .qrow-status.is-ok {
+      color: var(--c-duty-text);
+    }
+
+    .qrow-status.is-error {
+      color: var(--ink);
+      text-decoration: underline wavy;
+    }
+
+    .add-status {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      color: var(--carbon);
+    }
+
+    .qrow-x {
+      flex: none;
+      width: 30px;
+      height: 30px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--carbon);
+      font-size: 1rem;
+      line-height: 1;
+      cursor: pointer;
+    }
+
+    .qrow-x:hover {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    .qrow-x:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .search-actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    .or {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--carbon);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .btn {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      padding: 12px 20px;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      background: var(--ink);
+      color: var(--kraft);
+      cursor: pointer;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .btn:hover:not(:disabled) {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .btn:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .btn-ghost:hover:not(:disabled) {
+      background: var(--ink);
+      color: var(--kraft);
+    }
+
+    .btn-link {
+      border: 0;
+      background: none;
+      padding: 4px 0;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      color: var(--ink);
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .btn-link:disabled {
+      color: var(--carbon);
+      text-decoration: none;
+      cursor: not-allowed;
+    }
+
+    .btn-link:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    /* ------------------------------------------- callout, legend, guide */
+
+    /* The one place the demo speaks about itself, so it gets a frame rather
+       than blending into the results it is qualifying. */
+    .callout {
+      margin: 34px 0 0;
+      padding: 15px 18px;
+      border: 1.5px solid var(--ink);
+      border-left-width: 6px;
+      border-radius: 2px;
+      background: var(--paper);
+    }
+
+    .callout p {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--carbon);
+      max-width: 78ch;
+    }
+
+    .callout strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .lnk-inline {
+      border: 0;
+      padding: 0;
+      background: none;
+      font: inherit;
+      color: var(--ink);
+      font-weight: 700;
+      cursor: pointer;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .lnk-inline:hover {
+      text-decoration-thickness: 2px;
+    }
+
+    .lnk-inline:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .howto {
+      margin: 18px 0 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .howto li {
+      position: relative;
+      padding-left: 20px;
+      margin-bottom: 9px;
+      font-size: 1rem;
+      color: var(--carbon);
+    }
+
+    .howto li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.62em;
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      background: var(--c-record);
+    }
+
+    .howto strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .howto a {
+      color: var(--ink);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .howto em {
+      font-style: normal;
+      font-family: var(--mono);
+      font-size: 0.88em;
+      color: var(--ink);
+    }
+
+    .legend {
+      display: flex;
+      align-items: baseline;
+      flex-wrap: wrap;
+      gap: 6px 18px;
+      margin: 26px 0 -14px;
+      padding-top: 20px;
+      border-top: 1.5px solid var(--ink);
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .legend i {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      border-radius: 1px;
+      margin-right: 6px;
+      vertical-align: -1px;
+    }
+
+    .legend-lead {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .legend[hidden] {
+      display: none;
+    }
+
+    .legend-sep {
+      text-transform: none;
+      letter-spacing: 0;
+    }
+
+    /* Which rates and ruleset produced these numbers — provenance, so it sits
+       at the quiet end of the row rather than in the reading order. */
+    .legend-src {
+      margin-left: auto;
+      text-transform: none;
+      letter-spacing: 0;
+      opacity: 0.75;
+    }
+
+    @media (max-width: 720px) {
+      .legend-src {
+        margin-left: 0;
+      }
+    }
+
+    /* ---------------------------------------------------- rows */
+
+    .results {
+      margin-top: 40px;
+    }
+
+    /* The row itself is the grid, so the sleeve can stretch the full height of
      the header + bar + meta block. The detail panel sits on its own track. */
-  .row {
-    display: grid;
-    grid-template-columns: 2.2rem 86px minmax(0, 1fr) auto;
-    grid-template-areas:
-      "rank thumb main   watch"
-      ".    .     detail detail";
-    column-gap: 14px;
-    border-top: 1px solid var(--kraft-deep);
-    padding: 17px 0 15px;
-  }
-  .row:last-child { border-bottom: 1px solid var(--kraft-deep); }
-  .row.is-miss { opacity: 0.72; }
-
-  .row-rank { grid-area: rank; align-self: start; padding-top: 3px; }
-  .row-main { grid-area: main; min-width: 0; }
-
-  .watch-btn {
-    grid-area: watch;
-    align-self: start;
-    font-family: var(--mono);
-    font-size: 0.62rem;
-    font-weight: 600;
-    letter-spacing: 0.09em;
-    text-transform: uppercase;
-    padding: 6px 10px;
-    border: 1.5px solid var(--kraft-deep);
-    border-radius: 2px;
-    background: transparent;
-    color: var(--carbon);
-    cursor: pointer;
-    white-space: nowrap;
-    min-width: 6.5rem;
-    text-align: center;
-  }
-  .watch-btn:hover:not([disabled]) { border-color: var(--ink); color: var(--ink); }
-  .watch-btn:focus-visible { outline: 2px solid var(--c-record); outline-offset: 2px; }
-  .watch-btn[aria-pressed="true"] {
-    background: var(--c-record);
-    border-color: var(--c-record);
-    color: #fff;
-  }
-  .watch-btn[disabled] { opacity: 0.55; cursor: progress; }
-  .watch-btn.is-error { border-color: var(--c-iva); color: var(--c-iva); }
-
-  .threshold {
-    margin: 9px 0 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-family: var(--mono);
-    font-size: 0.66rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    color: var(--carbon);
-  }
-  .threshold[hidden] { display: none; }
-  .threshold input {
-    width: 8rem;
-    font-family: var(--mono);
-    font-size: 0.78rem;
-    padding: 5px 8px;
-    border: 1.5px solid var(--kraft-deep);
-    border-radius: 2px;
-    background: #fff;
-    color: var(--ink);
-  }
-  .threshold input:focus { outline: 2px solid var(--c-record); outline-offset: -1px; }
-  .threshold .saved { color: var(--c-record); font-weight: 600; }
-  .threshold .saved.is-error { color: var(--c-iva); }
-
-  .row-thumb, .row-thumb-none {
-    grid-area: thumb;
-    width: 86px;
-    height: 100%;
-    align-self: stretch;
-    border-radius: 2px;
-    background: var(--paper);
-  }
-  .row-thumb { border: 1px solid var(--kraft-deep); object-fit: cover; display: block; }
-  .row-thumb-none { border: 1px dashed var(--kraft-deep); }
-
-  .row-head {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto 1.1rem;
-    grid-template-areas: "title total caret";
-    gap: 14px;
-    align-items: baseline;
-    width: 100%;
-    background: none; border: 0; padding: 0;
-    text-align: left; font: inherit; color: inherit; cursor: pointer;
-  }
-  .row-title { grid-area: title; }
-  .row-total { grid-area: total; }
-  .row-caret { grid-area: caret; }
-  .row-head:focus-visible { outline: 2px solid var(--c-record); outline-offset: 4px; }
-  .row-head[disabled] { cursor: default; }
-
-  .row-rank { font-family: var(--mono); font-size: 0.71rem; color: var(--carbon); font-variant-numeric: tabular-nums; }
-  .row-title { font-weight: 600; font-size: 1rem; line-height: 1.25; }
-  .row-artist { display: block; font-weight: 400; color: var(--carbon); font-size: 0.86rem; }
-  .row-total {
-    font-family: var(--mono); font-weight: 600; font-size: 1rem;
-    font-variant-numeric: tabular-nums; white-space: nowrap;
-  }
-  .row-total.is-none { color: var(--carbon); font-weight: 400; font-size: 0.85rem; }
-  .row-caret { font-family: var(--mono); font-size: 0.7rem; color: var(--carbon); text-align: right; }
-
-  .bar {
-    display: flex; height: 15px;
-    margin: 11px 0 0;
-    border: 1px solid var(--ink); border-radius: 2px;
-    overflow: hidden; background: var(--paper);
-  }
-  .bar[hidden] { display: none; }
-  .bar-seg { height: 100%; width: 0; transition: width 650ms cubic-bezier(.22,.61,.36,1); }
-  .bar-seg.record   { background: var(--c-record); }
-  .bar-seg.shipping { background: var(--c-shipping); }
-  .bar-seg.duty     { background: var(--c-duty); }
-  .bar-seg.iva      { background: var(--c-iva); }
-
-  /* Narrow screens: drop the rank and stack the price under the title, or the
-     title gets squeezed to an unreadable sliver. */
-  @media (max-width: 560px) {
     .row {
-      grid-template-columns: 64px minmax(0, 1fr);
+      display: grid;
+      grid-template-columns: 2.2rem 86px minmax(0, 1fr) auto;
       grid-template-areas:
-        "thumb main"
-        "thumb watch"
-        ".     detail";
-      column-gap: 12px;
+        "rank thumb main   watch"
+        ".    .     detail detail";
+      column-gap: 14px;
+      border-top: 1px solid var(--kraft-deep);
+      padding: 17px 0 15px;
     }
-    .watch-btn { justify-self: start; margin-top: 8px; }
-    .row-rank { display: none; }
-    /* Content stacks taller here, so a full-height sleeve would crop to a
-       narrow vertical strip. Keep it square and top-aligned instead. */
-    .row-thumb, .row-thumb-none { width: 64px; height: 64px; align-self: start; }
+
+    .row:last-child {
+      border-bottom: 1px solid var(--kraft-deep);
+    }
+
+    .row.is-miss {
+      opacity: 0.72;
+    }
+
+    .row-rank {
+      grid-area: rank;
+      align-self: start;
+      padding-top: 3px;
+    }
+
+    .row-main {
+      grid-area: main;
+      min-width: 0;
+    }
+
+    .watch-btn {
+      grid-area: watch;
+      align-self: start;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 6px 10px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--carbon);
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: 6.5rem;
+      text-align: center;
+    }
+
+    .watch-btn:hover:not([disabled]) {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    .watch-btn:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .watch-btn[aria-pressed="true"] {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--kraft);
+    }
+
+    .watch-btn[disabled] {
+      opacity: 0.55;
+      cursor: progress;
+    }
+
+    .watch-btn.is-error {
+      border-color: var(--ink);
+      color: var(--ink);
+      text-decoration: underline wavy;
+    }
+
+    .threshold {
+      margin: 9px 0 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .threshold[hidden] {
+      display: none;
+    }
+
+    .threshold input {
+      width: 8rem;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      padding: 5px 8px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: var(--kraft);
+      color: var(--ink);
+    }
+
+    .threshold input:focus {
+      outline: 2px solid var(--ink);
+      outline-offset: -1px;
+    }
+
+    .threshold .saved {
+      color: var(--c-duty-text);
+      font-weight: 700;
+    }
+
+    .threshold .saved.is-error {
+      color: var(--ink);
+      text-decoration: underline wavy;
+    }
+
+    /* Sits on the threshold row: an alert with no limit set has nothing to
+       fire on, so the two belong together. */
+    .alert-toggle {
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 4px 8px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--carbon);
+      cursor: pointer;
+      white-space: nowrap;
+    }
+
+    .alert-toggle:hover:not([disabled]) {
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+
+    .alert-toggle:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    .alert-toggle[aria-pressed="true"] {
+      background: var(--c-alert);
+      border-color: var(--c-alert);
+      color: var(--paper);
+    }
+
+    .alert-toggle[disabled] {
+      opacity: 0.55;
+      cursor: progress;
+    }
+
+    /* Alert toasts. Bottom-right so they never cover the results streaming in
+       at the top, and they stack rather than replace — a sweep can cross more
+       than one threshold in a run, and the second alert matters as much as
+       the first. */
+    .toast-stack {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 60;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: min(22rem, calc(100vw - 36px));
+      pointer-events: none;
+    }
+
+    .toast {
+      pointer-events: auto;
+      background: var(--ink);
+      color: var(--kraft);
+      /* The fill tracks the theme, so in dark mode the toast would sit almost
+         invisibly on an almost-identical page. The alert-coloured edge is what
+         actually separates it, and it reads as an alert besides. */
+      border-left: 3px solid var(--c-alert);
+      border-radius: 3px;
+      padding: 12px 14px;
+      box-shadow: 0 6px 20px rgba(10, 10, 10, 0.28);
+      animation: toast-in 220ms ease-out;
+    }
+
+    .toast-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    /* The demo sends no SMS. Saying so on the toast itself keeps that true
+       in the room, where a caption underneath the page would go unread. */
+    .toast-sim {
+      margin-left: auto;
+      opacity: 0.65;
+      font-weight: 600;
+    }
+
+    .toast-to {
+      color: var(--c-shipping);
+    }
+
+    .toast-body {
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      line-height: 1.45;
+    }
+
+    @keyframes toast-in {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: none; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .toast { animation: none; }
+    }
+
+    /* Square and top-aligned: sleeves are square, and stretching one to the
+       row's height cropped it to a strip whenever the row grew — which is
+       exactly what watching a record does when it reveals the alert field. */
+    .row-thumb,
+    .row-thumb-none {
+      grid-area: thumb;
+      width: 86px;
+      height: 86px;
+      align-self: start;
+      border-radius: 2px;
+      background: var(--paper);
+    }
+
+    .row-thumb {
+      border: 1px solid var(--kraft-deep);
+      object-fit: cover;
+      display: block;
+    }
+
+    .row-thumb-none {
+      border: 1px dashed var(--kraft-deep);
+    }
+
     .row-head {
-      grid-template-columns: minmax(0, 1fr) 1.1rem;
-      grid-template-areas:
-        "title caret"
-        "total caret";
-      gap: 3px 12px;
-      align-items: start;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto 1.1rem;
+      grid-template-areas: "title total caret";
+      gap: 14px;
+      align-items: baseline;
+      width: 100%;
+      background: none;
+      border: 0;
+      padding: 0;
+      text-align: left;
+      font: inherit;
+      color: inherit;
+      cursor: pointer;
     }
-  }
 
-  .row-meta {
-    margin: 9px 0 0;
-    font-family: var(--mono); font-size: 0.66rem;
-    letter-spacing: 0.06em; text-transform: uppercase; color: var(--carbon);
-    display: flex; flex-wrap: wrap; gap: 4px 14px;
-  }
-  .tag-domestic { color: var(--c-record); font-weight: 600; }
-  .tag-formal   { color: var(--c-iva); font-weight: 600; }
-  .tag-approx   { color: var(--c-duty-text); font-weight: 600; }
+    .row-title {
+      grid-area: title;
+    }
 
-  /* ---------------------------------------------------- detail */
+    .row-total {
+      grid-area: total;
+    }
 
-  .detail {
-    grid-area: detail;
-    margin: 14px 0 4px;
-    padding: 18px;
-    background: var(--paper);
-    border: 1px solid var(--kraft-deep);
-    border-radius: 3px;
-  }
-  .detail[hidden] { display: none; }
+    .row-caret {
+      grid-area: caret;
+    }
 
-  .facts { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 5px 14px; font-size: 0.86rem; }
-  .facts dt {
-    font-family: var(--mono); font-size: 0.64rem;
-    letter-spacing: 0.09em; text-transform: uppercase;
-    color: var(--carbon); padding-top: 2px;
-  }
-  .facts dd { margin: 0; }
+    .row-head:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 4px;
+    }
 
-  .why {
-    margin: 16px 0 0;
-    padding: 11px 13px;
-    border-left: 2px solid var(--c-record);
-    background: rgba(47,107,79,0.07);
-    font-size: 0.87rem;
-    color: var(--carbon);
-  }
-  .why strong {
-    display: block;
-    font-family: var(--mono); font-size: 0.62rem;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--c-record); margin-bottom: 3px; font-weight: 600;
-  }
+    .row-head[disabled] {
+      cursor: default;
+    }
 
-  .costs { width: 100%; border-collapse: collapse; margin-top: 18px; font-family: var(--mono); font-size: 0.8rem; }
-  .costs th {
-    font-size: 0.63rem; font-weight: 500; letter-spacing: 0.1em; text-transform: uppercase;
-    color: var(--carbon); text-align: right; padding: 0 0 7px 12px; border-bottom: 1px solid var(--kraft-deep);
-  }
-  .costs th:first-child { text-align: left; padding-left: 0; }
-  .costs td { padding: 7px 0 7px 12px; text-align: right; font-variant-numeric: tabular-nums; }
-  .costs td:first-child { text-align: left; padding-left: 0; display: flex; align-items: center; gap: 8px; }
-  .costs .swatch { width: 10px; height: 10px; border-radius: 1px; flex: none; }
-  .costs tr.total td { border-top: 1px solid var(--kraft-deep); font-weight: 600; padding-top: 9px; }
-  .costs .muted { color: var(--carbon); }
+    .row-rank {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--carbon);
+      font-variant-numeric: tabular-nums;
+    }
 
-  .detail-links { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 17px; }
-  .lnk {
-    font-family: var(--mono); font-size: 0.67rem; font-weight: 600;
-    letter-spacing: 0.1em; text-transform: uppercase;
-    padding: 9px 15px; border: 1.5px solid var(--ink); border-radius: 2px;
-    text-decoration: none; color: var(--ink); background: transparent;
-    transition: background 120ms ease, color 120ms ease;
-  }
-  .lnk:hover { background: var(--ink); color: var(--paper); }
-  .lnk:focus-visible { outline: 2px solid var(--c-record); outline-offset: 3px; }
-  .lnk-primary { background: var(--c-record); border-color: var(--c-record); color: #fff; }
-  .lnk-primary:hover { background: var(--ink); border-color: var(--ink); color: var(--paper); }
+    .row-title {
+      font-weight: 700;
+      font-size: 1.2rem;
+      line-height: 1.25;
+    }
 
-  .shipnote { margin: 13px 0 0; font-size: 0.8rem; color: var(--carbon); }
+    .row-artist {
+      display: block;
+      font-weight: 500;
+      color: var(--carbon);
+      font-size: 0.97rem;
+    }
 
-  /* ---------------------------------------------------- states */
+    .row-total {
+      font-family: var(--mono);
+      font-weight: 700;
+      font-size: 1.08rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+    }
 
-  .state {
-    padding: 44px 0; margin-top: 36px;
-    border-top: 1.5px solid var(--ink);
-    font-family: var(--mono); font-size: 0.79rem;
-    letter-spacing: 0.05em; color: var(--carbon);
-  }
-  .state[hidden] { display: none; }
-  .state-err { color: var(--c-iva); }
-  .progress { margin-top: 12px; font-size: 0.73rem; }
-  .progress b { color: var(--ink); font-weight: 600; }
+    .row-total.is-none {
+      color: var(--carbon);
+      font-weight: 400;
+      font-size: 0.85rem;
+    }
 
-  /* ---------------------------------------------------- how it works */
+    .row-caret {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--carbon);
+      text-align: right;
+    }
 
-  .steps { margin: 30px 0 0; padding: 0; list-style: none; counter-reset: s; }
-  .steps li {
-    counter-increment: s;
-    position: relative;
-    padding: 0 0 22px 52px;
-    border-left: 1.5px solid var(--kraft-deep);
-    margin-left: 13px;
-  }
-  .steps li:last-child { border-left-color: transparent; padding-bottom: 0; }
-  .steps li::before {
-    content: counter(s, decimal-leading-zero);
-    position: absolute; left: -14px; top: 0;
-    width: 27px; height: 27px;
-    display: grid; place-items: center;
-    background: var(--ink); color: var(--kraft);
-    font-family: var(--mono); font-size: 0.64rem; font-weight: 600;
-    border-radius: 50%;
-  }
-  .steps h3 { font-size: 1rem; font-weight: 600; margin-bottom: 5px; }
-  .steps p { font-size: 0.92rem; color: var(--carbon); margin: 0; max-width: 62ch; }
-  .steps code { font-family: var(--mono); font-size: 0.85em; }
+    .bar {
+      display: flex;
+      height: 26px;
+      margin: 12px 0 0;
+      border: 1px solid var(--ink);
+      border-radius: 2px;
+      overflow: hidden;
+      background: var(--paper);
+    }
 
-  .hiw-h2 {
-    font-size: 1.5rem; font-weight: 800; letter-spacing: -0.02em;
-    margin-bottom: 12px; text-wrap: balance;
-  }
-  .hiw-lede { max-width: 62ch; color: var(--carbon); }
-  .hiw-section { padding-top: 46px; }
+    .bar:hover .bar-seg {
+      opacity: 0.45;
+    }
 
-  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; margin-top: 20px; }
-  @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
-  .card {
-    border: 1.5px solid var(--ink); border-radius: 3px;
-    padding: 17px 18px; background: var(--paper);
-  }
-  .card h3 {
-    font-family: var(--mono); font-size: 0.68rem; font-weight: 600;
-    letter-spacing: 0.11em; text-transform: uppercase; margin-bottom: 9px;
-  }
-  .card.is-real h3 { color: var(--c-record); }
-  .card.is-illus h3 { color: var(--c-duty-text); }
-  .card ul { margin: 0; padding-left: 17px; }
-  .card li { font-size: 0.88rem; color: var(--carbon); margin-bottom: 6px; }
-  .card li:last-child { margin-bottom: 0; }
-  .card strong { color: var(--ink); font-weight: 600; }
+    .bar .bar-seg:hover {
+      opacity: 1;
+    }
 
-  /* ---------------------------------------------------- caveats */
+    /* One shared node, moved to whichever segment is under the pointer — the
+       bar itself clips its children, so the tip cannot live inside it. */
+    .bartip {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      align-items: center;
+      gap: 8px;
+      padding: 7px 10px;
+      background: var(--ink);
+      color: var(--kraft);
+      border-radius: 2px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      white-space: nowrap;
+      pointer-events: none;
+    }
 
-  .caveats { margin-top: 50px; padding-top: 21px; border-top: 1.5px solid var(--ink); }
-  .caveats h2 {
-    font-family: var(--mono); font-size: 0.69rem;
-    letter-spacing: 0.13em; text-transform: uppercase;
-    margin-bottom: 13px; color: var(--c-iva);
-  }
-  .caveats ul { margin: 0; padding-left: 18px; max-width: 70ch; }
-  .caveats li { margin-bottom: 8px; font-size: 0.88rem; color: var(--carbon); }
-  .caveats strong { color: var(--ink); font-weight: 600; }
+    .bartip.is-on {
+      display: flex;
+    }
 
-  @media (prefers-reduced-motion: reduce) {
-    .bar-seg { transition: none; }
-  }
-</style>
+    .bartip i {
+      width: 10px;
+      height: 10px;
+      border-radius: 1px;
+      flex: none;
+    }
+
+    .bartip .pct {
+      opacity: 0.65;
+      font-weight: 400;
+    }
+
+    .bar[hidden] {
+      display: none;
+    }
+
+    .bar-seg {
+      height: 100%;
+      width: 0;
+      cursor: help;
+      transition: width 650ms cubic-bezier(.22, .61, .36, 1), opacity 120ms ease;
+    }
+
+    /* Grayscale neighbours need a seam to stay readable. */
+    .bar-seg+.bar-seg {
+      box-shadow: inset 1px 0 0 var(--kraft);
+    }
+
+    .bar-seg.record {
+      background: var(--c-record);
+    }
+
+    .bar-seg.shipping {
+      background: var(--c-shipping);
+    }
+
+    .bar-seg.duty {
+      background: var(--c-duty);
+    }
+
+    .bar-seg.iva {
+      background: var(--c-iva);
+    }
+
+    /* Narrow screens: drop the rank and stack the price under the title, or the
+     title gets squeezed to an unreadable sliver. */
+    @media (max-width: 560px) {
+      .row {
+        grid-template-columns: 64px minmax(0, 1fr);
+        grid-template-areas:
+          "thumb main"
+          "thumb watch"
+          ".     detail";
+        column-gap: 12px;
+      }
+
+      .watch-btn {
+        justify-self: start;
+        margin-top: 8px;
+      }
+
+      .row-rank {
+        display: none;
+      }
+
+      .row-thumb,
+      .row-thumb-none {
+        width: 64px;
+        height: 64px;
+      }
+
+      .row-head {
+        grid-template-columns: minmax(0, 1fr) 1.1rem;
+        grid-template-areas:
+          "title caret"
+          "total caret";
+        gap: 3px 12px;
+        align-items: start;
+      }
+    }
+
+    .row-meta {
+      margin: 9px 0 0;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+    }
+
+    .tag-domestic {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tag-taxed {
+      color: var(--c-duty-text);
+      font-weight: 700;
+    }
+
+    .tag-scarce {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tag-formal {
+      color: var(--c-alert);
+      font-weight: 700;
+    }
+
+    .tag-approx {
+      color: var(--carbon);
+      font-weight: 400;
+      text-transform: lowercase;
+    }
+
+    /* ---------------------------------------------------- detail */
+
+    .detail {
+      grid-area: detail;
+      margin: 14px 0 4px;
+      padding: 18px;
+      background: var(--paper);
+      border: 1px solid var(--kraft-deep);
+      border-radius: 3px;
+    }
+
+    .detail[hidden] {
+      display: none;
+    }
+
+    .facts {
+      margin: 0;
+      display: grid;
+      grid-template-columns: auto minmax(0, 1fr);
+      gap: 5px 14px;
+      font-size: 0.97rem;
+    }
+
+    .facts dt {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      padding-top: 2px;
+    }
+
+    .facts dd {
+      margin: 0;
+    }
+
+    .why {
+      margin: 16px 0 0;
+      padding: 11px 13px;
+      border-left: 2px solid var(--ink);
+      background: var(--wash);
+      font-size: 0.93rem;
+      color: var(--carbon);
+    }
+
+    .why strong {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink);
+      margin-bottom: 3px;
+      font-weight: 600;
+    }
+
+    .costs {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: 1rem;
+    }
+
+    .costs th {
+      font-size: 0.85rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      text-align: right;
+      padding: 0 0 7px 12px;
+      border-bottom: 1px solid var(--kraft-deep);
+    }
+
+    .costs th:first-child {
+      text-align: left;
+      padding-left: 0;
+    }
+
+    .costs td {
+      padding: 7px 0 7px 12px;
+      text-align: right;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .costs td:first-child {
+      text-align: left;
+      padding-left: 0;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .costs .swatch {
+      width: 10px;
+      height: 10px;
+      border-radius: 1px;
+      flex: none;
+    }
+
+    .costs tr.total td {
+      border-top: 1px solid var(--kraft-deep);
+      font-weight: 600;
+      padding-top: 9px;
+    }
+
+    .costs .muted {
+      color: var(--carbon);
+    }
+
+    .detail-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 17px;
+    }
+
+    .lnk {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      padding: 9px 15px;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      text-decoration: none;
+      color: var(--ink);
+      background: transparent;
+      transition: background 120ms ease, color 120ms ease;
+    }
+
+    .lnk:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
+    .lnk:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    .lnk-primary {
+      background: var(--ink);
+      border-color: var(--ink);
+      color: var(--kraft);
+    }
+
+    .lnk-primary:hover {
+      background: transparent;
+      color: var(--ink);
+    }
+
+    .shipnote {
+      margin: 13px 0 0;
+      font-size: 1rem;
+      color: var(--carbon);
+    }
+
+    /* ---------------------------------------------------- watchlist */
+
+    /* Circular badge. min-width plus a pill radius keeps it round for single
+       digits and lets it stretch rather than clip once the count reaches 10+. */
+    .tab-count {
+      display: inline-grid;
+      place-items: center;
+      min-width: 1.45em;
+      height: 1.45em;
+      padding: 0 0.35em;
+      margin-left: 8px;
+      border-radius: 999px;
+      background: var(--ink);
+      color: var(--kraft);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0;
+      line-height: 1;
+      vertical-align: 0.1em;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .wl-empty {
+      font-family: var(--mono);
+      font-size: 0.88rem;
+      letter-spacing: 0.05em;
+      color: var(--carbon);
+      padding: 6px 0 2px;
+    }
+
+    .wl-empty strong {
+      color: var(--ink);
+    }
+
+    .wl-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-areas: "main best watch";
+      column-gap: 16px;
+      align-items: start;
+      border-top: 1px solid var(--kraft-deep);
+      padding: 15px 0 14px;
+    }
+
+    .wl-main {
+      grid-area: main;
+      min-width: 0;
+    }
+
+    .wl-title {
+      display: block;
+      font-size: 1rem;
+      font-weight: 600;
+      line-height: 1.25;
+    }
+
+    .wl-artist {
+      display: block;
+      margin-top: 2px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 400;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .wl-meta {
+      margin: 8px 0 0;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px 14px;
+    }
+
+    .wl-alerted {
+      color: var(--c-alert);
+      font-weight: 700;
+    }
+
+    .wl-best {
+      grid-area: best;
+      text-align: right;
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      white-space: nowrap;
+      padding-top: 1px;
+    }
+
+    .wl-best.is-none {
+      font-weight: 400;
+      color: var(--carbon);
+    }
+
+    .wl-best span {
+      display: block;
+      margin-top: 3px;
+      font-size: 0.7rem;
+      font-weight: 400;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    @media (max-width: 720px) {
+      .wl-item {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+          "main watch"
+          "best watch";
+      }
+
+      .wl-best {
+        text-align: left;
+        margin-top: 10px;
+      }
+    }
+
+    /* ---------------------------------------------------- states */
+
+    .state {
+      padding: 44px 0;
+      margin-top: 36px;
+      border-top: 1.5px solid var(--ink);
+      font-family: var(--mono);
+      font-size: 0.97rem;
+      letter-spacing: 0.05em;
+      color: var(--carbon);
+    }
+
+    .state[hidden] {
+      display: none;
+    }
+
+    .state-err {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    .progress {
+      margin-top: 12px;
+      font-size: 0.85rem;
+    }
+
+    .progress b {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ---------------------------------------------------- how it works */
+
+    .steps {
+      margin: 30px 0 0;
+      padding: 0;
+      list-style: none;
+      counter-reset: s;
+    }
+
+    .steps li {
+      counter-increment: s;
+      position: relative;
+      padding: 0 0 22px 52px;
+      border-left: 1.5px solid var(--kraft-deep);
+      margin-left: 13px;
+    }
+
+    .steps li:last-child {
+      border-left-color: transparent;
+      padding-bottom: 0;
+    }
+
+    .steps li::before {
+      content: counter(s, decimal-leading-zero);
+      position: absolute;
+      left: -14px;
+      top: 0;
+      width: 27px;
+      height: 27px;
+      display: grid;
+      place-items: center;
+      background: var(--ink);
+      color: var(--kraft);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      border-radius: 50%;
+    }
+
+    .steps h3 {
+      font-size: 1.15rem;
+      font-weight: 700;
+      margin-bottom: 5px;
+    }
+
+    .steps p {
+      font-size: 0.97rem;
+      color: var(--carbon);
+      margin: 0;
+      max-width: 62ch;
+    }
+
+    .steps code {
+      font-family: var(--mono);
+      font-size: 0.85em;
+    }
+
+    .hiw-h2 {
+      font-family: var(--display);
+      text-transform: uppercase;
+      font-size: 2.35rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      margin-bottom: 12px;
+      text-wrap: balance;
+    }
+
+    .hiw-lede {
+      max-width: 62ch;
+      color: var(--carbon);
+    }
+
+    .hiw-section {
+      padding-top: 46px;
+    }
+
+    .grid2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 720px) {
+      .grid2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      border: 1.5px solid var(--ink);
+      border-radius: 3px;
+      padding: 17px 18px;
+      background: var(--paper);
+    }
+
+    .card h3 {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.11em;
+      text-transform: uppercase;
+      margin-bottom: 9px;
+    }
+
+    .card.is-real h3 {
+      color: var(--c-duty-text);
+    }
+
+    .card.is-illus h3 {
+      color: var(--c-duty-text);
+    }
+
+    .card ul {
+      margin: 0;
+      padding-left: 17px;
+    }
+
+    .card li {
+      font-size: 1rem;
+      color: var(--carbon);
+      margin-bottom: 6px;
+    }
+
+    .card li:last-child {
+      margin-bottom: 0;
+    }
+
+    .card strong {
+      color: var(--ink);
+      font-weight: 600;
+    }
+
+    /* ------------------------------------------------------- caveats */
+
+    .caveats-list {
+      margin: 20px 0 0;
+      padding-left: 18px;
+      max-width: 70ch;
+    }
+
+    .caveats-list li {
+      margin-bottom: 10px;
+      font-size: 1rem;
+      color: var(--carbon);
+    }
+
+    .caveats-list strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .bar-seg {
+        transition: none;
+      }
+    }
+  </style>
 </head>
+
 <body>
-<div class="shell">
+  <div class="shell">
 
-  <header class="topbar">
-    <div class="wordmark">Aqui Ahora <span>/ Buying Desk</span></div>
-  </header>
-
-  <div class="tabs" role="tablist">
-    <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
-    <button class="tab" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
-  </div>
-
-  <!-- ========================= BUYING DESK ========================= -->
-  <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk">
-
-    <section class="hero">
-      <h1>What a record actually costs, landed in Mexico.</h1>
-      <p class="lede">Type in what you're hunting for, or load the demo list. Each result shows the current Discogs price plus shipping, duty and IVA — the number that decides whether a record is worth buying, and the one you can't see while you're clicking through listings.</p>
-    </section>
-
-    <section class="search">
-      <div class="search-head">
-        <h2>Records to price</h2>
-        <span class="search-count" id="qcount">0 of 10</span>
-      </div>
-      <div id="qrows"></div>
-      <button class="btn-link" id="addrow" type="button">+ Add another</button>
-      <div class="search-actions">
-        <button class="btn" id="go" type="button">Check these records</button>
-        <span class="or">or</span>
-        <button class="btn btn-ghost" id="godemo" type="button">Use the demo list</button>
-        <button class="btn btn-ghost" id="gowatch" type="button">Check my watchlist</button>
+    <header class="topbar">
+      <div></div>
+      <div class="topbar-right">
         <div class="ccy" role="group" aria-label="Display currency">
           <button id="ccy-mxn" aria-pressed="true">MXN</button>
           <button id="ccy-usd" aria-pressed="false">USD</button>
         </div>
+        <!--
+        <button class="theme" id="theme" type="button" aria-label="Switch to dark mode">
+          <svg class="i-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+          </svg>
+          <svg class="i-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="4" />
+            <path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" />
+          </svg>
+        </button>
+        -->
       </div>
-    </section>
+    </header>
 
-    <div class="state" id="idle">
-      Add a record above, or press <b>Use the demo list</b> for eight hand-picked pressings across five countries.
+    <div class="tabs" role="tablist">
+      <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
+      <button class="tab" id="tab-watch" role="tab" aria-selected="false" aria-controls="panel-watch">Watchlist</button>
+      <button class="tab" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
     </div>
 
-    <div class="state" id="loading" hidden>
-      <span id="loading-label">Checking Discogs…</span>
-      <div class="progress" id="progress"></div>
+    <!-- ========================= BUYING DESK ========================= -->
+    <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk">
+
+      <section class="hero">
+        <h1 class="hero-logo">
+          <img src="/aqui-ahora-logo.png" alt="Aquí Ahora — Vinyl Art + Culture">
+        </h1>
+        <div class="hero-copy">
+          <p class="lede"><strong>A buying desk for importing vinyl into Mexico.</strong> It looks up each record on Discogs and adds shipping, duty and IVA to the listed price, so you see the real landed cost before you buy.</p>
+          <ul class="howto">
+            <li><strong>Type up to ten records</strong> — artist and title — then press <em>Check these records</em>. No list of your own? Press <em>Use the demo list</em>.</li>
+            <li><strong>Read the price as one number.</strong> Every result is the total to get that record to your door, cheapest first.</li>
+            <li><strong>Hover the coloured bar</strong> to see what each part of that total costs, or open a row for the full breakdown and a link to the listing.</li>
+            <li><strong>Press Watch to keep a record.</strong> Set a peso limit and it tells you when a copy drops under it.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="search">
+        <div class="search-head">
+          <h2>Records to price</h2>
+          <span class="search-count" id="qcount">0 of 10</span>
+        </div>
+        <div id="qrows"></div>
+        <button class="btn-link" id="addrow" type="button">+ Add another</button>
+        <div class="search-actions">
+          <button class="btn" id="go" type="button">Check these records</button>
+          <span class="or">or</span>
+          <button class="btn btn-ghost" id="godemo" type="button">Use the demo list</button>
+          <button class="btn btn-ghost" id="gowatch" type="button">Check my watchlist</button>
+        </div>
+      </section>
+
+      <div class="state" id="idle">
+        Add a record above, or press <b>Use the demo list</b> for eight hand-picked pressings across five countries.
+      </div>
+
+      <div class="state" id="loading" hidden>
+        <span id="loading-label">Checking Discogs…</span>
+        <div class="progress" id="progress"></div>
+      </div>
+
+      <div class="state state-err" id="error" hidden></div>
+
+      <div class="callout">
+        <p><strong>Demo, not a quote.</strong> Discogs prices, stock and exchange rates are live. Shipping is estimated
+          and the customs rules aren't broker-validated, so treat the totals as close, not final —
+          <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</p>
+      </div>
+
+      <div class="legend" id="legend" hidden>
+        <span class="legend-lead"><i style="background:var(--c-record)"></i>Record</span>
+        <span class="legend-sep">+ what it costs to land it:</span>
+        <span><i style="background:var(--c-shipping)"></i>Shipping</span>
+        <span><i style="background:var(--c-duty)"></i>Duty</span>
+        <span><i style="background:var(--c-iva)"></i>IVA</span>
+        <span class="legend-src" id="legend-src"></span>
+      </div>
+
+      <section class="results" id="results"></section>
+
     </div>
 
-    <div class="state state-err" id="error" hidden></div>
+    <!-- ========================= WATCHLIST ========================= -->
+    <div class="panel" id="panel-watch" role="tabpanel" aria-labelledby="tab-watch" hidden>
 
-    <section class="results" id="results"></section>
+      <section class="hero">
+        <h1>Records you're waiting on.</h1>
+        <p class="lede"><strong>Everything you've pressed Watch on.</strong> Each record keeps a peso limit, and a sweep tells you when a copy has dipped under it.</p>
+        <ul class="howto">
+          <li><strong>Set a limit per record</strong> under <em>Alert under</em> — it saves the moment you leave the field. Limits are always in pesos, because that's what you pay the landed cost in; the MXN/USD toggle only changes how the best price seen is displayed.</li>
+          <li><strong>Press Check my watchlist</strong> to price every pressing being watched. Anything under your limit comes back flagged, and the best price seen updates in place.</li>
+          <li><strong>Press Watching to drop a record.</strong> It stops being swept, and the row disappears from this list.</li>
+          <li id="wl-sheet-item" hidden><strong>The list itself lives in a Google Sheet</strong> — <a id="wl-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand.</li>
+        </ul>
+      </section>
 
-    <section class="summary" id="summary" hidden>
-      <div>
-        <div class="summary-figure" id="overhead">—</div>
-        <div class="summary-label">Isn't the records</div>
-      </div>
-      <div>
-        <p class="summary-note" id="summary-note"></p>
-        <div class="legend">
-          <span><i style="background:var(--c-record)"></i>Record</span>
-          <span><i style="background:var(--c-shipping)"></i>Shipping</span>
-          <span><i style="background:var(--c-duty)"></i>Duty</span>
-          <span><i style="background:var(--c-iva)"></i>IVA</span>
+      <section class="search">
+        <div class="search-head">
+          <h2>Add records to watch</h2>
+          <span class="search-count" id="wl-qcount">0 of 10</span>
         </div>
-      </div>
-    </section>
+        <div id="wl-qrows"></div>
+        <button class="btn-link" id="wl-addrow" type="button">+ Add another</button>
+        <div class="search-actions">
+          <button class="btn" id="wl-add" type="button">Add to watchlist</button>
+          <span class="add-status" id="wl-add-status"></span>
+        </div>
+      </section>
 
-    <footer class="caveats">
-      <h2>Read before trusting these numbers</h2>
-      <ul>
-        <li><strong>Customs rules are not broker-validated.</strong> Duty, IVA and the formal-entry threshold come from public reporting on Mexico's 2026 Customs Law, not from a licensed broker.</li>
-        <li><strong>Origin is the pressing country, not the seller's location.</strong> Customs depends on where a parcel actually ships from, and the official Discogs API doesn't expose that. A German pressing may well be sold from Guadalajara.</li>
-        <li><strong>Shipping is illustrative</strong>, not a live carrier quote. The real system refines these from actual purchase data over time.</li>
-        <li><strong>This is one snapshot</strong>, not continuous monitoring, and it takes the single cheapest copy listed — not the best copy at a fair price.</li>
-        <li><strong>No identity resolution yet</strong> — reissues, repressings and regional variants aren't matched against each other.</li>
-      </ul>
-    </footer>
+      <section class="search">
+        <div class="search-head">
+          <h2>Watched records</h2>
+          <span class="search-count" id="wl-count">—</span>
+        </div>
+
+        <div id="wl-list"></div>
+
+        <div class="search-actions">
+          <button class="btn" id="wl-run" type="button">Check my watchlist</button>
+          <button class="btn-link" id="wl-refresh" type="button">Refresh from the sheet</button>
+        </div>
+      </section>
+    </div>
+
+    <!-- ========================= HOW IT WORKS ========================= -->
+    <div class="panel" id="panel-hiw" role="tabpanel" aria-labelledby="tab-hiw" hidden>
+
+      <section class="hero">
+        <h1>Eight steps, about twenty seconds.</h1>
+        <p class="lede">This demo does a small version of what the full system would do continuously in the background. Here's the whole chain, start to finish, so nothing about the numbers is a black box.</p>
+      </section>
+
+      <ol class="steps">
+        <li>
+          <h3>You give it a list</h3>
+          <p>Here you type it. In the real system this is your Discogs want list, synced automatically, plus the artists and labels you follow — so you never type anything at all.</p>
+        </li>
+        <li>
+          <h3>It finds the release on Discogs</h3>
+          <p>Using the official Discogs API and nothing else. No scraping, ever — Discogs' terms prohibit it, and your account holds your inventory, so an enforcement action would hit the shop and not just the tool.</p>
+        </li>
+        <li>
+          <h3>It reads the current lowest price</h3>
+          <p>Live marketplace figures: what the cheapest listed copy costs right now, and how many copies are for sale. Both come straight from Discogs at the moment you press the button.</p>
+        </li>
+        <li>
+          <h3>It converts to pesos</h3>
+          <p>At today's European Central Bank reference rate. The real system also stores the Banxico FIX rate, which is what SAT expects when the purchase is later reconciled for accounting.</p>
+        </li>
+        <li>
+          <h3>It adds shipping</h3>
+          <p>Estimated from the pressing country. The full system replaces these estimates with real carrier quotes, then keeps sharpening them against what shipments actually cost once they arrive.</p>
+        </li>
+        <li>
+          <h3>It applies Mexican customs</h3>
+          <p>Records from the US and Canada under about <code>USD $50</code> come in free under USMCA. Everything else picks up the roughly <code>19%</code> tasa global, and then <code>16%</code> IVA on top of value plus duty.</p>
+        </li>
+        <li>
+          <h3>It flags anything needing a broker</h3>
+          <p>Above roughly <code>USD $250</code> a shipment needs formal customs entry through a licensed broker. That's a delay and a fee, not just a bigger number, so it gets called out rather than buried in a total.</p>
+        </li>
+        <li>
+          <h3>You get one number, and a link to buy</h3>
+          <p>A single peso figure per record, sorted cheapest first, with the cost broken into its parts and a direct link to the Discogs marketplace. You decide; nothing is ever bought automatically.</p>
+        </li>
+      </ol>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">What's real here, and what isn't</h2>
+        <p class="hiw-lede">Worth being precise about, because two of these numbers are solid and two are placeholders standing in for work that belongs in the real build.</p>
+        <div class="grid2">
+          <div class="card is-real">
+            <h3>Real, live data</h3>
+            <ul>
+              <li><strong>Discogs prices and stock</strong> — pulled live from the official API each time you press the button.</li>
+              <li><strong>Release metadata</strong> — artist, label, catalogue number, format, year, cover art, all from Discogs.</li>
+              <li><strong>Exchange rates</strong> — today's ECB reference rate, fetched at the start of every run.</li>
+              <li><strong>Customs arithmetic</strong> — the de minimis, tasa global, IVA and formal-entry logic all genuinely run.</li>
+            </ul>
+          </div>
+          <div class="card is-illus">
+            <h3>Placeholder, pending real work</h3>
+            <ul>
+              <li><strong>Shipping costs</strong> — sensible estimates by country, not live carrier quotes. Every one is labelled low confidence.</li>
+              <li><strong>The customs figures themselves</strong> — from public reporting, not yet confirmed by a licensed broker.</li>
+              <li><strong>Shipping origin</strong> — we use the pressing country, because the official API won't tell us where the seller actually is.</li>
+              <li><strong>Matching</strong> — a search takes Discogs' best guess. Reissues and repressings aren't reconciled against each other.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="hiw-section" id="trust">
+        <h2 class="hiw-h2">Read before trusting these numbers</h2>
+        <p class="hiw-lede">Five things that would change a total, and that this demo cannot yet get right.</p>
+        <ul class="caveats-list">
+          <li><strong>Customs rules are not broker-validated.</strong> Duty, IVA and the formal-entry threshold come from public reporting on Mexico's 2026 Customs Law, not from a licensed broker.</li>
+          <li><strong>Origin is the pressing country, not the seller's location.</strong> Customs depends on where a parcel actually ships from, and the official Discogs API doesn't expose that. A German pressing may well be sold from Guadalajara.</li>
+          <li><strong>Shipping is illustrative</strong>, not a live carrier quote. The real system refines these from actual purchase data over time.</li>
+          <li><strong>This is one snapshot</strong>, not continuous monitoring, and it takes the single cheapest copy listed — not the best copy at a fair price.</li>
+          <li><strong>No identity resolution yet</strong> — reissues, repressings and regional variants aren't matched against each other.</li>
+        </ul>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">What the full system adds</h2>
+        <p class="hiw-lede">This page is one snapshot, run by hand. The build proper turns it into something that works while you're doing something else.</p>
+        <div class="grid2">
+          <div class="card">
+            <h3>Phase 1</h3>
+            <ul>
+              <li>Your want list, checked automatically every morning</li>
+              <li>eBay alongside Discogs, with real seller location and shipping</li>
+              <li>A digest document you read with your coffee</li>
+              <li>Mark records bought, passed or snoozed, so nothing you've rejected comes back</li>
+              <li>Alerts only for genuinely rare finds or prices below your threshold</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>Later phases</h3>
+            <ul>
+              <li>New releases from the labels, distributors and stores you follow</li>
+              <li>Bandcamp, for the indie pressings that never reach Discogs</li>
+              <li>Records you sell well, re-sourced automatically</li>
+              <li>Suggestions based on what you've bought and passed on before</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+    </div>
+
   </div>
 
-  <!-- ========================= HOW IT WORKS ========================= -->
-  <div class="panel" id="panel-hiw" role="tabpanel" aria-labelledby="tab-hiw" hidden>
+  <script>
+    (() => {
+      const $ = (id) => document.getElementById(id);
+      const MAX = 10;
 
-    <section class="hero">
-      <h1>Eight steps, about twenty seconds.</h1>
-      <p class="lede">This demo does a small version of what the full system would do continuously in the background. Here's the whole chain, start to finish, so nothing about the numbers is a black box.</p>
-    </section>
+      const CURRENCY_KEY = 'aqui-ahora:currency';
 
-    <ol class="steps">
-      <li>
-        <h3>You give it a list</h3>
-        <p>Here you type it. In the real system this is your Discogs want list, synced automatically, plus the artists and labels you follow — so you never type anything at all.</p>
-      </li>
-      <li>
-        <h3>It finds the release on Discogs</h3>
-        <p>Using the official Discogs API and nothing else. No scraping, ever — Discogs' terms prohibit it, and your account holds your inventory, so an enforcement action would hit the shop and not just the tool.</p>
-      </li>
-      <li>
-        <h3>It reads the current lowest price</h3>
-        <p>Live marketplace figures: what the cheapest listed copy costs right now, and how many copies are for sale. Both come straight from Discogs at the moment you press the button.</p>
-      </li>
-      <li>
-        <h3>It converts to pesos</h3>
-        <p>At today's European Central Bank reference rate. The real system also stores the Banxico FIX rate, which is what SAT expects when the purchase is later reconciled for accounting.</p>
-      </li>
-      <li>
-        <h3>It adds shipping</h3>
-        <p>Estimated from the pressing country. The full system replaces these estimates with real carrier quotes, then keeps sharpening them against what shipments actually cost once they arrive.</p>
-      </li>
-      <li>
-        <h3>It applies Mexican customs</h3>
-        <p>Records from the US and Canada under about <code>USD $50</code> come in free under USMCA. Everything else picks up the roughly <code>19%</code> tasa global, and then <code>16%</code> IVA on top of value plus duty.</p>
-      </li>
-      <li>
-        <h3>It flags anything needing a broker</h3>
-        <p>Above roughly <code>USD $250</code> a shipment needs formal customs entry through a licensed broker. That's a delay and a fee, not just a bigger number, so it gets called out rather than buried in a total.</p>
-      </li>
-      <li>
-        <h3>You get one number, and a link to buy</h3>
-        <p>A single peso figure per record, sorted cheapest first, with the cost broken into its parts and a direct link to the Discogs marketplace. You decide; nothing is ever bought automatically.</p>
-      </li>
-    </ol>
+      // ------------------------------------------------ color theme
+      // DARK MODE DISABLED. To restore, uncomment the head script, the two
+      // dark :root blocks, the .theme button and its icon-swap CSS, then
+      // reinstate this block:
+      //
+      //   const THEME_KEY = 'aqui-ahora:theme';
+      //   function applyTheme(t) {
+      //     document.documentElement.setAttribute('data-theme', t);
+      //     $('theme').setAttribute('aria-label',
+      //       t === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+      //   }
+      //   let theme = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+      //   applyTheme(theme);
+      //   $('theme').addEventListener('click', () => {
+      //     theme = theme === 'dark' ? 'light' : 'dark';
+      //     try { localStorage.setItem(THEME_KEY, theme); } catch { }
+      //     applyTheme(theme);
+      //   });
 
-    <section class="hiw-section">
-      <h2 class="hiw-h2">What's real here, and what isn't</h2>
-      <p class="hiw-lede">Worth being precise about, because two of these numbers are solid and two are placeholders standing in for work that belongs in the real build.</p>
-      <div class="grid2">
-        <div class="card is-real">
-          <h3>Real, live data</h3>
-          <ul>
-            <li><strong>Discogs prices and stock</strong> — pulled live from the official API each time you press the button.</li>
-            <li><strong>Release metadata</strong> — artist, label, catalogue number, format, year, cover art, all from Discogs.</li>
-            <li><strong>Exchange rates</strong> — today's ECB reference rate, fetched at the start of every run.</li>
-            <li><strong>Customs arithmetic</strong> — the de minimis, tasa global, IVA and formal-entry logic all genuinely run.</li>
-          </ul>
-        </div>
-        <div class="card is-illus">
-          <h3>Placeholder, pending real work</h3>
-          <ul>
-            <li><strong>Shipping costs</strong> — sensible estimates by country, not live carrier quotes. Every one is labelled low confidence.</li>
-            <li><strong>The customs figures themselves</strong> — from public reporting, not yet confirmed by a licensed broker.</li>
-            <li><strong>Shipping origin</strong> — we use the pressing country, because the official API won't tell us where the seller actually is.</li>
-            <li><strong>Matching</strong> — a search takes Discogs' best guess. Reissues and repressings aren't reconciled against each other.</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-
-    <section class="hiw-section">
-      <h2 class="hiw-h2">What the full system adds</h2>
-      <p class="hiw-lede">This page is one snapshot, run by hand. The build proper turns it into something that works while you're doing something else.</p>
-      <div class="grid2">
-        <div class="card">
-          <h3>Phase 1</h3>
-          <ul>
-            <li>Your want list, checked automatically every morning</li>
-            <li>eBay alongside Discogs, with real seller location and shipping</li>
-            <li>A digest document you read with your coffee</li>
-            <li>Mark records bought, passed or snoozed, so nothing you've rejected comes back</li>
-            <li>Alerts only for genuinely rare finds or prices below your threshold</li>
-          </ul>
-        </div>
-        <div class="card">
-          <h3>Later phases</h3>
-          <ul>
-            <li>New releases from the labels, distributors and stores you follow</li>
-            <li>Bandcamp, for the indie pressings that never reach Discogs</li>
-            <li>Records you sell well, re-sourced automatically</li>
-            <li>Suggestions based on what you've bought and passed on before</li>
-          </ul>
-        </div>
-      </div>
-    </section>
-  </div>
-
-</div>
-
-<script>
-(() => {
-  const $ = (id) => document.getElementById(id);
-  const MAX = 10;
-
-  const CURRENCY_KEY = 'aqui-ahora:currency';
-
-  /** localStorage throws outright in private mode or with storage disabled,
-   *  so every access is guarded and falls back to the peso default. */
-  function loadCurrency() {
-    try {
-      const saved = localStorage.getItem(CURRENCY_KEY);
-      return saved === 'USD' || saved === 'MXN' ? saved : 'MXN';
-    } catch {
-      return 'MXN';
-    }
-  }
-
-  const state = {
-    currency: loadCurrency(),
-    data: null,
-    live: [],      // results as they stream in
-    running: false,
-    watched: new Map(),     // releaseId -> watch item id
-    thresholds: new Map(),  // releaseId -> max landed MXN
-    pendingWatch: new Set(),// releaseIds with an in-flight request
-    pendingThresholds: new Set(), // watch item ids with an unsaved threshold
-  };
-
-  // ------------------------------------------------ formatting
-
-  const num = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-  const rate = () => (state.data && state.data.fx ? state.data.fx.ratesToMxn.USD : 1);
-
-  /** Both currencies use "$", so the code always rides along to disambiguate. */
-  function moneyBare(usdAmount) {
-    return '$' + num(state.currency === 'USD' ? usdAmount : usdAmount * rate());
-  }
-  function money(usdAmount) {
-    return moneyBare(usdAmount) + ' ' + state.currency;
-  }
-
-  const SEGMENTS = [
-    { key: 'recordUsd',   cls: 'record',   label: 'Record',   color: 'var(--c-record)' },
-    { key: 'shippingUsd', cls: 'shipping', label: 'Shipping', color: 'var(--c-shipping)' },
-    { key: 'dutyUsd',     cls: 'duty',     label: 'Duty',     color: 'var(--c-duty)' },
-    { key: 'ivaUsd',      cls: 'iva',      label: 'IVA',      color: 'var(--c-iva)' },
-  ];
-
-  const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-  // ------------------------------------------------ tabs
-
-  function selectTab(which) {
-    const isDesk = which === 'desk';
-    $('tab-desk').setAttribute('aria-selected', String(isDesk));
-    $('tab-hiw').setAttribute('aria-selected', String(!isDesk));
-    $('panel-desk').hidden = !isDesk;
-    $('panel-hiw').hidden = isDesk;
-  }
-  $('tab-desk').addEventListener('click', () => selectTab('desk'));
-  $('tab-hiw').addEventListener('click', () => selectTab('hiw'));
-
-  // ------------------------------------------------ currency
-
-  function setCurrency(c) {
-    state.currency = c;
-    try {
-      localStorage.setItem(CURRENCY_KEY, c);
-    } catch {
-      // Storage unavailable — the choice just won't survive a reload.
-    }
-    $('ccy-mxn').setAttribute('aria-pressed', String(c === 'MXN'));
-    $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
-    if (state.data) renderResults(state.data.results, true);
-    if (state.data) renderSummary(state.data);
-  }
-  $('ccy-mxn').addEventListener('click', () => setCurrency('MXN'));
-  $('ccy-usd').addEventListener('click', () => setCurrency('USD'));
-
-  // The markup hardcodes MXN as pressed; sync the buttons to the stored choice.
-  setCurrency(state.currency);
-
-  // ------------------------------------------------ search rows
-
-  function queryRows() { return [...document.querySelectorAll('.qrow input')]; }
-
-  function updateCount() {
-    const rows = queryRows();
-    const filled = rows.filter((i) => i.value.trim()).length;
-    $('qcount').textContent = filled + ' of ' + MAX;
-    $('addrow').disabled = rows.length >= MAX;
-    $('go').disabled = state.running || filled === 0;
-  }
-
-  function addRow(value) {
-    const rows = document.querySelectorAll('.qrow');
-    if (rows.length >= MAX) return;
-    const n = rows.length + 1;
-    const div = document.createElement('div');
-    div.className = 'qrow';
-    div.innerHTML =
-      '<span class="qrow-n">' + String(n).padStart(2, '0') + '</span>' +
-      '<input type="text" placeholder="Artist and title — e.g. Basic Channel Q 1.1" ' +
-        'aria-label="Record ' + n + '" value="' + esc(value || '') + '">' +
-      '<button class="qrow-x" type="button" aria-label="Remove record ' + n + '">&times;</button>';
-    $('qrows').appendChild(div);
-    div.querySelector('input').addEventListener('input', updateCount);
-    div.querySelector('input').addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') { e.preventDefault(); run('search'); }
-    });
-    div.querySelector('.qrow-x').addEventListener('click', () => {
-      div.remove();
-      renumber();
-      updateCount();
-      if (!document.querySelector('.qrow')) addRow('');
-    });
-    updateCount();
-  }
-
-  function renumber() {
-    document.querySelectorAll('.qrow').forEach((row, i) => {
-      row.querySelector('.qrow-n').textContent = String(i + 1).padStart(2, '0');
-      row.querySelector('input').setAttribute('aria-label', 'Record ' + (i + 1));
-      row.querySelector('.qrow-x').setAttribute('aria-label', 'Remove record ' + (i + 1));
-    });
-  }
-
-  $('addrow').addEventListener('click', () => addRow(''));
-  addRow(''); addRow(''); addRow('');
-
-  // ------------------------------------------------ watchlist
-
-  async function loadWatchlist() {
-    try {
-      const res = await fetch('/api/watchlist');
-      const data = await res.json();
-      state.watched.clear();
-      state.thresholds.clear();
-      (data.items || []).forEach((item) => {
-        if (item.active === false) return;
-        (item.watchedReleaseIds || []).forEach((rid) => {
-          state.watched.set(rid, item.id);
-          if (item.maxLandedMxn != null) state.thresholds.set(rid, item.maxLandedMxn);
-        });
-      });
-    } catch {
-      // A watchlist that will not load must never break pricing.
-    }
-  }
-
-  async function toggleWatch(btn, releaseId) {
-    if (state.pendingWatch.has(releaseId)) return;   // in flight — ignore
-    state.pendingWatch.add(releaseId);
-
-    const wasWatched = state.watched.has(releaseId);
-    btn.disabled = true;
-    btn.classList.remove('is-error');
-    btn.textContent = wasWatched ? 'Removing…' : 'Adding…';
-
-    try {
-      if (wasWatched) {
-        const res = await fetch('/api/watchlist', {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: state.watched.get(releaseId), active: false }),
-        });
-        if (!res.ok) throw new Error('Could not remove');
-        state.watched.delete(releaseId);
-        state.thresholds.delete(releaseId);
-      } else {
-        const res = await fetch('/api/watchlist', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ releaseId }),
-        });
-        const data = await res.json();
-        if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
-        (data.item.watchedReleaseIds || []).forEach((rid) => state.watched.set(rid, data.item.id));
-        if (data.plan && data.plan.needsUserSelection) {
-          const row = btn.closest('.row');
-          const metaEl = row ? row.querySelector('.row-meta') : null;
-          if (metaEl) {
-            const note = document.createElement('span');
-            note.className = 'tag-approx';
-            note.textContent =
-              'Watching 1 of ' + data.plan.totalVinylVersions + ' pressings — picker coming in the next version';
-            metaEl.appendChild(note);
-          }
+      /** localStorage throws outright in private mode or with storage disabled,
+       *  so every access is guarded and falls back to the peso default. */
+      function loadCurrency() {
+        try {
+          const saved = localStorage.getItem(CURRENCY_KEY);
+          return saved === 'USD' || saved === 'MXN' ? saved : 'MXN';
+        } catch {
+          return 'MXN';
         }
       }
-      // Clear before repainting: refreshWatchControls skips anything still in
-      // pendingWatch, and this request's own entry must not make it skip the
-      // very button whose result it's reporting.
-      state.pendingWatch.delete(releaseId);
-      refreshWatchControls();
-    } catch (err) {
-      btn.classList.add('is-error');
-      btn.textContent = 'Failed';
-      setTimeout(() => { btn.classList.remove('is-error'); refreshWatchControls(); }, 2500);
-    } finally {
-      state.pendingWatch.delete(releaseId);
-      btn.disabled = false;
-    }
-  }
 
-  /**
-   * Repaints every visible watch control from state. Watching one pressing can
-   * add several release ids at once (all pressings of a master), so the clicked
-   * button is never the only one that needs updating.
-   */
-  function refreshWatchControls(root) {
-    (root || document).querySelectorAll('.watch-btn').forEach((btn) => {
-      const releaseId = Number(btn.dataset.release);
-      if (state.pendingWatch.has(releaseId)) return;   // mid-flight, leave its label alone
-      const watched = state.watched.has(releaseId);
-      btn.setAttribute('aria-pressed', String(watched));
-      btn.textContent = watched ? 'Watching' : 'Watch';
-      const row = btn.closest('.row');
-      const field = row ? row.querySelector('.threshold') : null;
-      if (field) field.hidden = !watched;
-    });
-  }
+      const state = {
+        currency: loadCurrency(),
+        data: null,
+        live: [],      // results as they stream in
+        running: false,
+        watchItems: [],         // full watchlist records, as the sheet holds them
+        watchError: null,       // last watchlist load failure, shown in the tab
+        sheetUrl: null,         // link to the backing Google Sheet, from the API
+        adding: false,          // an add-to-watchlist batch is in flight
+        watched: new Map(),     // releaseId -> watch item id
+        thresholds: new Map(),  // releaseId -> max landed MXN
+        alerts: new Map(),      // releaseId -> SMS alerting on
+        pendingWatch: new Set(),// releaseIds with an in-flight request
+        pendingThresholds: new Set(), // watch item ids with an unsaved threshold
+      };
 
-  // ------------------------------------------------ rendering
+      // ------------------------------------------------ formatting
 
-  function renderSummary(data) {
-    if (!data.totals || data.totals.totalUsd <= 0) { $('summary').hidden = true; return; }
-    const t = data.totals;
-    $('overhead').textContent = t.overheadPct.toFixed(1) + '%';
-    $('summary-note').innerHTML =
-      'Across ' + data.results.filter((r) => r.cost).length + ' records, <strong>' +
-      esc(money(t.shippingUsd + t.importUsd)) + '</strong> of the <strong>' + esc(money(t.totalUsd)) +
-      '</strong> total is shipping and import cost rather than the records themselves. Rates from ' +
-      esc(data.fx.date) + '. Customs ruleset <code>' + esc(data.customsRuleVersion) + '</code>.';
-    $('summary').hidden = false;
-  }
+      const num = (n) => n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const rate = () => (state.data && state.data.fx ? state.data.fx.ratesToMxn.USD : 1);
 
-  function detailHtml(r, id) {
-    const labels = (r.labels || []).map((l) => esc(l.name) + (l.catno ? ' — ' + esc(l.catno) : '')).join('<br>');
-    const tags = [...(r.genres || []), ...(r.styles || [])].map(esc).join(' · ');
+      /** Both currencies use "$", so the code always rides along to disambiguate. */
+      function moneyBare(usdAmount) {
+        return '$' + num(state.currency === 'USD' ? usdAmount : usdAmount * rate());
+      }
+      function money(usdAmount) {
+        return moneyBare(usdAmount) + ' ' + state.currency;
+      }
 
-    const facts =
-      '<dl class="facts">' +
-      (r.artist ? '<dt>Artist</dt><dd>' + esc(r.artist) + '</dd>' : '') +
-      (r.title ? '<dt>Title</dt><dd>' + esc(r.title) + '</dd>' : '') +
-      (r.labels && r.labels.length ? '<dt>Label</dt><dd>' + labels + '</dd>' : '') +
-      (r.format ? '<dt>Format</dt><dd>' + esc(r.format) + '</dd>' : '') +
-      (r.year ? '<dt>Year</dt><dd>' + esc(r.year) + '</dd>' : '') +
-      (r.originLabel ? '<dt>Pressed</dt><dd>' + esc(r.originLabel) +
-        (r.originApproximate ? ' <span class="tag-approx">(approx.)</span>' : '') + '</dd>' : '') +
-      (tags ? '<dt>Style</dt><dd>' + tags + '</dd>' : '') +
-      '<dt>For sale</dt><dd>' + r.numForSale + ' cop' + (r.numForSale === 1 ? 'y' : 'ies') + ' on Discogs</dd>' +
-      '</dl>';
+      const SEGMENTS = [
+        { key: 'recordUsd', cls: 'record', label: 'Record', color: 'var(--c-record)' },
+        { key: 'shippingUsd', cls: 'shipping', label: 'Shipping', color: 'var(--c-shipping)' },
+        { key: 'dutyUsd', cls: 'duty', label: 'Duty', color: 'var(--c-duty)' },
+        { key: 'ivaUsd', cls: 'iva', label: 'IVA', color: 'var(--c-iva)' },
+      ];
 
-    const why = r.note
-      ? '<p class="why"><strong>Why this record is in the demo</strong>' + esc(r.note) + '</p>'
-      : '<p class="why"><strong>You searched for</strong>' + esc(r.requested) + '</p>';
+      const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-    let costs = '';
-    if (r.cost) {
-      const total = r.cost.totalUsd;
-      costs =
-        '<table class="costs"><thead><tr>' +
-        '<th>Component</th><th>Share</th><th>' + (state.currency === 'USD' ? 'USD' : 'MXN') + '</th>' +
-        '</tr></thead><tbody>' +
-        SEGMENTS.map((s) => {
-          const v = r.cost[s.key];
-          return '<tr><td><span class="swatch" style="background:' + s.color + '"></span>' + s.label + '</td>' +
-            '<td class="muted">' + (v / total * 100).toFixed(1) + '%</td>' +
-            '<td>' + esc(moneyBare(v)) + '</td></tr>';
-        }).join('') +
-        '<tr class="total"><td>Landed total</td><td></td><td>' + esc(money(total)) + '</td></tr>' +
-        '</tbody></table>' +
-        (r.shippingNote ? '<p class="shipnote">Shipping: ' + esc(r.shippingNote) + '</p>' : '');
-    }
+      // ------------------------------------------------ tabs
 
-    const links = r.buyUrl
-      ? '<div class="detail-links">' +
-        '<a class="lnk lnk-primary" href="' + esc(r.buyUrl) + '" target="_blank" rel="noopener noreferrer">Buy on Discogs</a>' +
-        '<a class="lnk" href="' + esc(r.releaseUrl) + '" target="_blank" rel="noopener noreferrer">Release details</a>' +
-        '</div>'
-      : '';
+      const TABS = ['desk', 'watch', 'hiw'];
 
-    return '<div class="detail" id="' + id + '" hidden>' +
-      facts + why + costs + links + '</div>';
-  }
+      function selectTab(which) {
+        TABS.forEach((t) => {
+          const on = t === which;
+          $('tab-' + t).setAttribute('aria-selected', String(on));
+          $('panel-' + t).hidden = !on;
+        });
+        // Repaint on entry: a sweep or a Watch press on the desk moves this list.
+        if (which === 'watch') renderWatchlist();
+      }
+      TABS.forEach((t) => $('tab-' + t).addEventListener('click', () => selectTab(t)));
 
-  /** Sleeve thumbnail for the row header; keeps its slot even with no image. */
-  function thumbHtml(r) {
-    return r.coverImage
-      ? '<img class="row-thumb" src="' + esc(r.coverImage) + '" alt="Sleeve for ' + esc(r.title || r.requested) + '" ' +
-        'onerror="this.outerHTML=\'<span class=&quot;row-thumb-none&quot;></span>\'">'
-      : '<span class="row-thumb-none"></span>';
-  }
-
-  function rowHtml(r, i) {
-    // Keyed by release, not position — the list re-sorts between the streaming
-    // pass and the final one, so an index-based id would reopen the wrong row.
-    const id = 'detail-' + (r.discogsId ? 'd' + r.discogsId : 'q' + i);
-    const rank = String(i + 1).padStart(2, '0');
-
-    if (!r.matched) {
-      return '<article class="row is-miss">' +
-        '<span class="row-rank">' + rank + '</span>' +
-        thumbHtml(r) +
-        '<div class="row-main">' +
-          '<button class="row-head" disabled>' +
-            '<span class="row-title">' + esc(r.requested) +
-              '<span class="row-artist">' + esc(r.unmatchedReason || 'No match') + '</span></span>' +
-            '<span class="row-total is-none">No match</span><span class="row-caret"></span>' +
-          '</button>' +
-        '</div></article>';
-    }
-
-    if (!r.cost) {
-      return '<article class="row is-miss">' +
-        '<span class="row-rank">' + rank + '</span>' +
-        thumbHtml(r) +
-        '<div class="row-main">' +
-          '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
-            '<span class="row-title">' + esc(r.title) +
-              '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
-            '<span class="row-total is-none">None listed</span><span class="row-caret">+</span>' +
-          '</button>' +
-        '</div>' + detailHtml(r, id) + '</article>';
-    }
-
-    const total = r.cost.totalUsd;
-    const meta = [
-      esc(r.originIso),
-      r.numForSale + ' for sale',
-      r.customsRuleApplied === 'domestic'
-        ? '<span class="tag-domestic">Domestic — no import cost</span>'
-        : esc(String(r.customsRuleApplied).replace(/_/g, ' ')),
-      r.requiresFormalEntry ? '<span class="tag-formal">Formal entry required</span>' : '',
-      r.originApproximate ? '<span class="tag-approx">Origin approximate</span>' : '',
-    ].filter(Boolean);
-
-    return '<article class="row">' +
-      '<span class="row-rank">' + rank + '</span>' +
-      thumbHtml(r) +
-      '<div class="row-main">' +
-        '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
-          '<span class="row-title">' + esc(r.title) +
-            '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
-          '<span class="row-total">' + esc(money(total)) + '</span>' +
-          '<span class="row-caret">+</span>' +
-        '</button>' +
-        '<div class="bar">' +
-          SEGMENTS.map((s) => '<span class="bar-seg ' + s.cls + '" data-pct="' + (r.cost[s.key] / total * 100) + '"></span>').join('') +
-        '</div>' +
-        '<div class="row-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
-        '<div class="threshold"' + (state.watched.has(r.discogsId) ? '' : ' hidden') + '>' +
-          '<label for="th-' + id + '">Alert under</label>' +
-          '<input id="th-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
-            'placeholder="MXN" data-release="' + r.discogsId + '" ' +
-            'value="' + (state.thresholds.get(r.discogsId) ?? '') + '">' +
-          '<span class="saved" data-saved="' + r.discogsId + '"></span>' +
-        '</div>' +
-      '</div>' +
-      (r.discogsId
-        ? '<button class="watch-btn" type="button" data-release="' + r.discogsId + '" ' +
-          'aria-pressed="' + (state.watched.has(r.discogsId) ? 'true' : 'false') + '">' +
-          (state.watched.has(r.discogsId) ? 'Watching' : 'Watch') + '</button>'
-        : '') +
-      detailHtml(r, id) + '</article>';
-  }
-
-  function wireRows(root) {
-    root.querySelectorAll('.row-head:not([disabled])').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const panel = document.getElementById(btn.getAttribute('aria-controls'));
-        if (!panel) return;
-        const open = btn.getAttribute('aria-expanded') === 'true';
-        btn.setAttribute('aria-expanded', String(!open));
-        panel.hidden = open;
-        const caret = btn.querySelector('.row-caret');
-        if (caret) caret.textContent = open ? '+' : '–';
+      /** Cross-tab links: switch to How it works and land on the named section. */
+      document.querySelectorAll('[data-goto]').forEach((el) => {
+        el.addEventListener('click', () => {
+          selectTab('hiw');
+          const target = $(el.dataset.goto);
+          // Not smooth: the tab switch is already a jump, and animating a
+          // couple of thousand pixels after it just makes the link feel slow.
+          if (target) target.scrollIntoView({ block: 'start' });
+        });
       });
-    });
-    root.querySelectorAll('.watch-btn').forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        toggleWatch(btn, Number(btn.dataset.release));
+
+      // ------------------------------------------------ currency
+
+      function setCurrency(c) {
+        state.currency = c;
+        try {
+          localStorage.setItem(CURRENCY_KEY, c);
+        } catch {
+          // Storage unavailable — the choice just won't survive a reload.
+        }
+        $('ccy-mxn').setAttribute('aria-pressed', String(c === 'MXN'));
+        $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
+        if (state.data) renderResults(state.data.results, true);
+        if (state.data) renderSummary(state.data);
+        renderWatchlist();
+      }
+      $('ccy-mxn').addEventListener('click', () => setCurrency('MXN'));
+      $('ccy-usd').addEventListener('click', () => setCurrency('USD'));
+
+      // The markup hardcodes MXN as pressed; sync the buttons to the stored choice.
+      setCurrency(state.currency);
+
+      // ------------------------------------------------ typed rows
+
+      /**
+       * The numbered-input repeater: rows, a live count, an add-another link and
+       * a submit button that stays disabled until something is typed.
+       *
+       * Takes its element ids rather than reaching for the desk's, because two
+       * panels use it now — pricing on the desk, adding on the watchlist. A
+       * document-wide `.qrow` lookup would have each one counting the other's
+       * rows and submitting the other's text.
+       */
+      function createRepeater(opts) {
+        const rowsEl = $(opts.rowsId);
+        const rep = {};
+
+        rep.rows = () => [...rowsEl.querySelectorAll('.qrow')];
+        rep.inputs = () => [...rowsEl.querySelectorAll('.qrow input')];
+        rep.values = () => rep.inputs().map((i) => i.value.trim()).filter(Boolean).slice(0, MAX);
+
+        rep.refresh = () => {
+          const inputs = rep.inputs();
+          const filled = inputs.filter((i) => i.value.trim()).length;
+          $(opts.countId).textContent = filled + ' of ' + MAX;
+          $(opts.addId).disabled = inputs.length >= MAX;
+          $(opts.submitId).disabled = opts.busy() || filled === 0;
+        };
+
+        rep.renumber = () => {
+          rep.rows().forEach((row, i) => {
+            row.querySelector('.qrow-n').textContent = String(i + 1).padStart(2, '0');
+            row.querySelector('input').setAttribute('aria-label', 'Record ' + (i + 1));
+            row.querySelector('.qrow-x').setAttribute('aria-label', 'Remove record ' + (i + 1));
+          });
+        };
+
+        /** `text` is the label, kept short enough to sit on one line beside the
+         *  input; `detail` is the full reason, which lives in the tooltip. */
+        rep.setStatus = (row, text, kind, detail) => {
+          const flag = row.querySelector('.qrow-status');
+          if (!flag) return;
+          flag.textContent = text;
+          flag.className = 'qrow-status' + (kind ? ' is-' + kind : '');
+          if (detail) flag.title = detail;
+          else flag.removeAttribute('title');
+        };
+
+        rep.add = (value) => {
+          const existing = rep.rows();
+          if (existing.length >= MAX) return;
+          const n = existing.length + 1;
+          const div = document.createElement('div');
+          div.className = 'qrow';
+          div.innerHTML =
+            '<span class="qrow-n">' + String(n).padStart(2, '0') + '</span>' +
+            '<input type="text" placeholder="' + esc(opts.placeholder) + '" ' +
+            'aria-label="Record ' + n + '" value="' + esc(value || '') + '">' +
+            (opts.status ? '<span class="qrow-status"></span>' : '') +
+            '<button class="qrow-x" type="button" aria-label="Remove record ' + n + '">&times;</button>';
+          rowsEl.appendChild(div);
+
+          const input = div.querySelector('input');
+          input.addEventListener('input', () => {
+            // Editing a row invalidates whatever the last add said about it.
+            delete div.dataset.done;
+            rep.setStatus(div, '');
+            rep.refresh();
+          });
+          input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') { e.preventDefault(); opts.onSubmit(); }
+          });
+          div.querySelector('.qrow-x').addEventListener('click', () => rep.remove(div));
+          rep.refresh();
+        };
+
+        rep.remove = (row) => {
+          row.remove();
+          rep.renumber();
+          rep.refresh();
+          if (!rowsEl.querySelector('.qrow')) rep.add('');
+        };
+
+        $(opts.addId).addEventListener('click', () => rep.add(''));
+        $(opts.submitId).addEventListener('click', () => opts.onSubmit());
+        return rep;
+      }
+
+      const deskRows = createRepeater({
+        rowsId: 'qrows',
+        countId: 'qcount',
+        addId: 'addrow',
+        submitId: 'go',
+        placeholder: 'Artist and title — e.g. Basic Channel Q 1.1',
+        busy: () => state.running,
+        onSubmit: () => run('search'),
       });
-    });
-    root.querySelectorAll('.threshold input').forEach((input) => {
-      input.addEventListener('click', (e) => e.stopPropagation());
-      input.addEventListener('change', async () => {
-        const releaseId = Number(input.dataset.release);
-        const watchId = state.watched.get(releaseId);
-        const flag = root.querySelector('[data-saved="' + releaseId + '"]');
-        if (!watchId) return;
+      deskRows.add(''); deskRows.add(''); deskRows.add('');
+
+      const watchRows = createRepeater({
+        rowsId: 'wl-qrows',
+        countId: 'wl-qcount',
+        addId: 'wl-addrow',
+        submitId: 'wl-add',
+        placeholder: 'Artist and title — e.g. Fela Kuti Zombie',
+        status: true,
+        busy: () => state.adding,
+        onSubmit: () => addWatchQueries(),
+      });
+      watchRows.add(''); watchRows.add(''); watchRows.add('');
+
+      // ------------------------------------------------ watchlist
+
+      async function loadWatchlist() {
+        try {
+          const res = await fetch('/api/watchlist');
+          const data = await res.json();
+          if (!res.ok || (data && data.error)) throw new Error((data && data.error) || 'request failed');
+          state.watchItems = data.items || [];
+          state.sheetUrl = data.sheetUrl || null;
+          state.watchError = null;
+          state.watched.clear();
+          state.thresholds.clear();
+          state.alerts.clear();
+          (data.items || []).forEach((item) => {
+            if (item.active === false) return;
+            (item.watchedReleaseIds || []).forEach((rid) => {
+              state.watched.set(rid, item.id);
+              if (item.maxLandedMxn != null) state.thresholds.set(rid, item.maxLandedMxn);
+              if (item.alertSms) state.alerts.set(rid, true);
+            });
+          });
+        } catch (err) {
+          // A watchlist that will not load must never break pricing — the desk
+          // keeps working, and the Watchlist tab says why it is empty.
+          state.watchError = (err && err.message) || 'request failed';
+        }
+      }
+
+      async function toggleWatch(btn, releaseId) {
+        if (state.pendingWatch.has(releaseId)) return;   // in flight — ignore
+        state.pendingWatch.add(releaseId);
+
+        const wasWatched = state.watched.has(releaseId);
+        btn.disabled = true;
+        btn.classList.remove('is-error');
+        btn.textContent = wasWatched ? 'Removing…' : 'Adding…';
+
+        try {
+          if (wasWatched) {
+            const res = await fetch('/api/watchlist', {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ id: state.watched.get(releaseId), active: false }),
+            });
+            if (!res.ok) throw new Error('Could not remove');
+            state.watched.delete(releaseId);
+            state.thresholds.delete(releaseId);
+            state.alerts.delete(releaseId);
+          } else {
+            const res = await fetch('/api/watchlist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ releaseId }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
+            (data.item.watchedReleaseIds || []).forEach((rid) => state.watched.set(rid, data.item.id));
+            if (data.plan && data.plan.needsUserSelection) {
+              const row = btn.closest('.row');
+              const metaEl = row ? row.querySelector('.row-meta') : null;
+              if (metaEl) {
+                const note = document.createElement('span');
+                note.className = 'tag-approx';
+                note.textContent =
+                  'Watching 1 of ' + data.plan.totalVinylVersions + ' pressings — picker coming in the next version';
+                metaEl.appendChild(note);
+              }
+            }
+          }
+          // Clear before repainting: refreshWatchControls skips anything still in
+          // pendingWatch, and this request's own entry must not make it skip the
+          // very button whose result it's reporting.
+          state.pendingWatch.delete(releaseId);
+          refreshWatchControls();
+          // Re-read rather than patching a local copy: adding one pressing can
+          // add every pressing of the master, and the sheet is the record.
+          loadWatchlist().then(renderWatchlist);
+        } catch (err) {
+          btn.classList.add('is-error');
+          btn.textContent = 'Failed';
+          setTimeout(() => { btn.classList.remove('is-error'); refreshWatchControls(); }, 2500);
+        } finally {
+          state.pendingWatch.delete(releaseId);
+          btn.disabled = false;
+        }
+      }
+
+      /**
+       * Repaints every visible watch control from state. Watching one pressing can
+       * add several release ids at once (all pressings of a master), so the clicked
+       * button is never the only one that needs updating.
+       */
+      function refreshWatchControls(root) {
+        (root || document).querySelectorAll('.watch-btn').forEach((btn) => {
+          const releaseId = Number(btn.dataset.release);
+          if (state.pendingWatch.has(releaseId)) return;   // mid-flight, leave its label alone
+          const watched = state.watched.has(releaseId);
+          btn.setAttribute('aria-pressed', String(watched));
+          btn.textContent = watched ? 'Watching' : 'Watch';
+          const row = btn.closest('.row');
+          const field = row ? row.querySelector('.threshold') : null;
+          if (field) field.hidden = !watched;
+          // Un-watching drops the record's alert with it, so the button must
+          // not still read "SMS on" if the same record is watched again.
+          const alertBtn = row ? row.querySelector('.alert-toggle') : null;
+          if (alertBtn) paintAlertToggle(alertBtn, !!state.alerts.get(releaseId));
+        });
+      }
+
+      // ------------------------------------------------ watchlist tab
+
+      function ago(iso) {
+        const then = iso ? Date.parse(iso) : NaN;
+        if (!Number.isFinite(then)) return 'never checked';
+        const mins = Math.round((Date.now() - then) / 60000);
+        if (mins < 1) return 'checked just now';
+        if (mins < 60) return 'checked ' + mins + 'm ago';
+        const hrs = Math.round(mins / 60);
+        if (hrs < 24) return 'checked ' + hrs + 'h ago';
+        return 'checked ' + Math.round(hrs / 24) + 'd ago';
+      }
+
+      /** Thresholds and best-seen prices are stored in pesos, so this converts the
+       *  other way from money() — and only when a run has given us a real rate. */
+      function moneyMxn(mxn) {
+        const r = rate();
+        return state.currency === 'USD' && r > 1
+          ? '$' + num(mxn / r) + ' USD'
+          : '$' + num(mxn) + ' MXN';
+      }
+
+      function watchItemHtml(item) {
+        const pressings = (item.watchedReleaseIds || []).length;
+        const known = Number(item.pressingCount) || 0;
+        const meta = [
+          pressings === 1 ? '1 pressing' : pressings + ' pressings',
+          known > pressings ? '<span class="tag-approx">of ' + known + ' known</span>' : '',
+          ago(item.lastCheckedAt),
+          item.status === 'alerted' ? '<span class="wl-alerted">&#9873; Under your threshold</span>' : '',
+        ].filter(Boolean);
+
+        const best = item.bestLandedMxn == null
+          ? '<div class="wl-best is-none">&mdash;<span>not priced yet</span></div>'
+          : '<div class="wl-best">' + esc(moneyMxn(item.bestLandedMxn)) + '<span>best seen</span></div>';
+
+        const id = esc(item.id);
+        return '<article class="wl-item">' +
+          '<div class="wl-main">' +
+          '<span class="wl-title">' + esc(item.album || item.artist) +
+          '<span class="wl-artist">' + esc(item.artist) + '</span></span>' +
+          '<div class="wl-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
+          '<div class="threshold">' +
+          '<label for="wth-' + id + '">Alert under</label>' +
+          '<input id="wth-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
+          'placeholder="MXN" data-watch="' + id + '" value="' + (item.maxLandedMxn ?? '') + '">' +
+          '<span class="saved" data-wsaved="' + id + '"></span>' +
+          '<button class="alert-toggle" type="button" data-alert="' + id + '" ' +
+          'aria-pressed="' + (item.alertSms ? 'true' : 'false') + '" ' +
+          'title="Text the buying desk when this record crosses its limit">' +
+          (item.alertSms ? '&#9679; SMS on' : 'SMS off') + '</button>' +
+          '</div>' +
+          '</div>' +
+          best +
+          '<button class="watch-btn wl-remove" type="button" aria-pressed="true" data-watch="' + id + '">Watching</button>' +
+          '</article>';
+      }
+
+      function renderWatchlist() {
+        const list = $('wl-list');
+        if (!list) return;
+        const items = (state.watchItems || []).filter((i) => i.active !== false);
+
+        $('tab-watch').innerHTML =
+          'Watchlist' + (items.length ? '<span class="tab-count">' + items.length + '</span>' : '');
+        $('wl-count').textContent = items.length === 1 ? '1 record' : items.length + ' records';
+
+        // The whole bullet goes, not just the anchor — a sentence pointing at a
+        // link that isn't there reads worse than one bullet fewer. The sheet id
+        // arrives from the API, and WATCHLIST_SHEET_ID may simply not be set.
+        $('wl-sheet-item').hidden = !state.sheetUrl;
+        if (state.sheetUrl) $('wl-sheet').href = state.sheetUrl;
+        $('wl-run').disabled = state.running || items.length === 0;
+
+        if (state.watchError) {
+          list.innerHTML = '<p class="wl-empty">Could not load the watchlist &mdash; ' +
+            esc(state.watchError) + '</p>';
+          return;
+        }
+        if (!items.length) {
+          list.innerHTML = '<p class="wl-empty">Nothing here yet. Press <strong>Watch</strong> ' +
+            'on any priced record in the buying desk to add it.</p>';
+          return;
+        }
+
+        list.innerHTML = items.map(watchItemHtml).join('');
+        wireWatchlist(list);
+      }
+
+      function paintAlertToggle(btn, on) {
+        btn.setAttribute('aria-pressed', on ? 'true' : 'false');
+        btn.innerHTML = on ? '&#9679; SMS on' : 'SMS off';
+      }
+
+      /**
+       * Turns SMS alerting on or off for one record.
+       *
+       * Optimistic in the interface, authoritative in the sheet: the button
+       * flips at once because a toggle that lags feels broken, and reverts if
+       * the write is refused.
+       */
+      async function toggleAlertSms(btn, watchId) {
+        const id = watchId || btn.dataset.alert;
+        if (!id) return;
+
+        // Pressing Watch and then SMS immediately is faster than the watchlist
+        // re-read that follows it, so the record may not be in state.watchItems
+        // yet. The per-release map is written synchronously by whoever watched
+        // it, which makes it the reliable read.
+        const item = (state.watchItems || []).find((i) => i.id === id) || null;
+        const releaseIds = item
+          ? item.watchedReleaseIds || []
+          : [Number(btn.dataset.alertRelease)].filter(Boolean);
+        const now = item ? !!item.alertSms : releaseIds.some((rid) => state.alerts.get(rid));
+        const next = !now;
+
+        const apply = (on) => {
+          if (item) item.alertSms = on;
+          releaseIds.forEach((rid) => {
+            if (on) state.alerts.set(rid, true);
+            else state.alerts.delete(rid);
+          });
+          paintAlertToggle(btn, on);
+        };
+
+        apply(next);
+        btn.disabled = true;
+        try {
+          const res = await fetch('/api/watchlist', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: id, alertSms: next }),
+          });
+          if (!res.ok) throw new Error('save failed');
+          // An alert with no limit can never fire, and a toggle that looks armed
+          // but is inert is the kind of thing nobody notices until it matters.
+          const limit = item ? item.maxLandedMxn : state.thresholds.get(releaseIds[0]);
+          if (next && limit == null) {
+            showToast({
+              to: 'no limit set',
+              message: 'Alerting is on, but this record has no price limit yet — ' +
+                'set one under \u201cAlert under\u201d or nothing will ever trigger.',
+            });
+          }
+        } catch {
+          apply(!next);
+          btn.classList.add('is-error');
+          setTimeout(() => btn.classList.remove('is-error'), 1500);
+        } finally {
+          btn.disabled = false;
+        }
+      }
+
+      /**
+       * Shows the message that a real gateway would text the desk.
+       *
+       * Nothing is sent. The toast says so on its face, because a demo that
+       * looks like it fired an SMS is one question away from being believed.
+       */
+      function showToast(alert) {
+        const stack = $('toasts');
+        if (!stack) return;
+
+        const el = document.createElement('div');
+        el.className = 'toast';
+        el.innerHTML =
+          '<div class="toast-head">' +
+          '<span>&#9873; SMS &rarr; <span class="toast-to">' + esc(alert.to) + '</span></span>' +
+          '<span class="toast-sim">simulated</span>' +
+          '</div>' +
+          '<div class="toast-body">' + esc(alert.message) + '</div>';
+        stack.appendChild(el);
+
+        // Long enough to read aloud in a demo, and capped so a big sweep does
+        // not bury the page it is reporting on.
+        setTimeout(() => el.remove(), 9000);
+        while (stack.children.length > 4) stack.firstElementChild.remove();
+      }
+
+      /** Saves a threshold keyed by watch id. The desk saves the same field keyed
+       *  by release id; both write through the one PATCH so the sheet stays the
+       *  single source of truth. */
+      async function saveWatchThreshold(input) {
+        const watchId = input.dataset.watch;
+        const item = (state.watchItems || []).find((i) => i.id === watchId);
+        const flag = document.querySelector('[data-wsaved="' + watchId + '"]');
+        if (!item) return;
+
         const raw = input.value.trim();
         const value = raw === '' ? null : Number(raw);
         if (value !== null && (!Number.isFinite(value) || value < 0)) {
           if (flag) { flag.classList.add('is-error'); flag.textContent = 'Invalid'; }
           return;
         }
+
         state.pendingThresholds.add(watchId);
         try {
           const res = await fetch('/api/watchlist', {
@@ -1144,8 +2443,12 @@
             body: JSON.stringify({ id: watchId, maxLandedMxn: value }),
           });
           if (!res.ok) throw new Error('save failed');
-          if (value === null) state.thresholds.delete(releaseId);
-          else state.thresholds.set(releaseId, value);
+          item.maxLandedMxn = value;
+          // Keep the desk's per-release view in step without a re-read.
+          (item.watchedReleaseIds || []).forEach((rid) => {
+            if (value === null) state.thresholds.delete(rid);
+            else state.thresholds.set(rid, value);
+          });
           if (flag) {
             flag.classList.remove('is-error');
             flag.textContent = 'Saved';
@@ -1156,168 +2459,617 @@
         } finally {
           state.pendingThresholds.delete(watchId);
         }
+      }
+
+      async function removeWatchItem(btn) {
+        const watchId = btn.dataset.watch;
+        const item = (state.watchItems || []).find((i) => i.id === watchId);
+        if (!item) return;
+
+        btn.disabled = true;
+        btn.classList.remove('is-error');
+        btn.textContent = 'Removing…';
+        try {
+          const res = await fetch('/api/watchlist', {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: watchId, active: false }),
+          });
+          if (!res.ok) throw new Error('Could not remove');
+          item.active = false;
+          (item.watchedReleaseIds || []).forEach((rid) => {
+            state.watched.delete(rid);
+            state.thresholds.delete(rid);
+            state.alerts.delete(rid);
+          });
+          renderWatchlist();
+          refreshWatchControls();
+        } catch {
+          btn.disabled = false;
+          btn.classList.add('is-error');
+          btn.textContent = 'Failed';
+          setTimeout(renderWatchlist, 2500);
+        }
+      }
+
+      function wireWatchlist(root) {
+        root.querySelectorAll('.wl-remove').forEach((btn) => {
+          btn.addEventListener('click', () => removeWatchItem(btn));
+        });
+        root.querySelectorAll('.threshold input[data-watch]').forEach((input) => {
+          input.addEventListener('change', () => saveWatchThreshold(input));
+        });
+        root.querySelectorAll('.alert-toggle[data-alert]').forEach((btn) => {
+          btn.addEventListener('click', () => toggleAlertSms(btn));
+        });
+      }
+
+      /**
+       * Adds every typed row to the watchlist, one request at a time.
+       *
+       * Sequential on purpose: each add costs a Discogs search plus a release
+       * and a master-versions lookup, and that rate limit is shared with any
+       * sweep the same token is running. Ten rows fired at once would trip it.
+       */
+      async function addWatchQueries() {
+        if (state.adding) return;
+        const rows = watchRows.rows().filter((r) => r.querySelector('input').value.trim());
+        if (!rows.length) return;
+
+        state.adding = true;
+        watchRows.refresh();
+        $('wl-add').textContent = 'Adding…';
+
+        let added = 0;
+        let dupes = 0;
+        let failed = 0;
+
+        for (const [i, row] of rows.entries()) {
+          const query = row.querySelector('input').value.trim();
+          $('wl-add-status').textContent = 'Adding ' + (i + 1) + ' of ' + rows.length + '…';
+          watchRows.setStatus(row, 'Adding…');
+          try {
+            const res = await fetch('/api/watchlist', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
+            if (data.duplicate) {
+              dupes += 1;
+              watchRows.setStatus(row, 'Already watching');
+            } else {
+              added += 1;
+              watchRows.setStatus(row, 'Added', 'ok');
+            }
+            row.dataset.done = '1';
+          } catch (err) {
+            failed += 1;
+            const reason = (err && err.message) || 'Could not add';
+            watchRows.setStatus(row, /No vinyl release/.test(reason) ? 'No match' : 'Failed', 'error', reason);
+          }
+        }
+
+        state.adding = false;
+        $('wl-add').textContent = 'Add to watchlist';
+        await loadWatchlist();
+        renderWatchlist();
+
+        const parts = [];
+        if (added) parts.push(added === 1 ? '1 record added' : added + ' records added');
+        if (dupes) parts.push(dupes === 1 ? '1 already watching' : dupes + ' already watching');
+        if (failed) parts.push(failed === 1 ? '1 not added' : failed + ' not added');
+        $('wl-add-status').textContent = parts.join('  ·  ');
+
+        // Clear the rows that landed, but leave anything that needs another try
+        // sitting there with its message, so a typo can be fixed in place.
+        setTimeout(() => {
+          watchRows.rows().forEach((row) => { if (row.dataset.done) watchRows.remove(row); });
+        }, 1400);
+      }
+
+      $('wl-run').addEventListener('click', () => {
+        // The results render on the desk, so go there rather than duplicating them.
+        selectTab('desk');
+        run('watchlist');
       });
-    });
-    refreshWatchControls(root);
-    requestAnimationFrame(() => {
-      root.querySelectorAll('.bar-seg').forEach((el) => { el.style.width = el.dataset.pct + '%'; });
-    });
-  }
 
-  function renderResults(results, sorted) {
-    const wrap = $('results');
+      $('wl-refresh').addEventListener('click', () => {
+        loadWatchlist().then(renderWatchlist);
+      });
 
-    // Re-rendering (a currency flip, say) rebuilds every row, which would
-    // otherwise snap shut whatever the user had open. Remember and restore.
-    const openIds = new Set(
-      [...wrap.querySelectorAll('.row-head[aria-expanded="true"]')]
-        .map((b) => b.getAttribute('aria-controls')),
-    );
+      // ------------------------------------------------ rendering
 
-    const list = sorted
-      ? [...results].sort((a, b) => {
-          if (!a.cost && !b.cost) return 0;
-          if (!a.cost) return 1;
-          if (!b.cost) return -1;
-          return a.cost.totalUsd - b.cost.totalUsd;
-        })
-      : results;
-
-    wrap.innerHTML = list.map(rowHtml).join('');
-
-    openIds.forEach((id) => {
-      const panel = document.getElementById(id);
-      const btn = wrap.querySelector('[aria-controls="' + id + '"]');
-      if (!panel || !btn) return;
-      panel.hidden = false;
-      btn.setAttribute('aria-expanded', 'true');
-      const caret = btn.querySelector('.row-caret');
-      if (caret) caret.textContent = '–';
-    });
-
-    wireRows(wrap);
-  }
-
-  // ------------------------------------------------ run
-
-  /** Waits for in-flight threshold saves so a sweep never reads a stale value. */
-  async function settleThresholds(timeoutMs = 3000) {
-    const started = Date.now();
-    while (state.pendingThresholds.size > 0 && Date.now() - started < timeoutMs) {
-      await new Promise((r) => setTimeout(r, 50));
-    }
-  }
-
-  async function run(mode) {
-    if (state.running) return;
-    if (mode === 'watchlist') await settleThresholds();
-
-    let params;
-    if (mode === 'search') {
-      const queries = queryRows().map((i) => i.value.trim()).filter(Boolean).slice(0, MAX);
-      if (!queries.length) return;
-      params = new URLSearchParams({ mode: 'search' });
-      queries.forEach((q) => params.append('q', q));
-    } else if (mode === 'watchlist') {
-      params = new URLSearchParams({ mode: 'watchlist' });
-    } else {
-      params = new URLSearchParams({ mode: 'demo' });
-    }
-
-    state.running = true;
-    state.live = [];
-    $('go').disabled = true;
-    $('godemo').disabled = true;
-    $('gowatch').disabled = true;
-    $('idle').hidden = true;
-    $('error').hidden = true;
-    $('summary').hidden = true;
-    $('results').innerHTML = '';
-    $('loading').hidden = false;
-    $('loading-label').textContent =
-      mode === 'demo' ? 'Checking the demo list…'
-      : mode === 'watchlist' ? 'Checking your watchlist…'
-      : 'Checking Discogs…';
-    $('progress').textContent = '';
-
-    const es = new EventSource('/api/stream?' + params.toString());
-
-    es.addEventListener('progress', (e) => {
-      const p = JSON.parse(e.data);
-      $('progress').innerHTML = '<b>' + p.index + ' of ' + p.total + '</b> — ' + esc(p.label);
-    });
-
-    es.addEventListener('result', (e) => {
-      state.live.push(JSON.parse(e.data));
-      // Show arrivals immediately, unsorted, so the demo feels live.
-      state.data = state.data || { fx: { ratesToMxn: { USD: 1 } } };
-      renderResults(state.live, false);
-    });
-
-    es.addEventListener('done', (e) => {
-      state.data = JSON.parse(e.data);
-      renderResults(state.data.results, true);
-      renderSummary(state.data);
-      finish(es);
-    });
-
-    es.addEventListener('failed', (e) => {
-      const d = JSON.parse(e.data);
-      $('error').hidden = false;
-      $('error').textContent = 'Check failed — ' + d.error;
-      $('results').innerHTML = '';
-      finish(es);
-    });
-
-    es.onerror = () => {
-      if (state.running) {
-        $('error').hidden = false;
-        $('error').textContent = 'Lost connection to the server. Is it still running?';
+      /** The legend only means something once there is a bar to read it against,
+       *  so it appears with the first priced result and carries the provenance
+       *  of the run that produced them. */
+      function renderSummary(data) {
+        if (!data.totals || data.totals.totalUsd <= 0) { $('legend').hidden = true; return; }
+        $('legend-src').textContent =
+          'Rates ' + data.fx.date + ' · ruleset ' + data.customsRuleVersion;
+        $('legend').hidden = false;
       }
-      finish(es);
-    };
-  }
 
-  function finish(es) {
-    es.close();
-    state.running = false;
-    $('loading').hidden = true;
-    $('godemo').disabled = false;
-    $('gowatch').disabled = false;
-    updateCount();
-  }
+      function detailHtml(r, id) {
+        const labels = (r.labels || []).map((l) => esc(l.name) + (l.catno ? ' — ' + esc(l.catno) : '')).join('<br>');
+        const tags = [...(r.genres || []), ...(r.styles || [])].map(esc).join(' · ');
 
-  $('go').addEventListener('click', () => run('search'));
-  $('godemo').addEventListener('click', () => run('demo'));
-  $('gowatch').addEventListener('click', () => run('watchlist'));
+        const facts =
+          '<dl class="facts">' +
+          (r.artist ? '<dt>Artist</dt><dd>' + esc(r.artist) + '</dd>' : '') +
+          (r.title ? '<dt>Title</dt><dd>' + esc(r.title) + '</dd>' : '') +
+          (r.labels && r.labels.length ? '<dt>Label</dt><dd>' + labels + '</dd>' : '') +
+          (r.format ? '<dt>Format</dt><dd>' + esc(r.format) + '</dd>' : '') +
+          (r.year ? '<dt>Year</dt><dd>' + esc(r.year) + '</dd>' : '') +
+          (r.originLabel ? '<dt>Pressed</dt><dd>' + esc(r.originLabel) +
+            (r.originApproximate ? ' <span class="tag-approx">(approx.)</span>' : '') + '</dd>' : '') +
+          (tags ? '<dt>Style</dt><dd>' + tags + '</dd>' : '') +
+          '<dt>For sale</dt><dd>' + r.numForSale + ' cop' + (r.numForSale === 1 ? 'y' : 'ies') + ' on Discogs</dd>' +
+          '</dl>';
 
-  // Restore a previous run if the server still has one cached.
-  loadWatchlist().then(() =>
-    fetch('/api/results').then((r) => r.json()).then((data) => {
-      if (data && data.results && data.results.length) {
-        state.data = data;
+        const why = r.note
+          ? '<p class="why"><strong>Why this record is in the demo</strong>' + esc(r.note) + '</p>'
+          : '<p class="why"><strong>You searched for</strong>' + esc(r.requested) + '</p>';
+
+        let costs = '';
+        if (r.cost) {
+          const total = r.cost.totalUsd;
+          costs =
+            '<table class="costs"><thead><tr>' +
+            '<th>Component</th><th>Share</th><th>' + (state.currency === 'USD' ? 'USD' : 'MXN') + '</th>' +
+            '</tr></thead><tbody>' +
+            SEGMENTS.map((s) => {
+              const v = r.cost[s.key];
+              return '<tr><td><span class="swatch" style="background:' + s.color + '"></span>' + s.label + '</td>' +
+                '<td class="muted">' + (v / total * 100).toFixed(1) + '%</td>' +
+                '<td>' + esc(moneyBare(v)) + '</td></tr>';
+            }).join('') +
+            '<tr class="total"><td>Landed total</td><td></td><td>' + esc(money(total)) + '</td></tr>' +
+            '</tbody></table>' +
+            (r.shippingNote ? '<p class="shipnote">Shipping: ' + esc(r.shippingNote) + '</p>' : '');
+        }
+
+        const links = r.buyUrl
+          ? '<div class="detail-links">' +
+          '<a class="lnk lnk-primary" href="' + esc(r.buyUrl) + '" target="_blank" rel="noopener noreferrer">Buy on Discogs</a>' +
+          '<a class="lnk" href="' + esc(r.releaseUrl) + '" target="_blank" rel="noopener noreferrer">Release details</a>' +
+          '</div>'
+          : '';
+
+        return '<div class="detail" id="' + id + '" hidden>' +
+          facts + why + costs + links + '</div>';
+      }
+
+      // ------------------------------------------------ row meta tags
+
+      /** ISO 3166 alpha-2 to its flag, by offsetting each letter into the
+       *  regional-indicator block. Anything that isn't two letters has no flag. */
+      function flag(iso) {
+        if (typeof iso !== 'string' || !/^[A-Za-z]{2}$/.test(iso)) return '';
+        return String.fromCodePoint(...[...iso.toUpperCase()].map((c) => 0x1f1a5 + c.charCodeAt(0)));
+      }
+
+      /** Country names for the isos the origin resolver can return. */
+      const COUNTRY = {
+        US: 'USA', MX: 'Mexico', CA: 'Canada', DE: 'Germany', GB: 'UK', UK: 'UK',
+        FR: 'France', NL: 'Netherlands', IT: 'Italy', ES: 'Spain', SE: 'Sweden',
+        BE: 'Belgium', AT: 'Austria', CH: 'Switzerland', PL: 'Poland', PT: 'Portugal',
+        JP: 'Japan', KR: 'South Korea', AU: 'Australia', NZ: 'New Zealand',
+        BR: 'Brazil', AR: 'Argentina', CL: 'Chile', CO: 'Colombia', RU: 'Russia',
+      };
+
+      function originTag(r) {
+        const iso = r.originIso || '';
+        const name = COUNTRY[iso.toUpperCase()] || iso;
+        const mark = flag(iso);
+        // The pressing country stands in for the shipping origin, so say so
+        // rather than implying we know where the seller is.
+        return '<span title="Pressed in ' + esc(r.originLabel || name) + '">' +
+          (mark ? mark + ' ' : '') + esc(name) +
+          (r.originApproximate ? ' <span class="tag-approx">approx.</span>' : '') + '</span>';
+      }
+
+      /** Year and format identify which pressing this is — the thing you're
+       *  actually choosing between when several copies exist. */
+      function pressingTag(r) {
+        const parts = [r.year, r.format].filter(Boolean).map(esc);
+        return parts.length ? '<span>' + parts.join(' · ') + '</span>' : '';
+      }
+
+      /** Stock is a scarcity signal, so a thin market gets called out. */
+      function stockTag(r) {
+        const n = r.numForSale;
+        if (n === 1) return '<span class="tag-scarce">🔎 Only 1 copy</span>';
+        if (n <= 3) return '<span class="tag-scarce">🔎 Only ' + n + ' copies</span>';
+        return '<span>' + n + ' for sale</span>';
+      }
+
+      /** The rule slug ("usmca_de_minimis") means nothing to a buyer; what they
+       *  need is whether import cost lands on this record or not. */
+      function customsTag(r) {
+        const rule = r.customsRuleApplied;
+        if (rule === 'domestic') return '<span class="tag-domestic">✅ In Mexico — no import cost</span>';
+        if (rule === 'usmca_de_minimis') return '<span class="tag-domestic">✅ Duty-free under USMCA</span>';
+        if (rule === 'tasa_global') return '<span class="tag-taxed">🧾 Duty + IVA added</span>';
+        return rule ? '<span>' + esc(String(rule).replace(/_/g, ' ')) + '</span>' : '';
+      }
+
+      // ------------------------------------------------ bar tooltip
+
+      /**
+       * Hovering a cost bar names the segment under the pointer and gives its
+       * share and amount — the same numbers the expanded table lists, without
+       * making you expand the row to compare two records.
+       *
+       * One node, delegated from the results container: rows are re-rendered
+       * wholesale on every currency flip and re-sort, so per-segment listeners
+       * would be rebound constantly and a per-row tip would leak on re-render.
+       */
+      const bartip = document.createElement('div');
+      bartip.className = 'bartip';
+      bartip.setAttribute('role', 'tooltip');
+      document.body.appendChild(bartip);
+
+      function hideTip() { bartip.classList.remove('is-on'); }
+
+      function placeTip(e) {
+        const pad = 10;
+        const w = bartip.offsetWidth;
+        const h = bartip.offsetHeight;
+        // Above the pointer by default; below it when there is no room up top.
+        let top = e.clientY - h - 12;
+        if (top < pad) top = e.clientY + 18;
+        // Clamped so a segment near either edge doesn't push the tip offscreen.
+        const left = Math.min(Math.max(e.clientX - w / 2, pad), window.innerWidth - w - pad);
+        bartip.style.left = left + 'px';
+        bartip.style.top = top + 'px';
+      }
+
+      function showTip(seg, e) {
+        const usd = Number(seg.dataset.usd);
+        const pct = Number(seg.dataset.pct);
+        bartip.innerHTML =
+          '<i style="background:' + getComputedStyle(seg).backgroundColor + '"></i>' +
+          '<span>' + esc(seg.dataset.label) + '</span>' +
+          '<span class="pct">' + pct.toFixed(1) + '%</span>' +
+          '<span>' + esc(money(usd)) + '</span>';
+        bartip.classList.add('is-on');
+        placeTip(e);
+      }
+
+      $('results').addEventListener('pointerover', (e) => {
+        // Touch fires a synthetic hover on tap; the row toggle owns that gesture.
+        if (e.pointerType === 'touch') return;
+        const seg = e.target.closest('.bar-seg');
+        if (seg) showTip(seg, e);
+      });
+
+      $('results').addEventListener('pointermove', (e) => {
+        if (!bartip.classList.contains('is-on')) return;
+        const seg = e.target.closest('.bar-seg');
+        if (seg) placeTip(e); else hideTip();
+      });
+
+      $('results').addEventListener('pointerout', (e) => {
+        if (!e.relatedTarget || !e.relatedTarget.closest('.bar-seg')) hideTip();
+      });
+
+      // A fixed-position tip would otherwise hang in place while the page moves.
+      window.addEventListener('scroll', hideTip, { passive: true });
+
+      /** Sleeve thumbnail for the row header; keeps its slot even with no image. */
+      function thumbHtml(r) {
+        return r.coverImage
+          ? '<img class="row-thumb" src="' + esc(r.coverImage) + '" alt="Sleeve for ' + esc(r.title || r.requested) + '" ' +
+          'onerror="this.outerHTML=\'<span class=&quot;row-thumb-none&quot;></span>\'">'
+          : '<span class="row-thumb-none"></span>';
+      }
+
+      function rowHtml(r, i) {
+        // Keyed by release, not position — the list re-sorts between the streaming
+        // pass and the final one, so an index-based id would reopen the wrong row.
+        const id = 'detail-' + (r.discogsId ? 'd' + r.discogsId : 'q' + i);
+        const rank = String(i + 1).padStart(2, '0');
+
+        if (!r.matched) {
+          return '<article class="row is-miss">' +
+            '<span class="row-rank">' + rank + '</span>' +
+            thumbHtml(r) +
+            '<div class="row-main">' +
+            '<button class="row-head" disabled>' +
+            '<span class="row-title">' + esc(r.requested) +
+            '<span class="row-artist">' + esc(r.unmatchedReason || 'No match') + '</span></span>' +
+            '<span class="row-total is-none">No match</span><span class="row-caret"></span>' +
+            '</button>' +
+            '</div></article>';
+        }
+
+        if (!r.cost) {
+          return '<article class="row is-miss">' +
+            '<span class="row-rank">' + rank + '</span>' +
+            thumbHtml(r) +
+            '<div class="row-main">' +
+            '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
+            '<span class="row-title">' + esc(r.title) +
+            '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
+            '<span class="row-total is-none">None listed</span><span class="row-caret">+</span>' +
+            '</button>' +
+            '</div>' + detailHtml(r, id) + '</article>';
+        }
+
+        const total = r.cost.totalUsd;
+        const meta = [
+          originTag(r),
+          pressingTag(r),
+          stockTag(r),
+          customsTag(r),
+          r.requiresFormalEntry ? '<span class="tag-formal">⚠ Broker entry needed</span>' : '',
+        ].filter(Boolean);
+
+        return '<article class="row">' +
+          '<span class="row-rank">' + rank + '</span>' +
+          thumbHtml(r) +
+          '<div class="row-main">' +
+          '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
+          '<span class="row-title">' + esc(r.title) +
+          '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
+          '<span class="row-total">' + esc(money(total)) + '</span>' +
+          '<span class="row-caret">+</span>' +
+          '</button>' +
+          '<div class="bar">' +
+          SEGMENTS.map((s) => '<span class="bar-seg ' + s.cls + '" data-pct="' + (r.cost[s.key] / total * 100) +
+            '" data-label="' + s.label + '" data-usd="' + r.cost[s.key] + '"></span>').join('') +
+          '</div>' +
+          '<div class="row-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
+          '<div class="threshold"' + (state.watched.has(r.discogsId) ? '' : ' hidden') + '>' +
+          '<label for="th-' + id + '">Alert under</label>' +
+          '<input id="th-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
+          'placeholder="MXN" data-release="' + r.discogsId + '" ' +
+          'value="' + (state.thresholds.get(r.discogsId) ?? '') + '">' +
+          '<span class="saved" data-saved="' + r.discogsId + '"></span>' +
+          '<button class="alert-toggle" type="button" data-alert-release="' + r.discogsId + '" ' +
+          'aria-pressed="' + (state.alerts.get(r.discogsId) ? 'true' : 'false') + '" ' +
+          'title="Text the buying desk when this record crosses its limit">' +
+          (state.alerts.get(r.discogsId) ? '&#9679; SMS on' : 'SMS off') + '</button>' +
+          '</div>' +
+          '</div>' +
+          (r.discogsId
+            ? '<button class="watch-btn" type="button" data-release="' + r.discogsId + '" ' +
+            'aria-pressed="' + (state.watched.has(r.discogsId) ? 'true' : 'false') + '">' +
+            (state.watched.has(r.discogsId) ? 'Watching' : 'Watch') + '</button>'
+            : '') +
+          detailHtml(r, id) + '</article>';
+      }
+
+      function wireRows(root) {
+        root.querySelectorAll('.row-head:not([disabled])').forEach((btn) => {
+          btn.addEventListener('click', () => {
+            const panel = document.getElementById(btn.getAttribute('aria-controls'));
+            if (!panel) return;
+            const open = btn.getAttribute('aria-expanded') === 'true';
+            btn.setAttribute('aria-expanded', String(!open));
+            panel.hidden = open;
+            const caret = btn.querySelector('.row-caret');
+            if (caret) caret.textContent = open ? '+' : '–';
+          });
+        });
+        root.querySelectorAll('.watch-btn').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            toggleWatch(btn, Number(btn.dataset.release));
+          });
+        });
+        root.querySelectorAll('.alert-toggle[data-alert-release]').forEach((btn) => {
+          btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const watchId = state.watched.get(Number(btn.dataset.alertRelease));
+            if (watchId) toggleAlertSms(btn, watchId);
+          });
+        });
+        root.querySelectorAll('.threshold input').forEach((input) => {
+          input.addEventListener('click', (e) => e.stopPropagation());
+          input.addEventListener('change', async () => {
+            const releaseId = Number(input.dataset.release);
+            const watchId = state.watched.get(releaseId);
+            const flag = root.querySelector('[data-saved="' + releaseId + '"]');
+            if (!watchId) return;
+            const raw = input.value.trim();
+            const value = raw === '' ? null : Number(raw);
+            if (value !== null && (!Number.isFinite(value) || value < 0)) {
+              if (flag) { flag.classList.add('is-error'); flag.textContent = 'Invalid'; }
+              return;
+            }
+            state.pendingThresholds.add(watchId);
+            try {
+              const res = await fetch('/api/watchlist', {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ id: watchId, maxLandedMxn: value }),
+              });
+              if (!res.ok) throw new Error('save failed');
+              if (value === null) state.thresholds.delete(releaseId);
+              else state.thresholds.set(releaseId, value);
+              if (flag) {
+                flag.classList.remove('is-error');
+                flag.textContent = 'Saved';
+                setTimeout(() => { flag.textContent = ''; }, 1500);
+              }
+            } catch {
+              if (flag) { flag.classList.add('is-error'); flag.textContent = 'Failed'; }
+            } finally {
+              state.pendingThresholds.delete(watchId);
+            }
+          });
+        });
+        refreshWatchControls(root);
+        requestAnimationFrame(() => {
+          root.querySelectorAll('.bar-seg').forEach((el) => { el.style.width = el.dataset.pct + '%'; });
+        });
+      }
+
+      function renderResults(results, sorted) {
+        const wrap = $('results');
+
+        // Re-rendering (a currency flip, say) rebuilds every row, which would
+        // otherwise snap shut whatever the user had open. Remember and restore.
+        const openIds = new Set(
+          [...wrap.querySelectorAll('.row-head[aria-expanded="true"]')]
+            .map((b) => b.getAttribute('aria-controls')),
+        );
+
+        const list = sorted
+          ? [...results].sort((a, b) => {
+            if (!a.cost && !b.cost) return 0;
+            if (!a.cost) return 1;
+            if (!b.cost) return -1;
+            return a.cost.totalUsd - b.cost.totalUsd;
+          })
+          : results;
+
+        wrap.innerHTML = list.map(rowHtml).join('');
+
+        openIds.forEach((id) => {
+          const panel = document.getElementById(id);
+          const btn = wrap.querySelector('[aria-controls="' + id + '"]');
+          if (!panel || !btn) return;
+          panel.hidden = false;
+          btn.setAttribute('aria-expanded', 'true');
+          const caret = btn.querySelector('.row-caret');
+          if (caret) caret.textContent = '–';
+        });
+
+        wireRows(wrap);
+      }
+
+      // ------------------------------------------------ run
+
+      /** Waits for in-flight threshold saves so a sweep never reads a stale value. */
+      async function settleThresholds(timeoutMs = 3000) {
+        const started = Date.now();
+        while (state.pendingThresholds.size > 0 && Date.now() - started < timeoutMs) {
+          await new Promise((r) => setTimeout(r, 50));
+        }
+      }
+
+      async function run(mode) {
+        if (state.running) return;
+        if (mode === 'watchlist') await settleThresholds();
+
+        let params;
+        if (mode === 'search') {
+          const queries = deskRows.values();
+          if (!queries.length) return;
+          params = new URLSearchParams({ mode: 'search' });
+          queries.forEach((q) => params.append('q', q));
+        } else if (mode === 'watchlist') {
+          params = new URLSearchParams({ mode: 'watchlist' });
+        } else {
+          params = new URLSearchParams({ mode: 'demo' });
+        }
+
+        state.running = true;
+        state.live = [];
+        $('go').disabled = true;
+        $('godemo').disabled = true;
+        $('gowatch').disabled = true;
+        $('wl-run').disabled = true;
         $('idle').hidden = true;
-        renderResults(data.results, true);
-        renderSummary(data);
+        $('error').hidden = true;
+        $('legend').hidden = true;
+        $('results').innerHTML = '';
+        $('loading').hidden = false;
+        $('loading-label').textContent =
+          mode === 'demo' ? 'Checking the demo list…'
+            : mode === 'watchlist' ? 'Checking your watchlist…'
+              : 'Checking Discogs…';
+        $('progress').textContent = '';
+
+        const es = new EventSource('/api/stream?' + params.toString());
+
+        es.addEventListener('progress', (e) => {
+          const p = JSON.parse(e.data);
+          $('progress').innerHTML = '<b>' + p.index + ' of ' + p.total + '</b> — ' + esc(p.label);
+        });
+
+        es.addEventListener('result', (e) => {
+          const result = JSON.parse(e.data);
+          if (result.alert) showToast(result.alert);
+          state.live.push(result);
+          // Show arrivals immediately, unsorted, so the demo feels live.
+          state.data = state.data || { fx: { ratesToMxn: { USD: 1 } } };
+          renderResults(state.live, false);
+        });
+
+        es.addEventListener('done', (e) => {
+          state.data = JSON.parse(e.data);
+          renderResults(state.data.results, true);
+          renderSummary(state.data);
+          finish(es);
+          // A sweep writes best price, status and last-checked back to the sheet.
+          if (mode === 'watchlist') loadWatchlist().then(renderWatchlist);
+        });
+
+        es.addEventListener('failed', (e) => {
+          const d = JSON.parse(e.data);
+          $('error').hidden = false;
+          $('error').textContent = 'Check failed — ' + d.error;
+          $('results').innerHTML = '';
+          finish(es);
+        });
+
+        es.onerror = () => {
+          if (state.running) {
+            $('error').hidden = false;
+            $('error').textContent = 'Lost connection to the server. Is it still running?';
+          }
+          finish(es);
+        };
       }
-    }).catch(() => {}),
-  );
 
-  updateCount();
+      function finish(es) {
+        es.close();
+        state.running = false;
+        $('loading').hidden = true;
+        $('godemo').disabled = false;
+        $('gowatch').disabled = false;
+        renderWatchlist();
+        deskRows.refresh();
+      }
 
-  // Inspection hook — lets you render a payload by hand from the console if a
-  // demo ever needs debugging without spending Discogs rate limit.
-  window.__desk = {
-    show(payload) {
-      state.data = payload;
-      $('idle').hidden = true;
-      $('loading').hidden = true;
-      $('error').hidden = true;
-      renderResults(payload.results, true);
-      renderSummary(payload);
-    },
-  };
-})();
-</script>
+      $('godemo').addEventListener('click', () => run('demo'));
+      $('gowatch').addEventListener('click', () => run('watchlist'));
+
+      // Restore a previous run if the server still has one cached.
+      loadWatchlist().then(() => {
+        renderWatchlist();
+        return fetch('/api/results').then((r) => r.json()).then((data) => {
+          if (data && data.results && data.results.length) {
+            state.data = data;
+            $('idle').hidden = true;
+            renderResults(data.results, true);
+            renderSummary(data);
+          }
+        }).catch(() => { });
+      });
+
+      deskRows.refresh();
+
+      // Inspection hook — lets you render a payload by hand from the console if a
+      // demo ever needs debugging without spending Discogs rate limit.
+      window.__desk = {
+        show(payload) {
+          state.data = payload;
+          $('idle').hidden = true;
+          $('loading').hidden = true;
+          $('error').hidden = true;
+          renderResults(payload.results, true);
+          renderSummary(payload);
+        },
+      };
+    })();
+  </script>
+  <div class="toast-stack" id="toasts" role="status" aria-live="polite"></div>
 </body>
+
 </html>

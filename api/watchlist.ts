@@ -6,11 +6,12 @@ import {
   newWatchId,
   type WatchItem,
 } from "../src/watchlist.js";
-import { getRelease, getMasterVersions } from "../src/discogs.js";
+import { getRelease, getMasterVersions, searchRelease } from "../src/discogs.js";
 import { planPressings, AUTO_WATCH_LIMIT } from "../src/pressings.js";
 
 const MAX_WATCHED_RELEASE_IDS = 200;
 const MAX_MIN_CONDITION_LENGTH = 32;
+const MAX_QUERY_LENGTH = 200;
 
 function json(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
@@ -52,15 +53,49 @@ function publicErrorMessage(err: unknown): string {
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   try {
     if (req.method === "GET") {
-      json(res, 200, { items: await listWatchItems() });
+      // The sheet id rides along so the page can link straight to it. It is not
+      // a credential — the sheet is only readable by whoever Google has already
+      // granted access to — but it does name the document, so it goes out only
+      // on this authenticated-by-obscurity POC surface.
+      const sheetId = process.env.WATCHLIST_SHEET_ID;
+      json(res, 200, {
+        items: await listWatchItems(),
+        sheetUrl: sheetId ? `https://docs.google.com/spreadsheets/d/${sheetId}/edit` : null,
+      });
       return;
     }
 
     if (req.method === "POST") {
       const body = await readBody(req);
-      const releaseId = Number(body.releaseId);
-      if (!Number.isFinite(releaseId) || releaseId <= 0) {
-        json(res, 400, { error: "releaseId is required" });
+
+      // Two ways in: the desk knows the release it priced, the watchlist page
+      // only has what the user typed. Free text is resolved the same way a
+      // search run resolves it, so both paths agree on what "best match" means.
+      let releaseId: number;
+      if (typeof body.query === "string" && body.query.trim() !== "") {
+        const query = body.query.trim().slice(0, MAX_QUERY_LENGTH);
+        const hit = await searchRelease(query);
+        if (!hit) {
+          json(res, 404, { error: `No vinyl release found on Discogs for "${query}"` });
+          return;
+        }
+        releaseId = hit.id;
+      } else {
+        releaseId = Number(body.releaseId);
+        if (!Number.isFinite(releaseId) || releaseId <= 0) {
+          json(res, 400, { error: "releaseId or query is required" });
+          return;
+        }
+      }
+
+      // Typing the same record twice is easy — and a second row for it would
+      // double every sweep's work while splitting its threshold in two. Report
+      // the existing item instead of appending a duplicate.
+      const existingWatch = (await listWatchItems()).find(
+        (w) => w.active && w.watchedReleaseIds.includes(releaseId),
+      );
+      if (existingWatch) {
+        json(res, 200, { item: existingWatch, duplicate: true });
         return;
       }
 
@@ -100,6 +135,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         bestReleaseId: null,
         status: "watching",
         notes: "",
+        alertSms: false,
       };
 
       await addWatchItem(item);
@@ -140,6 +176,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
       const updated: WatchItem = {
         ...existing,
         active: typeof body.active === "boolean" ? body.active : existing.active,
+        alertSms: typeof body.alertSms === "boolean" ? body.alertSms : existing.alertSms,
         maxLandedMxn,
         watchedReleaseIds,
       };
