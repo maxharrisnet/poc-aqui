@@ -15,8 +15,39 @@ export function base64url(input: string | Buffer): string {
  * Vercel stores multi-line env vars with escaped newlines. Signing fails with
  * an opaque error unless they are restored first — see spec v0.2 §7.
  */
+/**
+ * Coaxes a service-account PEM into the shape `createSign` will accept.
+ *
+ * Every mangling handled here has actually happened to this project on a
+ * deploy. The value must survive a .env file, a shell, a dashboard paste box
+ * and a CLI prompt, and each of those damages it differently:
+ *
+ *   - Surrounding quotes. `.env` files need them; Vercel's dashboard does not,
+ *     and pasting the quoted form stores the quotes as part of the key. This
+ *     is the one that cost an evening — the failure surfaces as an opaque
+ *     DECODER error with nothing pointing at punctuation.
+ *   - Escaped newlines, singly or doubly. `\n` is the normal single-line form;
+ *     `\\n` appears when the value passes through JSON encoding twice.
+ *   - Carriage returns, from a Windows clipboard.
+ *
+ * Deliberately not handled: a truncated key. Interactive `vercel env add`
+ * reads one line from a prompt, so pasting a real multi-line PEM silently
+ * keeps only the first line. Nothing can reconstruct the rest — see the
+ * README for the piped form that avoids it.
+ */
 export function normalisePrivateKey(key: string): string {
-  return key.replace(/\\n/g, "\n");
+  let out = key.trim();
+
+  // Strip one matching pair of wrapping quotes, not quotes inside the body.
+  if (out.length >= 2 && (out[0] === '"' || out[0] === "'") && out.at(-1) === out[0]) {
+    out = out.slice(1, -1);
+  }
+
+  return out
+    .replace(/\\\\n/g, "\n")
+    .replace(/\\n/g, "\n")
+    .replace(/\r/g, "")
+    .trim();
 }
 
 export function buildJwt(email: string, privateKey: string, nowSeconds: number): string {

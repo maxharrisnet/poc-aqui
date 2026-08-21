@@ -19,6 +19,35 @@ test("normalisePrivateKey restores escaped newlines", () => {
   assert.equal(normalisePrivateKey("a\nb"), "a\nb");
 });
 
+test("normalisePrivateKey survives the ways a deploy mangles a PEM", () => {
+  // Quoting is required in a .env file and fatal in Vercel's dashboard. The
+  // resulting DECODER error names nothing useful, so this is worth a test.
+  assert.equal(normalisePrivateKey('"a\\nb"'), "a\nb");
+  assert.equal(normalisePrivateKey("'a\\nb'"), "a\nb");
+  // Two passes of JSON encoding double the escape.
+  assert.equal(normalisePrivateKey("a\\\\nb"), "a\nb");
+  // Windows clipboards add carriage returns.
+  assert.equal(normalisePrivateKey("a\r\nb"), "a\nb");
+  assert.equal(normalisePrivateKey("  a\\nb  "), "a\nb");
+  // A quote inside the body is not a wrapper and must survive.
+  assert.equal(normalisePrivateKey('a"b'), 'a"b');
+});
+
+test("a real PEM round-trips through every mangling and still signs", () => {
+  const { privateKey } = generateKeyPairSync("rsa", {
+    modulusLength: 2048,
+    privateKeyEncoding: { type: "pkcs8", format: "pem" },
+    publicKeyEncoding: { type: "spki", format: "pem" },
+  });
+  const escaped = privateKey.replace(/\n/g, "\\n");
+  for (const variant of [privateKey, escaped, `"${escaped}"`, `  ${escaped}  `]) {
+    assert.doesNotThrow(
+      () => buildJwt("svc@proj.iam.gserviceaccount.com", variant, 1_700_000_000),
+      `failed for variant starting ${JSON.stringify(variant.slice(0, 12))}`,
+    );
+  }
+});
+
 test("buildJwt produces three signed segments with the right claims", () => {
   const { privateKey, publicKey } = generateKeyPairSync("rsa", {
     modulusLength: 2048,
