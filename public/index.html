@@ -915,6 +915,204 @@
       to { opacity: 1; transform: none; }
     }
 
+    /* ------------------------------------------------ coverage matrix */
+
+    .cov-wrap {
+      margin-top: 22px;
+      overflow-x: auto;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 3px;
+      background: var(--paper);
+      padding: 10px 8px;
+    }
+
+    .cov {
+      display: block;
+      min-width: 1000px;
+      width: 100%;
+      height: auto;
+      color: var(--ink);
+    }
+
+    .cov .cv-col {
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing: 0.06em;
+      fill: var(--carbon);
+    }
+
+    .cov .cv-group {
+      font-family: var(--mono);
+      font-size: 11.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      fill: var(--carbon);
+    }
+
+    .cov .cv-row {
+      font-family: var(--mono);
+      font-size: 15px;
+      font-weight: 700;
+      fill: var(--ink);
+    }
+
+    .cov .cv-rule {
+      stroke: var(--kraft-deep);
+      stroke-width: 1.2;
+    }
+
+    .cov .cv-cell {
+      stroke: var(--ink);
+      stroke-width: 1.4;
+    }
+
+    /* Three states, distinguishable without colour: solid, half, hatched. */
+    .cov .is-full { fill: var(--ink); }
+    .cov .is-part { fill: var(--kraft); }
+    .cov .cv-half { fill: var(--ink); }
+    .cov .is-none { fill: url(#hatch); opacity: 0.75; }
+
+    .cov-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      margin-top: 14px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .cov-key span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .cov-key i {
+      width: 26px;
+      height: 16px;
+      border: 1.4px solid var(--ink);
+      border-radius: 2px;
+    }
+
+    .cov-key i.k-full { background: var(--ink); }
+    .cov-key i.k-part {
+      background: linear-gradient(to right, var(--ink) 0 50%, var(--kraft) 50% 100%);
+    }
+    .cov-key i.k-none {
+      background: repeating-linear-gradient(45deg, var(--wash) 0 3px, transparent 3px 6px);
+    }
+
+    /* Source cards. Committed ones get a solid rule, optional ones dashed —
+       same vocabulary as the flow diagram above. */
+    .src-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 20px;
+    }
+
+    @media (max-width: 820px) {
+      .src-grid { grid-template-columns: 1fr; }
+    }
+
+    .src {
+      border: 1.5px solid var(--ink);
+      border-left-width: 5px;
+      border-radius: 3px;
+      padding: 15px 17px;
+      background: var(--paper);
+    }
+
+    .src.is-opt {
+      border-style: dashed;
+      border-left-style: solid;
+      border-left-color: var(--carbon);
+    }
+
+    .src h4 {
+      font-family: var(--mono);
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      margin: 0 0 3px;
+    }
+
+    .src .src-role {
+      font-family: var(--mono);
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      display: block;
+      margin-bottom: 9px;
+    }
+
+    .src p {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      color: var(--carbon);
+    }
+
+    .src p:last-child { margin-bottom: 0; }
+
+    .src strong { color: var(--ink); font-weight: 600; }
+
+    .gap-note {
+      margin-top: 20px;
+      padding: 15px 17px;
+      border: 1.5px dashed var(--ink);
+      border-radius: 3px;
+    }
+
+    .gap-note h4 {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin: 0 0 9px;
+    }
+
+    .gap-note ul { margin: 0; padding-left: 18px; }
+    .gap-note li { font-size: 0.95rem; color: var(--carbon); margin-bottom: 6px; }
+    .gap-note li:last-child { margin-bottom: 0; }
+    .gap-note strong { color: var(--ink); font-weight: 600; }
+
+    /* Citation links. Every factual claim about what an API does or won't do
+       carries one — the client should be able to check us without asking. */
+    .cite {
+      color: inherit;
+      text-decoration: underline;
+      text-decoration-color: var(--kraft-deep);
+      text-underline-offset: 2px;
+    }
+
+    .cite:hover,
+    .cite:focus-visible {
+      text-decoration-color: var(--ink);
+    }
+
+    .cite::after {
+      content: "\2197";
+      font-size: 0.78em;
+      margin-left: 2px;
+      vertical-align: 0.15em;
+      color: var(--carbon);
+    }
+
+    .cite-note {
+      margin-top: 16px;
+      font-size: 0.9rem;
+      color: var(--carbon);
+      max-width: 70ch;
+    }
+
+    .src p .cite {
+      text-decoration-color: var(--kraft-deep);
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .toast { animation: none; }
     }
@@ -1040,6 +1238,33 @@
 
     /* One shared node, moved to whichever segment is under the pointer — the
        bar itself clips its children, so the tip cannot live inside it. */
+    .flowtip {
+      position: fixed;
+      z-index: 20;
+      display: none;
+      max-width: 340px;
+      padding: 11px 13px;
+      background: var(--ink);
+      color: var(--kraft);
+      border-radius: 3px;
+      font-size: 0.86rem;
+      line-height: 1.45;
+      pointer-events: none;
+    }
+
+    .flowtip.is-on {
+      display: block;
+    }
+
+    .flowtip b {
+      display: block;
+      margin-bottom: 5px;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+    }
+
     .bartip {
       position: fixed;
       z-index: 20;
@@ -1683,6 +1908,12 @@
       border-style: dashed;
     }
 
+    /* Solid like "built", but filled — this step exists and works, and is the
+       one box that is never going to be replaced by code. */
+    .key-swatch.is-human {
+      background: var(--wash);
+    }
+
     .key-swatch.is-unsure {
       border-style: dashed;
       background:
@@ -1704,9 +1935,25 @@
 
     .flow {
       display: block;
-      min-width: 900px;
+      min-width: 1020px;
       width: 100%;
       height: auto;
+    }
+
+    /* Every box is hoverable and tabbable — the tooltip is the only place the
+       reasoning behind a box lives, so it has to be reachable without a mouse. */
+    .flow .node {
+      cursor: help;
+      outline: none;
+    }
+
+    .flow .node:hover .n-box,
+    .flow .node:focus-visible .n-box {
+      stroke-width: 3;
+    }
+
+    .flow .node:focus-visible .n-box {
+      fill: var(--wash);
     }
 
     .flow .n-box {
@@ -1719,6 +1966,10 @@
       stroke-dasharray: 6 4;
     }
 
+    .flow .n-box.is-human {
+      fill: var(--wash);
+    }
+
     .flow .n-box.is-unsure {
       stroke-dasharray: 3 3;
       fill: var(--paper);
@@ -1726,7 +1977,7 @@
 
     .flow .n-title {
       font-family: var(--mono);
-      font-size: 13px;
+      font-size: 16px;
       font-weight: 700;
       letter-spacing: 0.04em;
       fill: var(--ink);
@@ -1734,13 +1985,13 @@
 
     .flow .n-sub {
       font-family: var(--sans);
-      font-size: 11.5px;
+      font-size: 14px;
       fill: var(--carbon);
     }
 
     .flow .n-band {
       font-family: var(--mono);
-      font-size: 10.5px;
+      font-size: 12.5px;
       letter-spacing: 0.16em;
       text-transform: uppercase;
       fill: var(--carbon);
@@ -2119,24 +2370,115 @@
 
       <section class="hiw-section">
         <h2 class="hiw-h2">The whole system 🗺️</h2>
-        <p class="hiw-lede">Four sources feed one matching problem, which feeds one cost engine, which writes to two sheets and comes out three ways. The demo you're looking at is the solid path through the middle.</p>
+        <p class="hiw-lede">It's a loop, not a line. What sells over the counter pulls stock down; low stock switches a record's watch back on; the watchlist drives four sources into one matching problem and one cost engine; and whatever a person decides to buy lands back on the shelf. Nothing in it spends money by itself. Hover or tab to any box for what it's really doing. 💡</p>
 
         <div class="status-key">
           <span><i class="key-swatch"></i> ✅ Built &amp; running</span>
           <span><i class="key-swatch is-pending"></i> 🔨 Known how, not built</span>
           <span><i class="key-swatch is-unsure"></i> ❓ Still unproven</span>
+          <span><i class="key-swatch is-human"></i> 🧍 Human step, on purpose</span>
         </div>
 
         <div class="flow-wrap">
-          <svg class="flow" viewBox="0 0 1040 800" role="img" aria-label="System flow from data sources through identity matching and the landed cost engine into the Google Sheets watchlist and inventory, and out to the buying desk, SMS alerts and the morning digest."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" opacity="0.55"/></marker></defs><text class="n-band" x="26" y="48">01 · Sources</text><line class="rail" x1="26" y1="56" x2="1014" y2="56"/><rect class="n-box" x="26" y="64" width="232" height="100" rx="3"/><text class="n-title" x="40" y="91">📀 Discogs API</text><text class="n-sub" x="40" y="111">Prices, stock, release metadata</text><text class="n-sub" x="247" y="90" text-anchor="end">✅</text><rect class="n-box is-pending" x="274" y="64" width="232" height="100" rx="3"/><text class="n-title" x="288" y="91">🛒 eBay Browse API</text><text class="n-sub" x="288" y="111">Real listings, seller origin,</text><text class="n-sub" x="288" y="127">quoted shipping to MX</text><text class="n-sub" x="495" y="90" text-anchor="end">🔨</text><rect class="n-box is-pending" x="522" y="64" width="232" height="100" rx="3"/><text class="n-title" x="536" y="91">📧 Bandcamp mail</text><text class="n-sub" x="536" y="111">New-release announcements.</text><text class="n-sub" x="536" y="127">No prices, ever</text><text class="n-sub" x="743" y="90" text-anchor="end">🔨</text><rect class="n-box is-pending" x="770" y="64" width="232" height="100" rx="3"/><text class="n-title" x="784" y="91">🎧 Spotify API</text><text class="n-sub" x="784" y="111">Canonical names, barcodes.</text><text class="n-sub" x="784" y="127">No vinyl, no merch</text><text class="n-sub" x="991" y="90" text-anchor="end">🔨</text><text class="n-band" x="26" y="212">02 · Identity</text><line class="rail" x1="26" y1="220" x2="1014" y2="220"/><rect class="n-box is-unsure" x="274" y="228" width="492" height="74" rx="3"/><text class="n-title" x="288" y="255">🔗 Matching &amp; identity resolution</text><text class="n-sub" x="288" y="275">One record across four sources. Barcodes help; free-text titles do not.</text><text class="n-sub" x="755" y="254" text-anchor="end">❓</text><text class="n-band" x="26" y="350">03 · Costing</text><line class="rail" x1="26" y1="358" x2="1014" y2="358"/><rect class="n-box" x="140" y="366" width="760" height="124" rx="3"/><text class="n-title" x="154" y="393">🧮 Landed cost engine</text><text class="n-sub" x="154" y="413">Price + shipping + duty + IVA, in pesos</text><text class="n-sub" x="889" y="392" text-anchor="end">✅</text><rect class="n-box" x="158" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="172" y="457">💱 FX · live ECB</text><rect class="n-box is-unsure" x="410" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="424" y="457">📦 Shipping · estimated</text><rect class="n-box is-unsure" x="662" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="676" y="457">🛃 Customs · not broker-checked</text><text class="n-band" x="26" y="516">04 · State</text><line class="rail" x1="26" y1="524" x2="1014" y2="524"/><rect class="n-box" x="140" y="532" width="360" height="88" rx="3"/><text class="n-title" x="154" y="559">📋 Watchlist · Google Sheets</text><text class="n-sub" x="154" y="579">One row per album wanted, with</text><text class="n-sub" x="154" y="595">a peso limit and an alert switch</text><text class="n-sub" x="489" y="558" text-anchor="end">✅</text><rect class="n-box is-pending" x="540" y="532" width="360" height="88" rx="3"/><text class="n-title" x="554" y="559">📦 Inventory · Google Sheets</text><text class="n-sub" x="554" y="579">One row per physical copy owned.</text><text class="n-sub" x="554" y="595">Closes the buy-to-shelf loop</text><text class="n-sub" x="889" y="558" text-anchor="end">🔨</text><text class="n-band" x="26" y="660">05 · Output</text><line class="rail" x1="26" y1="668" x2="1014" y2="668"/><rect class="n-box" x="26" y="676" width="300" height="96" rx="3"/><text class="n-title" x="40" y="703">🖥 Buying desk</text><text class="n-sub" x="40" y="723">This interface. Streams results</text><text class="n-sub" x="40" y="739">live, cheapest first</text><text class="n-sub" x="315" y="702" text-anchor="end">✅</text><rect class="n-box is-pending" x="370" y="676" width="300" height="96" rx="3"/><text class="n-title" x="384" y="703">🔔 Alerts · SMS</text><text class="n-sub" x="384" y="723">Fires on crossing a limit.</text><text class="n-sub" x="384" y="739">Simulated in the demo</text><text class="n-sub" x="659" y="702" text-anchor="end">🔨</text><rect class="n-box is-pending" x="714" y="676" width="300" height="96" rx="3"/><text class="n-title" x="728" y="703">📰 Morning digest</text><text class="n-sub" x="728" y="723">A document to read with</text><text class="n-sub" x="728" y="739">your coffee</text><text class="n-sub" x="1003" y="702" text-anchor="end">🔨</text><path class="link" d="M142 164 C 142 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M390 164 C 390 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M638 164 C 638 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M886 164 C 886 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M520 302 C 520 334.0, 520 334.0, 520 366" marker-end="url(#ah)"/><path class="link" d="M400 490 C 400 511.0, 320 511.0, 320 532" marker-end="url(#ah)"/><path class="link is-pending" d="M640 490 C 640 511.0, 720 511.0, 720 532" marker-end="url(#ah)"/><path class="link" d="M260 620 C 260 648.0, 176 648.0, 176 676" marker-end="url(#ah)"/><path class="link is-pending" d="M400 620 C 400 648.0, 520 648.0, 520 676" marker-end="url(#ah)"/><path class="link is-pending" d="M760 620 C 760 648.0, 864 648.0, 864 676" marker-end="url(#ah)"/></svg>
+          <svg class="flow" viewBox="0 0 1180 1480" role="img" aria-label="System loop: sales in the shop pull stock down, low stock switches a record's watch on, the watchlist drives the sources, matching and the landed-cost engine, a person decides what to buy, and the parcel that lands becomes stock again."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" opacity="0.55"/></marker></defs><text class="n-band" x="26" y="44">01 &#183; The shop — where demand comes from</text><line class="rail" x1="26" y1="52" x2="1094" y2="52"/><g class="node" tabindex="0" role="group" aria-label="🏪 Shop floor · in person. Every sale over the counter is the demand signal the rest of the system runs on. Records are sold in person, so there is no storefront to build — what's needed is a till that records which copy left the shelf." data-tip="Every sale over the counter is the demand signal the rest of the system runs on. Records are sold in person, so there is no storefront to build — what's needed is a till that records which copy left the shelf." data-title="🏪 Shop floor · in person"><rect class="n-box is-pending" x="26" y="62" width="514" height="112" rx="3"/><text class="n-title" x="42" y="96">🏪 Shop floor · in person</text><text class="n-sub" x="42" y="122">Records sell over the counter. No online store,</text><text class="n-sub" x="42" y="141">no cart, no checkout to build.</text><text class="n-sub" x="526" y="95" text-anchor="end">🔨</text></g><g class="node" tabindex="0" role="group" aria-label="📦 Inventory · database. One row per physical copy: what it cost landed, what it's priced at, how many are on the shelf. Google Sheets stands in for this today, but stock levels the shop actually depends on belong in a real database — a spreadsheet has no locking, no history and no constraints." data-tip="One row per physical copy: what it cost landed, what it's priced at, how many are on the shelf. Google Sheets stands in for this today, but stock levels the shop actually depends on belong in a real database — a spreadsheet has no locking, no history and no constraints." data-title="📦 Inventory · database"><rect class="n-box is-pending" x="580" y="62" width="514" height="112" rx="3"/><text class="n-title" x="596" y="96">📦 Inventory · database</text><text class="n-sub" x="596" y="122">One row per copy owned: landed cost, shelf price,</text><text class="n-sub" x="596" y="141">how many are in stock. Sheets is the placeholder.</text><text class="n-sub" x="1080" y="95" text-anchor="end">🔨</text></g><text class="n-band" x="26" y="222">02 &#183; What to watch</text><line class="rail" x1="26" y1="230" x2="1094" y2="230"/><g class="node" tabindex="0" role="group" aria-label="📉 Stock threshold. A floor per title. When the shelf count drops under it, that record's watch and alerts turn back on by themselves, and the system starts hunting for another copy. Some titles carry no threshold at all — they're simply always watched, or toggled by hand." data-tip="A floor per title. When the shelf count drops under it, that record's watch and alerts turn back on by themselves, and the system starts hunting for another copy. Some titles carry no threshold at all — they're simply always watched, or toggled by hand." data-title="📉 Stock threshold"><rect class="n-box is-pending" x="26" y="240" width="514" height="112" rx="3"/><text class="n-title" x="42" y="274">📉 Stock threshold</text><text class="n-sub" x="42" y="300">Under N copies in store, the watch and alerts</text><text class="n-sub" x="42" y="319">switch themselves back on. Or: always watch.</text><text class="n-sub" x="526" y="273" text-anchor="end">🔨</text></g><g class="node" tabindex="0" role="group" aria-label="📋 Watchlist · Google Sheets. One row per album wanted, with a peso limit and an alert switch. It stays in Google Sheets deliberately: it's the interface Ian already works in, and he can fix a row there faster than any form would let him." data-tip="One row per album wanted, with a peso limit and an alert switch. It stays in Google Sheets deliberately: it's the interface Ian already works in, and he can fix a row there faster than any form would let him." data-title="📋 Watchlist · Google Sheets"><rect class="n-box" x="580" y="240" width="514" height="112" rx="3"/><text class="n-title" x="596" y="274">📋 Watchlist · Google Sheets</text><text class="n-sub" x="596" y="300">One row per album wanted, with a peso limit</text><text class="n-sub" x="596" y="319">and an alert switch. Stays in Sheets on purpose.</text><text class="n-sub" x="1080" y="273" text-anchor="end">✅</text></g><text class="n-band" x="26" y="400">03 &#183; Sources</text><line class="rail" x1="26" y1="408" x2="1094" y2="408"/><g class="node" tabindex="0" role="group" aria-label="📀 Discogs API. Prices, stock counts and release metadata from the official API. Sanctioned endpoints only — no scraping, because the account at risk is the shop's." data-tip="Prices, stock counts and release metadata from the official API. Sanctioned endpoints only — no scraping, because the account at risk is the shop's." data-title="📀 Discogs API"><rect class="n-box" x="26" y="418" width="252" height="124" rx="3"/><text class="n-title" x="42" y="452">📀 Discogs API</text><text class="n-sub" x="42" y="478">Prices, stock counts,</text><text class="n-sub" x="42" y="497">release metadata</text><text class="n-sub" x="264" y="451" text-anchor="end">✅</text></g><g class="node" tabindex="0" role="group" aria-label="🛒 eBay Browse API. The only source that returns real listings: who is selling, where it ships from, and what shipping to Mexico actually costs. It turns two of the cost engine's estimates into facts." data-tip="The only source that returns real listings: who is selling, where it ships from, and what shipping to Mexico actually costs. It turns two of the cost engine's estimates into facts." data-title="🛒 eBay Browse API"><rect class="n-box is-pending" x="298" y="418" width="252" height="124" rx="3"/><text class="n-title" x="314" y="452">🛒 eBay Browse API</text><text class="n-sub" x="314" y="478">Real listings, seller origin,</text><text class="n-sub" x="314" y="497">quoted shipping to MX</text><text class="n-sub" x="536" y="451" text-anchor="end">🔨</text></g><g class="node" tabindex="0" role="group" aria-label="📧 Bandcamp mail. No search API exists. A dedicated mailbox receives follow notifications, so we learn that a record was listed — never what it costs. It answers what's new, never who has this record." data-tip="No search API exists. A dedicated mailbox receives follow notifications, so we learn that a record was listed — never what it costs. It answers what's new, never who has this record." data-title="📧 Bandcamp mail"><rect class="n-box is-pending" x="570" y="418" width="252" height="124" rx="3"/><text class="n-title" x="586" y="452">📧 Bandcamp mail</text><text class="n-sub" x="586" y="478">New-release announcements.</text><text class="n-sub" x="586" y="497">No prices, ever</text><text class="n-sub" x="808" y="451" text-anchor="end">🔨</text></g><g class="node" tabindex="0" role="group" aria-label="🎧 Spotify API. It can't find or price a record — there's no vinyl in it at all. What it gives is canonical artist and album names plus barcodes, which is what makes matching the other three sources reliable." data-tip="It can't find or price a record — there's no vinyl in it at all. What it gives is canonical artist and album names plus barcodes, which is what makes matching the other three sources reliable." data-title="🎧 Spotify API"><rect class="n-box is-pending" x="842" y="418" width="252" height="124" rx="3"/><text class="n-title" x="858" y="452">🎧 Spotify API</text><text class="n-sub" x="858" y="478">Canonical names, barcodes.</text><text class="n-sub" x="858" y="497">No vinyl, no merch</text><text class="n-sub" x="1080" y="451" text-anchor="end">🔨</text></g><text class="n-band" x="26" y="590">04 &#183; Identity</text><line class="rail" x1="26" y1="598" x2="1094" y2="598"/><g class="node" tabindex="0" role="group" aria-label="🔗 Matching &amp; identity resolution. Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes make it tractable where they exist; everywhere else it is free-text matching, which is never finished, only tuned." data-tip="Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes make it tractable where they exist; everywhere else it is free-text matching, which is never finished, only tuned." data-title="🔗 Matching &amp; identity resolution"><rect class="n-box is-unsure" x="298" y="608" width="524" height="92" rx="3"/><text class="n-title" x="314" y="642">🔗 Matching &amp; identity resolution</text><text class="n-sub" x="314" y="668">One record across four sources. Barcodes help;</text><text class="n-sub" x="314" y="687">free-text titles do not.</text><text class="n-sub" x="808" y="641" text-anchor="end">❓</text></g><text class="n-band" x="26" y="748">05 &#183; Costing</text><line class="rail" x1="26" y1="756" x2="1094" y2="756"/><g class="node" tabindex="0" role="group" aria-label="🧮 Landed cost engine. Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. This is the part that is fully built, and the reason the numbers on the buying desk mean anything." data-tip="Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. This is the part that is fully built, and the reason the numbers on the buying desk mean anything." data-title="🧮 Landed cost engine"><rect class="n-box" x="140" y="766" width="840" height="148" rx="3"/><text class="n-title" x="156" y="800">🧮 Landed cost engine</text><text class="n-sub" x="156" y="826">Price + shipping + duty + IVA, in pesos</text><text class="n-sub" x="966" y="799" text-anchor="end">✅</text></g><g class="node" tabindex="0" role="group" aria-label="FX · live ECB. Daily ECB reference rates, fetched at the start of every run. Free, no key, no account." data-tip="Daily ECB reference rates, fetched at the start of every run. Free, no key, no account." data-title="FX · live ECB"><rect class="n-box" x="158" y="850" width="254" height="46" rx="3"/><text class="n-sub" x="174" y="878">💱 FX · live ECB</text></g><g class="node" tabindex="0" role="group" aria-label="Shipping · estimated. Sensible estimates by country, not a live carrier quote. Labelled low-confidence everywhere it appears, and the first thing eBay replaces." data-tip="Sensible estimates by country, not a live carrier quote. Labelled low-confidence everywhere it appears, and the first thing eBay replaces." data-title="Shipping · estimated"><rect class="n-box is-unsure" x="433" y="850" width="254" height="46" rx="3"/><text class="n-sub" x="449" y="878">📦 Shipping · estimated</text></g><g class="node" tabindex="0" role="group" aria-label="Customs · not broker-checked. Mexico's 2026 de minimis, tasa global and IVA rules, implemented from public reporting rather than confirmed by a licensed broker." data-tip="Mexico's 2026 de minimis, tasa global and IVA rules, implemented from public reporting rather than confirmed by a licensed broker." data-title="Customs · not broker-checked"><rect class="n-box is-unsure" x="708" y="850" width="254" height="46" rx="3"/><text class="n-sub" x="724" y="878">🛃 Customs · not broker-checked</text></g><text class="n-band" x="26" y="962">06 &#183; Surfacing — how it reaches you</text><line class="rail" x1="26" y1="970" x2="1094" y2="970"/><g class="node" tabindex="0" role="group" aria-label="🖥 Buying desk. This interface. It streams results as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row." data-tip="This interface. It streams results as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row." data-title="🖥 Buying desk"><rect class="n-box" x="26" y="980" width="342" height="112" rx="3"/><text class="n-title" x="42" y="1014">🖥 Buying desk</text><text class="n-sub" x="42" y="1040">This interface. Streams results</text><text class="n-sub" x="42" y="1059">live, cheapest first</text><text class="n-sub" x="354" y="1013" text-anchor="end">✅</text></g><g class="node" tabindex="0" role="group" aria-label="🔔 Alerts · SMS. A text the moment a record crosses its limit. Rare copies go fast and email is too slow to be the channel that catches them. Simulated in the demo." data-tip="A text the moment a record crosses its limit. Rare copies go fast and email is too slow to be the channel that catches them. Simulated in the demo." data-title="🔔 Alerts · SMS"><rect class="n-box is-pending" x="389" y="980" width="342" height="112" rx="3"/><text class="n-title" x="405" y="1014">🔔 Alerts · SMS</text><text class="n-sub" x="405" y="1040">Fires when a record crosses</text><text class="n-sub" x="405" y="1059">its limit. Simulated for now</text><text class="n-sub" x="717" y="1013" text-anchor="end">🔨</text></g><g class="node" tabindex="0" role="group" aria-label="📰 Morning digest. A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore. The unhurried counterpart to the alert." data-tip="A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore. The unhurried counterpart to the alert." data-title="📰 Morning digest"><rect class="n-box is-pending" x="752" y="980" width="342" height="112" rx="3"/><text class="n-title" x="768" y="1014">📰 Morning digest</text><text class="n-sub" x="768" y="1040">What moved overnight, read</text><text class="n-sub" x="768" y="1059">with your coffee</text><text class="n-sub" x="1080" y="1013" text-anchor="end">🔨</text></g><text class="n-band" x="26" y="1136">07 &#183; The buy — a person, every time</text><line class="rail" x1="26" y1="1144" x2="1094" y2="1144"/><g class="node" tabindex="0" role="group" aria-label="🧍 Ian buys the copy. The system finds, prices and ranks. It never buys. A person looks at the copy, the seller and the condition and decides — the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast enough to act on. The order this creates is also what intake later reconciles the parcel against." data-tip="The system finds, prices and ranks. It never buys. A person looks at the copy, the seller and the condition and decides — the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast enough to act on. The order this creates is also what intake later reconciles the parcel against." data-title="🧍 Ian buys the copy"><rect class="n-box is-human" x="298" y="1154" width="524" height="104" rx="3"/><text class="n-title" x="314" y="1188">🧍 Ian buys the copy</text><text class="n-sub" x="314" y="1214">Checkout happens on Discogs or eBay, by hand,</text><text class="n-sub" x="314" y="1233">on a card. Nothing here spends money by itself.</text><text class="n-sub" x="808" y="1187" text-anchor="end">🧍</text></g><text class="n-band" x="26" y="1310">08 &#183; Intake — landed copies become stock</text><line class="rail" x1="26" y1="1318" x2="1094" y2="1318"/><g class="node" tabindex="0" role="group" aria-label="📥 Intake · parcel to shelf. The genuinely open question. A parcel arrives weeks after the decision to buy it; something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it. Scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand — undecided." data-tip="The genuinely open question. A parcel arrives weeks after the decision to buy it; something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it. Scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand — undecided." data-title="📥 Intake · parcel to shelf"><rect class="n-box is-unsure" x="140" y="1328" width="840" height="112" rx="3"/><text class="n-title" x="156" y="1362">📥 Intake · parcel to shelf</text><text class="n-sub" x="156" y="1388">A parcel lands. Something has to turn it into an inventory row</text><text class="n-sub" x="156" y="1407">at its real landed cost — scan it, confirm the order, or by hand?</text><text class="n-sub" x="966" y="1361" text-anchor="end">❓</text></g><path class="link" d="M540 118 L574 118" marker-end="url(#ah)"/><path class="link is-pending" d="M837 174 C 837 207.0, 283 207.0, 283 240" marker-end="url(#ah)"/><path class="link is-pending" d="M540 296 L574 296" marker-end="url(#ah)"/><path class="link" d="M837 352 C 837 385.0, 152 385.0, 152 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 424 385.0, 424 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 696 385.0, 696 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 968 385.0, 968 418" marker-end="url(#ah)"/><path class="link" d="M152 542 C 152 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M424 542 C 424 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M696 542 C 696 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M968 542 C 968 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M560 700 C 560 733.0, 560 733.0, 560 766" marker-end="url(#ah)"/><path class="link" d="M197 914 C 197 947.0, 197 947.0, 197 980" marker-end="url(#ah)"/><path class="link is-pending" d="M560 914 C 560 947.0, 560 947.0, 560 980" marker-end="url(#ah)"/><path class="link is-pending" d="M923 914 C 923 947.0, 923 947.0, 923 980" marker-end="url(#ah)"/><path class="link" d="M197 1092 C 197 1123.0, 560 1123.0, 560 1154" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1092 C 560 1123.0, 560 1123.0, 560 1154" marker-end="url(#ah)"/><path class="link is-pending" d="M923 1092 C 923 1123.0, 560 1123.0, 560 1154" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1258 C 560 1293.0, 560 1293.0, 560 1328" marker-end="url(#ah)"/><path class="link is-pending" d="M980 1384 H1120 Q1132 1384 1132 1372 V186 Q1132 174 1120 174 H1010" marker-end="url(#ah)"/><text class="n-band" x="1147" y="780" text-anchor="middle" transform="rotate(90 1147 780)">Closes the loop</text></svg>
         </div>
 
-        <p class="t-note">The one genuinely uncertain box is <strong>identity resolution</strong> — deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes make it tractable where they exist. Where they don't, it's free-text matching, and free-text matching is never finished, only tuned.</p>
+        <p class="t-note">Two boxes are genuinely uncertain, and they sit at opposite ends of the loop. <strong>Identity resolution</strong> — deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes make it tractable where they exist; where they don't, it's free-text matching, which is never finished, only tuned. And <strong>intake</strong> — a parcel lands weeks after the decision to buy it, and something has to turn it into an inventory row at its real landed cost without anyone retyping it.</p>
+        <p class="t-note"><strong>One step is deliberately manual.</strong> The system narrows thousands of copies down to a shortlist with real landed costs against them, and then stops. Someone reads the seller, the condition and the photographs, and buys — or doesn't. Automating that would save a minute and cost the judgement that makes the shortlist worth having.</p>
+        <p class="t-note"><strong>On storage.</strong> The watchlist stays in Google Sheets deliberately — it's the interface Ian works in, and a spreadsheet row is faster to correct than any form. Inventory is the opposite case: stock counts the shop floor depends on need a real database, with the locking, history and constraints a sheet can't offer. Sheets holds both today because it got the demo standing up; only one of them should stay there.</p>
+      </section>
+
+      <section class="hiw-section" id="sourcing">
+        <h2 class="hiw-h2">Where the records come from 🌍</h2>
+        <p class="hiw-lede">Seven sources, and not one of them answers the whole question. Two find copies and price them properly, one has the deepest catalogue but no per-copy detail, two only announce that something exists, and two know nothing about buying at all — they just say which record is which. The art is in the combination.</p>
+
+        <div class="cov-wrap">
+          <svg class="cov" viewBox="0 0 1086 590" role="img" aria-label="Coverage matrix. eBay and Mercado Libre answer every question about a copy except which record it is. Discogs finds copies and gives a price but no seller detail. MusicBrainz and Spotify answer only identity. Bandcamp and the European shops announce that something exists without pricing it."><defs><pattern id="hatch" width="6" height="6" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="currentColor" stroke-width="1.4" opacity="0.28"/></pattern></defs><text class="cv-col" x="356" y="112" text-anchor="middle">Finds</text><text class="cv-col" x="356" y="128" text-anchor="middle">a copy</text><text class="cv-col" x="484" y="112" text-anchor="middle">Price</text><text class="cv-col" x="612" y="112" text-anchor="middle">Seller</text><text class="cv-col" x="612" y="128" text-anchor="middle">location</text><text class="cv-col" x="740" y="112" text-anchor="middle">Real</text><text class="cv-col" x="740" y="128" text-anchor="middle">shipping</text><text class="cv-col" x="868" y="112" text-anchor="middle">Condition</text><text class="cv-col" x="996" y="112" text-anchor="middle">Identity</text><text class="cv-col" x="996" y="128" text-anchor="middle">barcode</text><line class="cv-rule" x1="26" y1="140" x2="1060" y2="140"/><text class="cv-group" x="26" y="88">Committed · building these</text><text class="cv-row" x="26" y="180">📀 Discogs</text><rect class="cv-cell is-full" x="341" y="163" width="30" height="22" rx="2"/><rect class="cv-cell is-part" x="469" y="163" width="30" height="22" rx="2"/><rect class="cv-half" x="469" y="163" width="15" height="22"/><rect class="cv-cell is-none" x="597" y="163" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="725" y="163" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="853" y="163" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="981" y="163" width="30" height="22" rx="2"/><text class="cv-row" x="26" y="234">🛒 eBay</text><rect class="cv-cell is-full" x="341" y="217" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="469" y="217" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="597" y="217" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="725" y="217" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="853" y="217" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="981" y="217" width="30" height="22" rx="2"/><text class="cv-row" x="26" y="288">🇲🇽 Mercado Libre</text><rect class="cv-cell is-full" x="341" y="271" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="469" y="271" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="597" y="271" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="725" y="271" width="30" height="22" rx="2"/><rect class="cv-cell is-part" x="853" y="271" width="30" height="22" rx="2"/><rect class="cv-half" x="853" y="271" width="15" height="22"/><rect class="cv-cell is-none" x="981" y="271" width="30" height="22" rx="2"/><text class="cv-row" x="26" y="342">🧬 MusicBrainz</text><rect class="cv-cell is-none" x="341" y="325" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="469" y="325" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="597" y="325" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="725" y="325" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="853" y="325" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="981" y="325" width="30" height="22" rx="2"/><line class="cv-rule" x1="26" y1="378" x2="1060" y2="378"/><text class="cv-group" x="26" y="406">Optional · if the effort is there</text><text class="cv-row" x="26" y="442">📧 Bandcamp</text><rect class="cv-cell is-part" x="341" y="425" width="30" height="22" rx="2"/><rect class="cv-half" x="341" y="425" width="15" height="22"/><rect class="cv-cell is-none" x="469" y="425" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="597" y="425" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="725" y="425" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="853" y="425" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="981" y="425" width="30" height="22" rx="2"/><text class="cv-row" x="26" y="496">🏬 EU shops</text><rect class="cv-cell is-part" x="341" y="479" width="30" height="22" rx="2"/><rect class="cv-half" x="341" y="479" width="15" height="22"/><rect class="cv-cell is-none" x="469" y="479" width="30" height="22" rx="2"/><rect class="cv-cell is-full" x="597" y="479" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="725" y="479" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="853" y="479" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="981" y="479" width="30" height="22" rx="2"/><text class="cv-row" x="26" y="550">🎧 Spotify</text><rect class="cv-cell is-none" x="341" y="533" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="469" y="533" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="597" y="533" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="725" y="533" width="30" height="22" rx="2"/><rect class="cv-cell is-none" x="853" y="533" width="30" height="22" rx="2"/><rect class="cv-cell is-part" x="981" y="533" width="30" height="22" rx="2"/><rect class="cv-half" x="981" y="533" width="15" height="22"/></svg>
+        </div>
+
+        <div class="cov-key">
+          <span><i class="k-full"></i> Answers it</span>
+          <span><i class="k-part"></i> Partly</span>
+          <span><i class="k-none"></i> Not available</span>
+        </div>
+
+        <div class="gap-note">
+          <h4>⚠️ What the grid is telling you</h4>
+          <ul>
+            <li><strong>The two sources that find copies can't identify them.</strong> eBay and Mercado Libre fill every column but the last — their listings are free text with no release identifier. The rightmost column is the whole matching problem, drawn.</li>
+            <li><strong>The two sources that identify records can't find them.</strong> MusicBrainz and Spotify fill only that column. They are the missing half, which is exactly why they earn a place.</li>
+            <li><strong>Discogs is a price without a seller.</strong> Deepest catalogue on the list, and the only one that answers "what is this worth" — but nothing about who has it or where it ships from.</li>
+            <li><strong>Nothing here covers Japan, Instagram, or a record shop with no website.</strong> Real supply, genuinely unreachable. Worth knowing rather than quietly hoping.</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">The sources, one by one 📚</h2>
+        <p class="hiw-lede">Four we should commit to, three worth having if the effort is there. Every API on this list is free — the cost is integration time, not licence fees.</p>
+
+        <div class="src-grid">
+          <div class="src">
+            <h4>🛒 eBay Browse API</h4>
+            <span class="src-role">Committed · the biggest upgrade</span>
+            <p>The only source returning <strong>real listings</strong> — who is selling, where it ships from, what shipping to Mexico actually costs, and what condition the copy is in. It turns two of the cost engine's estimates into quoted facts.</p>
+            <p><strong>One integration covers Europe.</strong> Germany, the UK, France, Italy and the Netherlands are <a class="cite" href="https://developer.ebay.com/api-docs/buy/static/ref-marketplace-supported.html" target="_blank" rel="noopener">a parameter on the same call</a> — sixteen marketplaces in total, not five projects. Given how much buying is European, this is the cheapest coverage on the list.</p>
+          </div>
+
+          <div class="src">
+            <h4>🇲🇽 Mercado Libre</h4>
+            <span class="src-role">Committed · no import problem at all</span>
+            <p>Domestic Mexican listings skip <strong>customs, duty, the tasa global and the international shipping lane entirely</strong>. The landed cost collapses to price plus domestic postage — the one source where our number is exact rather than estimated.</p>
+            <p><a class="cite" href="https://developers.mercadolibre.com.mx/en_us/items-and-searches" target="_blank" rel="noopener">Catalogue search</a> needs no seller's authorisation — only our own app token. Same free-text matching problem as eBay, solved by the same work. One caveat: stock is returned as a coarse band rather than an exact count.</p>
+          </div>
+
+          <div class="src">
+            <h4>📀 Discogs API</h4>
+            <span class="src-role">Committed · already running</span>
+            <p>The deepest catalogue in the business and the reference for <strong>what a pressing is worth</strong>. Lowest price and stock count, live, on sanctioned endpoints only.</p>
+            <p>What it will never give us is per-copy detail — no condition, no seller, no shipping origin. It answers "what does this go for", not "who has one".</p>
+          </div>
+
+          <div class="src">
+            <h4>🧬 MusicBrainz</h4>
+            <span class="src-role">Committed · cheapest, highest leverage</span>
+            <p><a class="cite" href="https://musicbrainz.org/doc/MusicBrainz_API" target="_blank" rel="noopener">Free, open, no API key</a> — one request a second and a real user-agent is the whole contract. Publishes <strong>barcodes, release groups and the relationships between pressings</strong>, curated by people who care about exactly the distinctions a record buyer cares about.</p>
+            <p>It finds nothing and prices nothing. It makes every other source more reliable, which is why it goes in first rather than last.</p>
+          </div>
+
+          <div class="src is-opt">
+            <h4>📧 Bandcamp · via mailbox</h4>
+            <span class="src-role">Optional · leads, never prices</span>
+            <p><a class="cite" href="https://bandcamp.com/developer" target="_blank" rel="noopener">No catalogue API exists</a> — the developer API is account, sales reports and merch orders, all seller-side. A dedicated mailbox receives follow notifications instead, so we learn a record was listed — <strong>never what it costs</strong>. Every result is a link and a date.</p>
+            <p>Covers the indie pressings that never reach Discogs, and only from labels Ian already follows.</p>
+          </div>
+
+          <div class="src is-opt">
+            <h4>🏬 European specialist shops</h4>
+            <span class="src-role">Optional · one parser per shop</span>
+            <p>HHV, Hard Wax, Decks and the rest run bespoke platforms with <strong>no APIs and no usable feeds</strong> — we tested nine of them for both the <a class="cite" href="https://community.shopify.dev/t/why-are-all-products-public/10069" target="_blank" rel="noopener">public Shopify product feed</a> and RSS, and none had either. What they do have is new-arrival newsletters.</p>
+            <p>They ride the same mailbox as Bandcamp. That pipeline isn't a Bandcamp feature; it's a shop-notification reader that Bandcamp happens to use first.</p>
+          </div>
+
+          <div class="src is-opt">
+            <h4>🎧 Spotify</h4>
+            <span class="src-role">Optional · identity only</span>
+            <p>No vinyl in it at all, and the artist-page merch is <a class="cite" href="https://newsroom.spotify.com/2023-10-16/shop-find-all-artist-merch-hub-spotify-app-shopify/" target="_blank" rel="noopener">a Shopify storefront</a> the Web API doesn't expose. It cannot find or price a record.</p>
+            <p>What it offers is <strong>canonical names and barcodes</strong>, plus the option to seed the watchlist straight from Ian's saved albums rather than typing them in.</p>
+          </div>
+
+          <div class="src is-opt">
+            <h4>🚫 Japan &amp; Instagram</h4>
+            <span class="src-role">Out of reach · recorded, not planned</span>
+            <p><strong>Japan:</strong> Yahoo! Auctions is where rare Japanese pressings trade. Access for non-Japanese entities is restrictive and the proxy services everyone uses publish no APIs. Rakuten's item search <a class="cite" href="https://webservice.rakuten.co.jp/documentation/ichiba-item-search" target="_blank" rel="noopener">excludes auction and C2C listings</a> specifically — precisely the inventory worth having.</p>
+            <p><strong>Instagram:</strong> a great deal of dealing happens there and effectively none of it is readable — the <a class="cite" href="https://developers.facebook.com/docs/instagram-platform/overview" target="_blank" rel="noopener">platform reaches only professional accounts your app user owns or manages</a>. Hashtag search exists but is <a class="cite" href="https://developers.facebook.com/docs/instagram-platform/instagram-graph-api/reference/ig-hashtag-search" target="_blank" rel="noopener">capped at 30 hashtags a week</a> and approval-gated. The stores behind those accounts are the way in.</p>
+          </div>
+        </div>
       </section>
 
       <section class="hiw-section">
         <h2 class="hiw-h2">The stack ⚙️</h2>
-        <p class="hiw-lede">Deliberately small. No framework, no database, no build step — the whole thing is TypeScript on Node, a few HTTP calls, and a spreadsheet doing the job a database would otherwise need.</p>
+        <p class="hiw-lede">Deliberately small. No framework, no build step — the whole thing is TypeScript on Node, a few HTTP calls, and a spreadsheet standing in for a database. The watchlist stays in that spreadsheet; inventory is the piece that has to graduate to a real one.</p>
 
         <div class="t-table-wrap">
           <table class="t-table">
@@ -2158,9 +2500,21 @@
               </tr>
               <tr>
                 <td>📋 Google Sheets</td>
-                <td>Watchlist and inventory storage, via the Sheets API</td>
-                <td>Ian can read and correct the data by hand, which no database allows</td>
+                <td>The watchlist, via the Sheets API</td>
+                <td>Ian reads and corrects it by hand, which no database allows. Staying here on purpose</td>
                 <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>🗄 Inventory database</td>
+                <td>One row per copy owned: landed cost, shelf price, stock on hand, re-watch threshold</td>
+                <td>Stock the shop floor depends on needs locking, history and constraints. A sheet has none. Sheets is the placeholder until this exists</td>
+                <td><span class="pill is-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>💳 Clip or Stripe</td>
+                <td>Card payments at the counter, and the record of what sold</td>
+                <td>A sale is what pulls stock down and switches a watch back on. Which of the two, and how the till talks to the database, is undecided</td>
+                <td><span class="pill is-unsure">Unproven</span></td>
               </tr>
               <tr>
                 <td>📀 Discogs API</td>
@@ -2211,32 +2565,33 @@
 
       <section class="hiw-section">
         <h2 class="hiw-h2">What the APIs won't give us 🚧</h2>
-        <p class="hiw-lede">Each of these is a hard ceiling, not a to-do. They shape what the product can honestly promise, so they're worth knowing before the roadmap is set.</p>
+        <p class="hiw-lede">Each of these is a hard ceiling, not a to-do. They shape what the product can honestly promise, so they're worth knowing before the roadmap is set. <strong>Every claim below links to the documentation it came from</strong> ↗ — none of it should have to be taken on trust.</p>
 
         <div class="grid2">
           <div class="card">
             <h3>📀 Discogs</h3>
             <ul>
-              <li><strong>No marketplace listings.</strong> The API publishes a lowest price and a stock count, and nothing per-copy. Condition, seller and seller location simply aren't available.</li>
+              <li><strong>No marketplace listings.</strong> The API publishes a lowest price and a stock count, and nothing per-copy — the <a class="cite" href="https://www.discogs.com/developers/#page:marketplace,header:marketplace-release-statistics" target="_blank" rel="noopener">documented Marketplace endpoints</a> cover statistics, a single listing by id, and a seller's own inventory. Condition, seller and seller location simply aren't available.</li>
               <li><strong>So origin is a guess.</strong> We use where the record was pressed, because where it ships from isn't offered. A German pressing may sit in Guadalajara.</li>
-              <li><strong>60 requests a minute.</strong> Every record costs two, so a sweep is paced rather than parallel.</li>
-              <li><strong>Scraping is out.</strong> Their terms prohibit it, and the account at risk is the shop's.</li>
+              <li><a class="cite" href="https://www.discogs.com/developers/#page:home,header:home-rate-limiting" target="_blank" rel="noopener"><strong>60 requests a minute</strong></a> authenticated. Every record costs two, so a sweep is paced rather than parallel.</li>
+              <li><strong>Scraping is out.</strong> Their <a class="cite" href="https://support.discogs.com/hc/en-us/articles/360009334333-Terms-of-Service" target="_blank" rel="noopener">Terms of Service</a> exclude "any collection and use of any product listings, descriptions, or prices" and any use of scraping or harvesting tools. The account at risk is the shop's.</li>
             </ul>
           </div>
           <div class="card">
             <h3>🛒 eBay</h3>
             <ul>
-              <li><strong>No release identifiers.</strong> Listings are free text, so joining them to a Discogs pressing is a matching problem, not a lookup.</li>
-              <li><strong>Roughly 5,000 calls a day</strong> on the standard tier — generous, but it caps how often a large watchlist can be swept.</li>
-              <li><strong>Shipping to Mexico must be asked for explicitly</strong>, per request, or the quote comes back for the wrong country.</li>
+              <li><strong>Sixteen marketplaces, one integration.</strong> Germany, the UK, France, Italy, the Netherlands and eleven more are <a class="cite" href="https://developer.ebay.com/api-docs/buy/static/ref-marketplace-supported.html" target="_blank" rel="noopener">a parameter on the same call</a>. This is a capability, not a limit — it is here because it is the cheapest coverage on the list.</li>
+              <li><strong>No release identifiers.</strong> <a class="cite" href="https://developer.ebay.com/api-docs/buy/browse/resources/item_summary/methods/search" target="_blank" rel="noopener">Listings</a> carry seller, item location and shipping cost, but nothing identifying which pressing it is. Joining them to Discogs is a matching problem, not a lookup.</li>
+              <li><a class="cite" href="https://developer.ebay.com/develop/get-started/api-call-limits" target="_blank" rel="noopener"><strong>5,000 calls a day</strong></a> on the standard tier — generous, but it caps how often a large watchlist can be swept. More requires passing eBay's application growth check.</li>
+              <li><strong>Shipping to Mexico has to be asked for.</strong> The <a class="cite" href="https://developer.ebay.com/api-docs/buy/static/api-browse.html" target="_blank" rel="noopener">destination header</a> is optional, but calculated shipping and delivery estimates need it — omit it and the quote is for the wrong country.</li>
             </ul>
           </div>
           <div class="card">
             <h3>📧 Bandcamp</h3>
             <ul>
-              <li><strong>No API at all</strong> for searching what's for sale. The developer API serves artists reporting on their own sales.</li>
+              <li><strong>No API at all</strong> for searching what's for sale. The <a class="cite" href="https://bandcamp.com/developer" target="_blank" rel="noopener">published developer API</a> is three seller-side modules — account, sales reports, merch orders — and nothing else.</li>
               <li><strong>No prices in the emails.</strong> None. So a Bandcamp find can never carry a landed cost — only a link and a date.</li>
-              <li><strong>We can't follow a label programmatically</strong>, or even ask whether we already do. Ian follows; the app learns the roster from the mail.</li>
+              <li><strong>We can't follow a label programmatically</strong>, or even ask whether we already do — there is no fan-side endpoint in that API at all. Ian follows; the app learns the roster from the mail.</li>
               <li><strong>Coverage is the follow list</strong> — it answers "what's new", never "who has this record".</li>
             </ul>
           </div>
@@ -2244,9 +2599,10 @@
             <h3>🎧 Spotify</h3>
             <ul>
               <li><strong>No vinyl.</strong> It's a streaming catalogue: no format, no pressing, no stock, no price.</li>
-              <li><strong>The merch isn't in the API.</strong> Artist-page merch runs through a third-party storefront integration with no public endpoint, so we can't read it even though you can see it.</li>
-              <li><strong>Barcodes are usually the digital release</strong>, which often differs from the vinyl pressing's. A strong hint, not an identity.</li>
-              <li><strong>Recommendations and audio features were withdrawn</strong> for new apps in late 2024. Nothing should be built on them.</li>
+              <li><strong>Five users, not five hundred.</strong> An app in <a class="cite" href="https://developer.spotify.com/documentation/web-api/concepts/quota-modes" target="_blank" rel="noopener">development mode</a> can authenticate five people, each allowlisted by hand, and extended quota now effectively requires a quarter of a million monthly users. Fine for Ian. Never a customer-facing feature.</li>
+              <li><strong>The merch isn't in the API.</strong> Artist merch is <a class="cite" href="https://newsroom.spotify.com/2023-10-16/shop-find-all-artist-merch-hub-spotify-app-shopify/" target="_blank" rel="noopener">a Shopify storefront owned by the artist</a>, and the Web API exposes no merch resource — we can't read it even though you can see it.</li>
+              <li><a class="cite" href="https://developer.spotify.com/documentation/web-api/reference/get-an-album" target="_blank" rel="noopener"><strong>Barcodes</strong></a> are published per album, but usually for the digital release, which often differs from the vinyl pressing's. A strong hint, not an identity.</li>
+              <li><strong>Recommendations and audio features were withdrawn</strong> for new apps in <a class="cite" href="https://developer.spotify.com/blog/2024-11-27-changes-to-the-web-api" target="_blank" rel="noopener">November 2024</a>. Nothing should be built on them.</li>
             </ul>
           </div>
         </div>
@@ -3188,6 +3544,66 @@
 
       // A fixed-position tip would otherwise hang in place while the page moves.
       window.addEventListener('scroll', hideTip, { passive: true });
+
+      /**
+       * Flowchart tooltips. Every box carries the reasoning that will not fit
+       * inside it, and the only way to read it is to hover or tab to the box —
+       * so this listens for focus as well as the pointer.
+       *
+       * A separate element from the cost-bar tip: that one is a single nowrap
+       * line of figures, this one is a paragraph that has to wrap.
+       */
+      const flowtip = document.createElement('div');
+      flowtip.className = 'flowtip';
+      flowtip.setAttribute('role', 'tooltip');
+      document.body.appendChild(flowtip);
+
+      function hideFlowTip() { flowtip.classList.remove('is-on'); }
+
+      function placeFlowTip(x, y) {
+        const pad = 12;
+        const w = flowtip.offsetWidth;
+        const h = flowtip.offsetHeight;
+        let top = y - h - 14;
+        if (top < pad) top = y + 20;
+        const left = Math.min(Math.max(x - w / 2, pad), window.innerWidth - w - pad);
+        flowtip.style.left = left + 'px';
+        flowtip.style.top = top + 'px';
+      }
+
+      function showFlowTip(node, x, y) {
+        flowtip.innerHTML =
+          '<b>' + esc(node.dataset.title || '') + '</b>' + esc(node.dataset.tip || '');
+        flowtip.classList.add('is-on');
+        placeFlowTip(x, y);
+      }
+
+      const flow = document.querySelector('.flow');
+      if (flow) {
+        flow.addEventListener('pointerover', (e) => {
+          if (e.pointerType === 'touch') return;
+          const node = e.target.closest('.node');
+          if (node) showFlowTip(node, e.clientX, e.clientY);
+        });
+        flow.addEventListener('pointermove', (e) => {
+          if (!flowtip.classList.contains('is-on')) return;
+          const node = e.target.closest('.node');
+          if (node) placeFlowTip(e.clientX, e.clientY); else hideFlowTip();
+        });
+        flow.addEventListener('pointerout', (e) => {
+          if (!e.relatedTarget || !e.relatedTarget.closest('.node')) hideFlowTip();
+        });
+        // Keyboard: anchor the tip to the box itself rather than a pointer that
+        // isn't there.
+        flow.addEventListener('focusin', (e) => {
+          const node = e.target.closest('.node');
+          if (!node) return;
+          const r = node.getBoundingClientRect();
+          showFlowTip(node, r.left + r.width / 2, r.top);
+        });
+        flow.addEventListener('focusout', hideFlowTip);
+        window.addEventListener('scroll', hideFlowTip, { passive: true });
+      }
 
       /** Sleeve thumbnail for the row header; keeps its slot even with no image. */
       function thumbHtml(r) {
