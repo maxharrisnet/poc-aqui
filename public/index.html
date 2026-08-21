@@ -1647,6 +1647,218 @@
       font-weight: 700;
     }
 
+    /* ------------------------------------------------------- technical */
+
+    /* Status is carried by shape and label, never by colour alone: the page
+       is monochrome by design and a legend nobody can read is worse than no
+       legend. Built is solid, pending is dashed, unproven is dashed on a
+       hatched fill — and each one is spelled out with a word beside it. */
+    .status-key {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 18px;
+      margin-top: 18px;
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .status-key span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+    }
+
+    .key-swatch {
+      width: 26px;
+      height: 15px;
+      border-radius: 2px;
+      background: var(--paper);
+      border: 1.5px solid var(--ink);
+    }
+
+    .key-swatch.is-pending {
+      border-style: dashed;
+    }
+
+    .key-swatch.is-unsure {
+      border-style: dashed;
+      background:
+        repeating-linear-gradient(45deg, var(--wash) 0 4px, transparent 4px 8px),
+        var(--paper);
+    }
+
+    /* The diagram has a fixed aspect and a lot of small type. Below its natural
+       width it scrolls rather than shrinking, because a flowchart reflowed to
+       phone width stops being a flowchart. */
+    .flow-wrap {
+      margin-top: 22px;
+      overflow-x: auto;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 3px;
+      background: var(--paper);
+      padding: 8px;
+    }
+
+    .flow {
+      display: block;
+      min-width: 900px;
+      width: 100%;
+      height: auto;
+    }
+
+    .flow .n-box {
+      fill: var(--kraft);
+      stroke: var(--ink);
+      stroke-width: 1.5;
+    }
+
+    .flow .n-box.is-pending {
+      stroke-dasharray: 6 4;
+    }
+
+    .flow .n-box.is-unsure {
+      stroke-dasharray: 3 3;
+      fill: var(--paper);
+    }
+
+    .flow .n-title {
+      font-family: var(--mono);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      fill: var(--ink);
+    }
+
+    .flow .n-sub {
+      font-family: var(--sans);
+      font-size: 11.5px;
+      fill: var(--carbon);
+    }
+
+    .flow .n-band {
+      font-family: var(--mono);
+      font-size: 10.5px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      fill: var(--carbon);
+    }
+
+    .flow .link {
+      stroke: var(--ink);
+      stroke-width: 1.4;
+      fill: none;
+      opacity: 0.55;
+    }
+
+    .flow .link.is-pending {
+      stroke-dasharray: 5 4;
+    }
+
+    .flow .rail {
+      stroke: var(--kraft-deep);
+      stroke-width: 1.2;
+    }
+
+    /* Stack and cost tables. Both are wide and both are read by scanning one
+       column, so they scroll horizontally instead of wrapping into mush. */
+    .t-table-wrap {
+      margin-top: 20px;
+      overflow-x: auto;
+    }
+
+    .t-table {
+      width: 100%;
+      min-width: 620px;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+    }
+
+    .t-table th {
+      text-align: left;
+      font-family: var(--mono);
+      font-size: 0.72rem;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--carbon);
+      padding: 0 12px 8px 0;
+      border-bottom: 1.5px solid var(--ink);
+      white-space: nowrap;
+    }
+
+    .t-table td {
+      padding: 11px 12px 11px 0;
+      border-bottom: 1px solid var(--kraft-deep);
+      color: var(--carbon);
+      vertical-align: top;
+    }
+
+    .t-table td:first-child {
+      color: var(--ink);
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    .t-table tr:last-child td {
+      border-bottom: none;
+    }
+
+    .t-cost {
+      font-family: var(--mono);
+      font-size: 0.85rem;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    /* A pill saying which of the three states a row is in, so the tables carry
+       the same vocabulary as the diagram. */
+    .pill {
+      display: inline-block;
+      font-family: var(--mono);
+      font-size: 0.68rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      padding: 2px 7px;
+      border-radius: 2px;
+      border: 1.5px solid var(--ink);
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    .pill.is-pending {
+      border-style: dashed;
+    }
+
+    .pill.is-unsure {
+      border-style: dashed;
+      color: var(--carbon);
+      border-color: var(--carbon);
+    }
+
+    .t-total {
+      margin-top: 18px;
+      padding: 15px 17px;
+      border: 1.5px solid var(--ink);
+      border-radius: 3px;
+      background: var(--paper);
+    }
+
+    .t-total strong {
+      font-family: var(--mono);
+      font-size: 1.05rem;
+    }
+
+    .t-note {
+      margin-top: 14px;
+      font-size: 0.92rem;
+      color: var(--carbon);
+      max-width: 70ch;
+    }
+
     @media (prefers-reduced-motion: reduce) {
       .bar-seg {
         transition: none;
@@ -1683,6 +1895,7 @@
       <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
       <button class="tab" id="tab-watch" role="tab" aria-selected="false" aria-controls="panel-watch">Watchlist</button>
       <button class="tab" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
+      <button class="tab" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
     </div>
 
     <!-- ========================= BUYING DESK ========================= -->
@@ -1897,6 +2110,224 @@
       </section>
     </div>
 
+    <div class="panel" id="panel-tech" role="tabpanel" aria-labelledby="tab-tech" hidden>
+
+      <section class="hero">
+        <h1>What it's made of.</h1>
+        <p class="lede">The whole system on one page — every moving part, what it costs to run, and an honest mark against each piece saying whether it exists yet. 🧰</p>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">The whole system 🗺️</h2>
+        <p class="hiw-lede">Four sources feed one matching problem, which feeds one cost engine, which writes to two sheets and comes out three ways. The demo you're looking at is the solid path through the middle.</p>
+
+        <div class="status-key">
+          <span><i class="key-swatch"></i> ✅ Built &amp; running</span>
+          <span><i class="key-swatch is-pending"></i> 🔨 Known how, not built</span>
+          <span><i class="key-swatch is-unsure"></i> ❓ Still unproven</span>
+        </div>
+
+        <div class="flow-wrap">
+          <svg class="flow" viewBox="0 0 1040 800" role="img" aria-label="System flow from data sources through identity matching and the landed cost engine into the Google Sheets watchlist and inventory, and out to the buying desk, SMS alerts and the morning digest."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" opacity="0.55"/></marker></defs><text class="n-band" x="26" y="48">01 · Sources</text><line class="rail" x1="26" y1="56" x2="1014" y2="56"/><rect class="n-box" x="26" y="64" width="232" height="100" rx="3"/><text class="n-title" x="40" y="91">📀 Discogs API</text><text class="n-sub" x="40" y="111">Prices, stock, release metadata</text><text class="n-sub" x="247" y="90" text-anchor="end">✅</text><rect class="n-box is-pending" x="274" y="64" width="232" height="100" rx="3"/><text class="n-title" x="288" y="91">🛒 eBay Browse API</text><text class="n-sub" x="288" y="111">Real listings, seller origin,</text><text class="n-sub" x="288" y="127">quoted shipping to MX</text><text class="n-sub" x="495" y="90" text-anchor="end">🔨</text><rect class="n-box is-pending" x="522" y="64" width="232" height="100" rx="3"/><text class="n-title" x="536" y="91">📧 Bandcamp mail</text><text class="n-sub" x="536" y="111">New-release announcements.</text><text class="n-sub" x="536" y="127">No prices, ever</text><text class="n-sub" x="743" y="90" text-anchor="end">🔨</text><rect class="n-box is-pending" x="770" y="64" width="232" height="100" rx="3"/><text class="n-title" x="784" y="91">🎧 Spotify API</text><text class="n-sub" x="784" y="111">Canonical names, barcodes.</text><text class="n-sub" x="784" y="127">No vinyl, no merch</text><text class="n-sub" x="991" y="90" text-anchor="end">🔨</text><text class="n-band" x="26" y="212">02 · Identity</text><line class="rail" x1="26" y1="220" x2="1014" y2="220"/><rect class="n-box is-unsure" x="274" y="228" width="492" height="74" rx="3"/><text class="n-title" x="288" y="255">🔗 Matching &amp; identity resolution</text><text class="n-sub" x="288" y="275">One record across four sources. Barcodes help; free-text titles do not.</text><text class="n-sub" x="755" y="254" text-anchor="end">❓</text><text class="n-band" x="26" y="350">03 · Costing</text><line class="rail" x1="26" y1="358" x2="1014" y2="358"/><rect class="n-box" x="140" y="366" width="760" height="124" rx="3"/><text class="n-title" x="154" y="393">🧮 Landed cost engine</text><text class="n-sub" x="154" y="413">Price + shipping + duty + IVA, in pesos</text><text class="n-sub" x="889" y="392" text-anchor="end">✅</text><rect class="n-box" x="158" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="172" y="457">💱 FX · live ECB</text><rect class="n-box is-unsure" x="410" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="424" y="457">📦 Shipping · estimated</text><rect class="n-box is-unsure" x="662" y="432" width="240" height="40" rx="3"/><text class="n-sub" x="676" y="457">🛃 Customs · not broker-checked</text><text class="n-band" x="26" y="516">04 · State</text><line class="rail" x1="26" y1="524" x2="1014" y2="524"/><rect class="n-box" x="140" y="532" width="360" height="88" rx="3"/><text class="n-title" x="154" y="559">📋 Watchlist · Google Sheets</text><text class="n-sub" x="154" y="579">One row per album wanted, with</text><text class="n-sub" x="154" y="595">a peso limit and an alert switch</text><text class="n-sub" x="489" y="558" text-anchor="end">✅</text><rect class="n-box is-pending" x="540" y="532" width="360" height="88" rx="3"/><text class="n-title" x="554" y="559">📦 Inventory · Google Sheets</text><text class="n-sub" x="554" y="579">One row per physical copy owned.</text><text class="n-sub" x="554" y="595">Closes the buy-to-shelf loop</text><text class="n-sub" x="889" y="558" text-anchor="end">🔨</text><text class="n-band" x="26" y="660">05 · Output</text><line class="rail" x1="26" y1="668" x2="1014" y2="668"/><rect class="n-box" x="26" y="676" width="300" height="96" rx="3"/><text class="n-title" x="40" y="703">🖥 Buying desk</text><text class="n-sub" x="40" y="723">This interface. Streams results</text><text class="n-sub" x="40" y="739">live, cheapest first</text><text class="n-sub" x="315" y="702" text-anchor="end">✅</text><rect class="n-box is-pending" x="370" y="676" width="300" height="96" rx="3"/><text class="n-title" x="384" y="703">🔔 Alerts · SMS</text><text class="n-sub" x="384" y="723">Fires on crossing a limit.</text><text class="n-sub" x="384" y="739">Simulated in the demo</text><text class="n-sub" x="659" y="702" text-anchor="end">🔨</text><rect class="n-box is-pending" x="714" y="676" width="300" height="96" rx="3"/><text class="n-title" x="728" y="703">📰 Morning digest</text><text class="n-sub" x="728" y="723">A document to read with</text><text class="n-sub" x="728" y="739">your coffee</text><text class="n-sub" x="1003" y="702" text-anchor="end">🔨</text><path class="link" d="M142 164 C 142 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M390 164 C 390 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M638 164 C 638 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M886 164 C 886 196.0, 520 196.0, 520 228" marker-end="url(#ah)"/><path class="link is-pending" d="M520 302 C 520 334.0, 520 334.0, 520 366" marker-end="url(#ah)"/><path class="link" d="M400 490 C 400 511.0, 320 511.0, 320 532" marker-end="url(#ah)"/><path class="link is-pending" d="M640 490 C 640 511.0, 720 511.0, 720 532" marker-end="url(#ah)"/><path class="link" d="M260 620 C 260 648.0, 176 648.0, 176 676" marker-end="url(#ah)"/><path class="link is-pending" d="M400 620 C 400 648.0, 520 648.0, 520 676" marker-end="url(#ah)"/><path class="link is-pending" d="M760 620 C 760 648.0, 864 648.0, 864 676" marker-end="url(#ah)"/></svg>
+        </div>
+
+        <p class="t-note">The one genuinely uncertain box is <strong>identity resolution</strong> — deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes make it tractable where they exist. Where they don't, it's free-text matching, and free-text matching is never finished, only tuned.</p>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">The stack ⚙️</h2>
+        <p class="hiw-lede">Deliberately small. No framework, no database, no build step — the whole thing is TypeScript on Node, a few HTTP calls, and a spreadsheet doing the job a database would otherwise need.</p>
+
+        <div class="t-table-wrap">
+          <table class="t-table">
+            <thead>
+              <tr><th>Piece</th><th>What it is</th><th>Why it's there</th><th>Status</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>🟦 TypeScript · Node</td>
+                <td>The application itself, no runtime dependencies</td>
+                <td>Nothing to keep patched, nothing to break on upgrade</td>
+                <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>▲ Vercel</td>
+                <td>Static page plus serverless functions</td>
+                <td>Hosting and the scheduled sweeps, no server to run</td>
+                <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>📋 Google Sheets</td>
+                <td>Watchlist and inventory storage, via the Sheets API</td>
+                <td>Ian can read and correct the data by hand, which no database allows</td>
+                <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>📀 Discogs API</td>
+                <td>Prices, stock counts, release metadata</td>
+                <td>The pricing signal the whole engine runs on</td>
+                <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>💱 Frankfurter · ECB</td>
+                <td>Daily reference exchange rates</td>
+                <td>Converting to pesos. Free, no key, no account</td>
+                <td><span class="pill">Built</span></td>
+              </tr>
+              <tr>
+                <td>🛒 eBay Browse API</td>
+                <td>Real listings with seller location and quoted shipping</td>
+                <td>The only source that turns an estimated landed cost into a real one</td>
+                <td><span class="pill is-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>📧 Gmail API</td>
+                <td>Reads a dedicated mailbox of Bandcamp follow notifications</td>
+                <td>The only route into Bandcamp that exists</td>
+                <td><span class="pill is-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>🎧 Spotify API</td>
+                <td>Canonical artist and album names, barcodes</td>
+                <td>Makes matching across the other three sources far more reliable</td>
+                <td><span class="pill is-pending">Pending</span></td>
+              </tr>
+              <tr>
+                <td>🤖 Gemini</td>
+                <td>Fuzzy matching and title normalisation</td>
+                <td>Where barcodes run out. Kept in Google to keep the bill in one place</td>
+                <td><span class="pill is-unsure">Unproven</span></td>
+              </tr>
+              <tr>
+                <td>🔔 SMS gateway</td>
+                <td>Texts the desk when a record crosses its limit</td>
+                <td>Rare finds go fast. Email is too slow to be the alert channel</td>
+                <td><span class="pill is-pending">Pending</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">What the APIs won't give us 🚧</h2>
+        <p class="hiw-lede">Each of these is a hard ceiling, not a to-do. They shape what the product can honestly promise, so they're worth knowing before the roadmap is set.</p>
+
+        <div class="grid2">
+          <div class="card">
+            <h3>📀 Discogs</h3>
+            <ul>
+              <li><strong>No marketplace listings.</strong> The API publishes a lowest price and a stock count, and nothing per-copy. Condition, seller and seller location simply aren't available.</li>
+              <li><strong>So origin is a guess.</strong> We use where the record was pressed, because where it ships from isn't offered. A German pressing may sit in Guadalajara.</li>
+              <li><strong>60 requests a minute.</strong> Every record costs two, so a sweep is paced rather than parallel.</li>
+              <li><strong>Scraping is out.</strong> Their terms prohibit it, and the account at risk is the shop's.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🛒 eBay</h3>
+            <ul>
+              <li><strong>No release identifiers.</strong> Listings are free text, so joining them to a Discogs pressing is a matching problem, not a lookup.</li>
+              <li><strong>Roughly 5,000 calls a day</strong> on the standard tier — generous, but it caps how often a large watchlist can be swept.</li>
+              <li><strong>Shipping to Mexico must be asked for explicitly</strong>, per request, or the quote comes back for the wrong country.</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>📧 Bandcamp</h3>
+            <ul>
+              <li><strong>No API at all</strong> for searching what's for sale. The developer API serves artists reporting on their own sales.</li>
+              <li><strong>No prices in the emails.</strong> None. So a Bandcamp find can never carry a landed cost — only a link and a date.</li>
+              <li><strong>We can't follow a label programmatically</strong>, or even ask whether we already do. Ian follows; the app learns the roster from the mail.</li>
+              <li><strong>Coverage is the follow list</strong> — it answers "what's new", never "who has this record".</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>🎧 Spotify</h3>
+            <ul>
+              <li><strong>No vinyl.</strong> It's a streaming catalogue: no format, no pressing, no stock, no price.</li>
+              <li><strong>The merch isn't in the API.</strong> Artist-page merch runs through a third-party storefront integration with no public endpoint, so we can't read it even though you can see it.</li>
+              <li><strong>Barcodes are usually the digital release</strong>, which often differs from the vinyl pressing's. A strong hint, not an identity.</li>
+              <li><strong>Recommendations and audio features were withdrawn</strong> for new apps in late 2024. Nothing should be built on them.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="hiw-section">
+        <h2 class="hiw-h2">What it costs to run 💰</h2>
+        <p class="hiw-lede">Every platform the full system touches. The APIs that matter most — Discogs, eBay, Spotify, Bandcamp, exchange rates — are all free; the running cost is hosting, a mailbox, and the alerts themselves.</p>
+
+        <div class="t-table-wrap">
+          <table class="t-table">
+            <thead>
+              <tr><th>Platform</th><th>What we need it for</th><th>Plan</th><th>Cost</th></tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>📧 Google Workspace</td>
+                <td>The dedicated Bandcamp mailbox, and the Sheets the data lives in</td>
+                <td>Business Starter, one seat</td>
+                <td class="t-cost">~$7–9 / mo</td>
+              </tr>
+              <tr>
+                <td>▲ Vercel</td>
+                <td>Hosting, functions, scheduled sweeps</td>
+                <td>Hobby is free; Pro if it needs password protection or longer runs</td>
+                <td class="t-cost">$0 – $20 / mo</td>
+              </tr>
+              <tr>
+                <td>🔔 SMS gateway</td>
+                <td>Alerts to the desk</td>
+                <td>Pay per message, plus a number to send from</td>
+                <td class="t-cost">~$1–2 / mo<br>+ ~$0.05 / text</td>
+              </tr>
+              <tr>
+                <td>🤖 Gemini API</td>
+                <td>Matching and title normalisation</td>
+                <td>Free tier covers light use; usage-priced beyond it</td>
+                <td class="t-cost">$0 – ~$5 / mo</td>
+              </tr>
+              <tr>
+                <td>📀 Discogs API</td>
+                <td>Prices and metadata</td>
+                <td>Personal access token</td>
+                <td class="t-cost">Free</td>
+              </tr>
+              <tr>
+                <td>🛒 eBay API</td>
+                <td>Listings, seller origin, real shipping</td>
+                <td>Developer account, production keys</td>
+                <td class="t-cost">Free</td>
+              </tr>
+              <tr>
+                <td>🎧 Spotify API</td>
+                <td>Canonical names and barcodes</td>
+                <td>Developer account</td>
+                <td class="t-cost">Free</td>
+              </tr>
+              <tr>
+                <td>📧 Bandcamp</td>
+                <td>New-release announcements</td>
+                <td>A fan account following labels — no paid tier exists</td>
+                <td class="t-cost">Free</td>
+              </tr>
+              <tr>
+                <td>💱 Frankfurter · ECB</td>
+                <td>Exchange rates</td>
+                <td>Public endpoint, no account</td>
+                <td class="t-cost">Free</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="t-total">
+          <strong>≈ $10–35 per month</strong> to run the whole thing, depending on hosting tier and how many alerts actually fire. 📉
+        </div>
+
+        <p class="t-note">⚠️ <strong>Treat these as planning figures, not quotes.</strong> Every one needs confirming at signup — published pricing moves, and the SMS line in particular is the one to check carefully: texting Mexican numbers costs several times what it does in the US and requires registering the sender before anything will deliver. The AI line is deliberately kept inside Google so it lands on the Workspace bill rather than becoming a fourth vendor.</p>
+      </section>
+    </div>
+
   </div>
 
   <script>
@@ -1977,7 +2408,7 @@
 
       // ------------------------------------------------ tabs
 
-      const TABS = ['desk', 'watch', 'hiw'];
+      const TABS = ['desk', 'watch', 'hiw', 'tech'];
 
       function selectTab(which) {
         TABS.forEach((t) => {

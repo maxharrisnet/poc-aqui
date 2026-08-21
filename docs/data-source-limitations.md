@@ -26,6 +26,7 @@ by what we assumed.
 | **eBay** | **Yes** | Official Browse API — seller location, condition, real shipping cost to Mexico |
 | **Discogs** | **No** | Official API publishes aggregate statistics only. No endpoint returns the listings for a release |
 | **Bandcamp** | **Announcements only, no prices** | Follow notifications sent to a dedicated mailbox — tells us a record was listed, never what it costs |
+| **Spotify** | **No — it has no vinyl at all** | Useful for identifying records precisely, not for finding or pricing them |
 
 ---
 
@@ -149,6 +150,47 @@ The honest limit is that this can confirm a label is followed, but never that
 one is not. A label Ian follows that has released nothing yet looks identical
 to a label he has never followed.
 
+## Spotify
+
+Spotify is worth addressing because its API is genuinely open and generous,
+and because the obvious hope — that it could reach the vinyl and merchandise
+sold on artist pages — does not survive contact with it.
+
+**Spotify is a streaming catalogue. It has no concept of a physical record.**
+No format, no pressing, no stock, no price, no seller. It cannot tell us that a
+record exists on vinyl, let alone what a copy costs.
+
+**The merchandise on artist pages is not available through the API.** It is
+sold through a third-party storefront integration rather than by Spotify
+itself, and no public endpoint exposes it. It is visible on the page and
+unreadable by us — a frustrating combination, but a firm one.
+
+What Spotify is genuinely good for is the problem sitting underneath
+everything else: **knowing that two records are the same record.**
+
+- **Barcodes.** Spotify publishes a UPC or EAN for an album, and Discogs
+  carries barcodes too, which gives us a real identifier to match on instead of
+  comparing titles and hoping. One caveat that matters: Spotify's barcode is
+  usually the digital release, which frequently differs from the barcode on the
+  vinyl pressing. It is a strong hint, not proof.
+- **Canonical names.** A single authoritative spelling of every artist and
+  album, to reconcile eBay's free-text listing titles and Discogs' disambiguated
+  names ("Atmosphere (2)") against.
+- **Seeding the watchlist.** With Ian's permission, his saved albums and
+  followed artists could populate the watchlist directly — a considerably
+  better start than typing records in one at a time.
+
+Two constraints to plan around: Spotify withdrew several endpoints from new
+applications in late 2024, including recommendations and audio features, so
+nothing should be built on those; and an application is limited to 25
+authorised users until an extended quota is granted, which is irrelevant for
+Ian alone and would matter if this ever widened.
+
+Spotify does not reduce the dependency on eBay. It makes the matching that
+eBay requires substantially more reliable.
+
+---
+
 ## What the interface can honestly promise
 
 The three sources give three different kinds of answer, and the buying desk
@@ -165,10 +207,12 @@ actually known:
 Only the eBay figure is a landed cost. The Discogs figure is a market price
 with the import cost estimated around it. The Bandcamp entry is a lead.
 
-This also means a Bandcamp-only record has no cost breakdown to show — no
-price, no origin, therefore no duty and no tax. That row is deliberately a
-different shape from the others, because pretending otherwise would put a
-fabricated number in front of a buying decision.
+This also means a record found only on Bandcamp has no cost breakdown to show —
+no price, no origin, therefore no duty and no tax. **Agreed treatment: that row
+drops the cost bar entirely, says plainly that pricing is not available, and
+offers the buy buttons underneath.** An empty bar or a zeroed one would both
+read as information; a sentence saying we do not know is the only honest
+version, and it costs the desk nothing — the link is what they wanted anyway.
 
 ---
 
@@ -180,7 +224,10 @@ fabricated number in front of a buying decision.
 2. **Discogs remains a pricing signal, not a listing feed.** It answers "what
    does this pressing generally go for and is anyone selling it", which is
    genuinely useful, and it will not answer more than that.
-3. **Bandcamp is a supply feed, not a search.** It tells the desk when
+3. **Spotify is an identity layer.** It cannot find or price a record, and its
+   merch is closed to us. It earns its place by making the match between
+   sources reliable, which is the hardest part of adding eBay.
+4. **Bandcamp is a supply feed, not a search.** It tells the desk when
    something worth having appears, and hands over a link. Useful, and
    deliberately not part of the cost engine.
 
