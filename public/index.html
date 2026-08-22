@@ -130,8 +130,12 @@
       -webkit-font-smoothing: antialiased;
     }
 
+    /* Wide enough that the system diagram fits without a scrollbar: its SVG
+       has a 1020px floor, and 1120 leaves room for the shell padding, the
+       diagram frame and its inset. Prose blocks carry their own max-widths,
+       so the extra room goes to the wide content rather than the line length. */
     .shell {
-      max-width: 1060px;
+      max-width: 1120px;
       margin: 0 auto;
       padding: 0 24px 90px;
     }
@@ -1788,94 +1792,6 @@
       color: var(--ink);
     }
 
-    .wl-item {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
-      grid-template-areas: "main best watch";
-      column-gap: 16px;
-      align-items: start;
-      border-top: 1px solid var(--kraft-deep);
-      padding: 15px 0 14px;
-    }
-
-    .wl-main {
-      grid-area: main;
-      min-width: 0;
-    }
-
-    .wl-title {
-      display: block;
-      font-size: 1rem;
-      font-weight: 600;
-      line-height: 1.25;
-    }
-
-    .wl-artist {
-      display: block;
-      margin-top: 2px;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--carbon);
-    }
-
-    .wl-meta {
-      margin: 8px 0 0;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      letter-spacing: 0.06em;
-      text-transform: uppercase;
-      color: var(--carbon);
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px 14px;
-    }
-
-    .wl-alerted {
-      color: var(--c-alert);
-      font-weight: 700;
-    }
-
-    .wl-best {
-      grid-area: best;
-      text-align: right;
-      font-family: var(--mono);
-      font-size: 0.95rem;
-      font-weight: 700;
-      white-space: nowrap;
-      padding-top: 1px;
-    }
-
-    .wl-best.is-none {
-      font-weight: 500;
-      color: var(--carbon);
-    }
-
-    .wl-best span {
-      display: block;
-      margin-top: 3px;
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--carbon);
-    }
-
-    @media (max-width: 720px) {
-      .wl-item {
-        grid-template-columns: minmax(0, 1fr) auto;
-        grid-template-areas:
-          "main watch"
-          "best watch";
-      }
-
-      .wl-best {
-        text-align: left;
-        margin-top: 10px;
-      }
-    }
     /* ---------------------------------------------------- inventory */
 
     /* Shop-wide figures, read before any single row is. Capital and retail
@@ -1915,13 +1831,13 @@
       color: var(--carbon);
     }
 
-    /* Sized to keep "$133,180.00 MXN" on one line at the width five of these
-       get on a desktop, and to shrink rather than wrap below it. */
+    /* Sized to keep "$133,180 MXN" on one line at the width six of these get
+       on a desktop, and to shrink rather than wrap below it. */
     .inv-stat b {
       display: block;
       white-space: nowrap;
       font-family: var(--mono);
-      font-size: clamp(0.95rem, 1.5vw, 1.2rem);
+      font-size: clamp(0.9rem, 1.25vw, 1.1rem);
       font-weight: 700;
       color: var(--ink);
       font-variant-numeric: tabular-nums;
@@ -2207,6 +2123,49 @@
     .inv-price.is-none {
       font-weight: 500;
       color: var(--carbon);
+    }
+
+    /* The second line of the price column: what a sweep last found. Muted
+       unless the figure is under the record's alert price, which is the one
+       thing on the row worth a colour. */
+    .inv-best {
+      display: block;
+      margin-top: 2px;
+      font-size: 0.72rem;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--carbon);
+      white-space: nowrap;
+    }
+
+    .inv-price.is-under,
+    .inv-best.is-under {
+      color: var(--c-alert);
+    }
+
+    .inv-pressings {
+      display: block;
+      margin-top: 4px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--carbon);
+    }
+
+    .inv-remove {
+      grid-column: 1 / -1;
+      margin: 4px 0 0;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      color: var(--carbon);
+    }
+
+    .inv-remove span {
+      margin-left: 10px;
+    }
+
+    .wchip.is-hit {
+      border-color: var(--c-alert);
+      color: var(--c-alert);
     }
 
     /* A switch, not a sentence. At forty rows a word-wide button per row was
@@ -3612,7 +3571,6 @@
 
     <div class="tabs" role="tablist">
       <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
-      <button class="tab" id="tab-watch" role="tab" aria-selected="false" aria-controls="panel-watch">Watchlist</button>
       <button class="tab" id="tab-inv" role="tab" aria-selected="false" aria-controls="panel-inv">Inventory</button>
       <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
       <button class="tab tab-info" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
@@ -3631,7 +3589,7 @@
             <li><strong>Type up to ten records</strong>: artist and title, then press <em>Check these records</em>. No list of your own? Press <em>Use the demo list</em>.</li>
             <li><strong>Read the price as one number.</strong> Every result is the total to get that record to your door, cheapest first.</li>
             <li><strong>Hover the coloured bar</strong> to see what each part of that total costs, or open a row for the full breakdown and a link to the listing.</li>
-            <li><strong>Press Watch to keep a record.</strong> Set a peso limit and it tells you when a copy drops under it.</li>
+            <li><strong>Press Watch to keep a record.</strong> It joins the inventory as wanted; set a peso limit and it tells you when a copy drops under it.</li>
           </ul>
         </div>
       </section>
@@ -3687,48 +3645,6 @@
 
     </div>
 
-    <!-- ========================= WATCHLIST ========================= -->
-    <div class="panel" id="panel-watch" role="tabpanel" aria-labelledby="tab-watch" hidden>
-
-      <section class="hero">
-        <h1>Records you're waiting on.</h1>
-        <p class="lede"><strong>Everything you've pressed Watch on.</strong> Each record keeps a peso limit, and a sweep tells you when a copy has dipped under it.</p>
-        <ul class="howto">
-          <li><strong>Set a limit per record</strong> under <em>Alert under</em>. It saves the moment you leave the field. Limits are always in pesos, because that's what you pay the landed cost in; the MXN/USD toggle only changes how the best price seen is displayed.</li>
-          <li><strong>Press Check my watchlist</strong> to price every pressing being watched. Anything under your limit comes back flagged, and the best price seen updates in place.</li>
-          <li><strong>Press Watching to drop a record.</strong> It stops being swept, and the row disappears from this list.</li>
-          <li id="wl-sheet-item" hidden><strong>The list itself lives in a Google Sheet</strong>: <a id="wl-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand.</li>
-        </ul>
-      </section>
-
-      <section class="search">
-        <div class="search-head">
-          <h2>Add records to watch</h2>
-          <span class="search-count" id="wl-qcount">0 of 10</span>
-        </div>
-        <div id="wl-qrows"></div>
-        <button class="btn-link" id="wl-addrow" type="button">+ Add another</button>
-        <div class="search-actions">
-          <button class="btn" id="wl-add" type="button">Add to watchlist</button>
-          <span class="add-status" id="wl-add-status"></span>
-        </div>
-      </section>
-
-      <section class="search">
-        <div class="search-head">
-          <h2>Watched records</h2>
-          <span class="search-count" id="wl-count"></span>
-        </div>
-
-        <div id="wl-list"></div>
-
-        <div class="search-actions">
-          <button class="btn" id="wl-run" type="button">Check my watchlist</button>
-          <button class="btn-link" id="wl-refresh" type="button">Refresh from the sheet</button>
-        </div>
-      </section>
-    </div>
-
     <!-- ========================= INVENTORY ========================= -->
     <div class="panel" id="panel-inv" role="tabpanel" aria-labelledby="tab-inv" hidden>
 
@@ -3737,15 +3653,29 @@
         <p class="lede"><strong>Every copy the shop owns</strong>: what it cost to land, what it's priced at, and how many are left. Tell a record when to start looking and what price is worth waking you for, and it does the looking copy.</p>
         <ul class="howto">
           <li><strong>Adjust stock with &minus; and +</strong> as copies sell or a parcel lands. Every change writes straight to the sheet.</li>
-          <li><strong>Open a row</strong> for its margin, its watch and alert settings, and where a copy could be bought. Folded, a row is a sleeve, a name, a count and a price, so a few hundred of them still scan.</li>
+          <li><strong>Add records by name</strong> under <em>Add records</em>. Each one is looked up on Discogs and joins the list as wanted, with its watch switched on, so the next sweep looks for a copy. Pressing <em>Watch</em> on the buying desk does the same.</li>
+          <li><strong>Open a row</strong> for its margin, its watch and alert settings, the best price seen for it, and where a copy could be bought. Folded, a row is a sleeve, a name, a count and a price, so a few hundred of them still scan.</li>
           <li><strong>Say when to start looking</strong> under <em>Watch when stock hits</em>. Fall to that count and the record arms its own watch: that's the loop the <button class="lnk-inline" type="button" data-goto="flow">system diagram</button> turns on.</li>
           <li><strong>Say what's worth interrupting you for</strong> under <em>Alert under</em>: the landed price below which a copy is worth a text. Nothing here buys anything, so the alert exists to put a person in front of the decision.</li>
-          <li><strong>Press Check listings now</strong> to price a copy this second. Discogs comes back with a real landed figure; the other platforms open as searches, because their APIs aren't built yet. Read it alongside <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</li>
-          <li id="inv-sheet-item" hidden><strong>The stock list lives in a Google Sheet</strong>: <a id="inv-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand. Stock counts belong in a real database eventually; the sheet is what got the demo standing up.</li>
+          <li><strong>Press Check listings now</strong> to price every watched pressing of a record this second, or <em>Check my watchlist</em> to do that for everything being watched. Discogs comes back with a real landed figure; the other platforms open as searches, because their APIs aren't built yet. Read it alongside <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</li>
+          <li id="inv-sheet-item" hidden><strong>Stock and watches live in one Google Sheet</strong>: <a id="inv-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand. A record the shop wants is a row with no copies yet. Stock counts belong in a real database eventually; the sheet is what got the demo standing up.</li>
         </ul>
       </section>
 
       <div class="inv-summary" id="inv-summary"></div>
+
+      <section class="search">
+        <div class="search-head">
+          <h2>Add records</h2>
+          <span class="search-count" id="inv-qcount">0 of 10</span>
+        </div>
+        <div id="inv-qrows"></div>
+        <button class="btn-link" id="inv-addrow" type="button">+ Add another</button>
+        <div class="search-actions">
+          <button class="btn" id="inv-add" type="button">Add to inventory</button>
+          <span class="add-status" id="inv-add-status"></span>
+        </div>
+      </section>
 
       <section class="search">
         <div class="search-head">
@@ -3755,6 +3685,8 @@
 
         <div class="inv-filters">
           <button class="chip" type="button" data-invfilter="all" aria-pressed="true">All</button>
+          <button class="chip" type="button" data-invfilter="shelf" aria-pressed="false">On the shelf</button>
+          <button class="chip" type="button" data-invfilter="wanted" aria-pressed="false">Wanted</button>
           <button class="chip" type="button" data-invfilter="low" aria-pressed="false">Needs restocking</button>
           <button class="chip" type="button" data-invfilter="watching" aria-pressed="false">Watched</button>
           <input class="inv-find" id="inv-find" type="search" placeholder="Filter by artist or title" aria-label="Filter stock by artist or title">
@@ -3764,6 +3696,7 @@
         <div class="pager" id="inv-pager" hidden></div>
 
         <div class="search-actions">
+          <button class="btn" id="inv-run" type="button">Check my watchlist</button>
           <button class="btn-link" id="inv-refresh" type="button">Refresh from the sheet</button>
         </div>
       </section>
@@ -3888,7 +3821,7 @@
         <p class="hiw-lede">A loop, not a line. Hover or tab to any box for what it is, why it's there and what it runs on. 💡</p>
         <ul class="t-bullets">
           <li><strong>Sales pull stock down.</strong> Low stock switches a record's watch back on by itself.</li>
-          <li><strong>The watchlist drives the sources.</strong> Four places to find a copy, two to confirm which record it is, one engine to price it in pesos.</li>
+          <li><strong>Watched records drive the sources.</strong> Four places to find a copy, two to confirm which record it is, one engine to price it in pesos.</li>
           <li><strong>A person buys.</strong> Nothing here spends money by itself. The parcel that lands becomes stock, and the loop closes.</li>
         </ul>
 
@@ -3900,14 +3833,14 @@
         </div>
 
         <div class="flow-wrap">
-          <svg class="flow" viewBox="0 0 1180 1508" role="img" aria-label="System loop: sales in the shop pull stock down, low stock switches a record&#x27;s watch on, the watchlist drives Discogs, eBay, Mercado Libre and the Bandcamp mailbox, MusicBrainz and Spotify confirm which record is which, the landed-cost engine prices every copy in pesos, a person decides what to buy, and the parcel that lands becomes stock again."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" opacity="0.55"/></marker></defs><text class="n-band" x="26" y="44">01 · The shop: where demand comes from</text><line class="rail" x1="26" y1="52" x2="1094" y2="52"/><g class="node" tabindex="0" role="group" aria-label="🏪 Shop floor · in person. What it is: Records are sold in person, over the counter. There is no online store, cart or checkout to build; what&#x27;s needed is a till that records which copy left the shelf. Why it&#x27;s there: Every sale over the counter is the demand signal the rest of the system runs on. Without it, nothing knows when stock is low. Runs on: A card till, Clip or Stripe (undecided), feeding the inventory database." data-title="🏪 Shop floor · in person" data-what="Records are sold in person, over the counter. There is no online store, cart or checkout to build; what&#x27;s needed is a till that records which copy left the shelf." data-why="Every sale over the counter is the demand signal the rest of the system runs on. Without it, nothing knows when stock is low." data-stack="A card till, Clip or Stripe (undecided), feeding the inventory database."><rect class="n-box is-pending" x="26" y="62" width="514" height="112" rx="3"/><text class="n-title" x="42" y="96">🏪 Shop floor · in person</text><text class="n-sub" x="42" y="122"><tspan class="n-k">WHAT</tspan><tspan x="84">Records sell over the counter. No online store.</tspan></text><text class="n-sub" x="42" y="141"><tspan class="n-k">WHY</tspan><tspan x="84">Every sale is the demand signal the rest runs on.</tspan></text><text class="n-sub" x="526" y="95" text-anchor="end">🔨</text><text class="n-tag" x="524" y="162" text-anchor="end">TILL: CLIP OR STRIPE</text></g><g class="node" tabindex="0" role="group" aria-label="📦 Inventory · database. What it is: One row per physical copy: what it cost landed, what it&#x27;s priced at, how many are on the shelf. Why it&#x27;s there: The shop floor depends on these numbers being right. A spreadsheet has no locking, no history and no constraints, so this is the one piece that has to leave Sheets. Runs on: Google Sheets as the placeholder; a real database to follow." data-title="📦 Inventory · database" data-what="One row per physical copy: what it cost landed, what it&#x27;s priced at, how many are on the shelf." data-why="The shop floor depends on these numbers being right. A spreadsheet has no locking, no history and no constraints, so this is the one piece that has to leave Sheets." data-stack="Google Sheets as the placeholder; a real database to follow."><rect class="n-box is-pending" x="580" y="62" width="514" height="112" rx="3"/><text class="n-title" x="596" y="96">📦 Inventory · database</text><text class="n-sub" x="596" y="122"><tspan class="n-k">WHAT</tspan><tspan x="638">One row per copy: landed cost, price, stock.</tspan></text><text class="n-sub" x="596" y="141"><tspan class="n-k">WHY</tspan><tspan x="638">Stock levels the shop floor depends on.</tspan></text><text class="n-sub" x="1080" y="95" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="162" text-anchor="end">SHEETS FOR NOW · REAL DATABASE NEXT</text></g><text class="n-band" x="26" y="222">02 · What to watch</text><line class="rail" x1="26" y1="230" x2="1094" y2="230"/><g class="node" tabindex="0" role="group" aria-label="📉 Stock threshold. What it is: A minimum shelf count per title. Under it, that record&#x27;s watch and alerts turn back on by themselves. Some titles carry no threshold and are simply always watched, or toggled by hand. Why it&#x27;s there: It&#x27;s what makes this a loop: selling a copy is what starts the hunt for the next one, without anyone having to remember. Runs on: A rule in the application, checked on every scheduled sweep on Vercel." data-title="📉 Stock threshold" data-what="A minimum shelf count per title. Under it, that record&#x27;s watch and alerts turn back on by themselves. Some titles carry no threshold and are simply always watched, or toggled by hand." data-why="It&#x27;s what makes this a loop: selling a copy is what starts the hunt for the next one, without anyone having to remember." data-stack="A rule in the application, checked on every scheduled sweep on Vercel."><rect class="n-box is-pending" x="26" y="240" width="514" height="112" rx="3"/><text class="n-title" x="42" y="274">📉 Stock threshold</text><text class="n-sub" x="42" y="300"><tspan class="n-k">WHAT</tspan><tspan x="84">A floor per title, or simply "always watch".</tspan></text><text class="n-sub" x="42" y="319"><tspan class="n-k">WHY</tspan><tspan x="84">Low stock switches the watch back on by itself.</tspan></text><text class="n-sub" x="526" y="273" text-anchor="end">🔨</text><text class="n-tag" x="524" y="340" text-anchor="end">APP RULE · SCHEDULED SWEEP</text></g><g class="node" tabindex="0" role="group" aria-label="📋 Watchlist · Google Sheets. What it is: One row per album wanted, with a peso limit and an alert switch. The app reads and writes it through the Sheets API. Why it&#x27;s there: It stays in Google Sheets deliberately: it&#x27;s the interface Ian already works in, and he can fix a row there faster than any form would let him. Runs on: Google Sheets, via the Sheets API." data-title="📋 Watchlist · Google Sheets" data-what="One row per album wanted, with a peso limit and an alert switch. The app reads and writes it through the Sheets API." data-why="It stays in Google Sheets deliberately: it&#x27;s the interface Ian already works in, and he can fix a row there faster than any form would let him." data-stack="Google Sheets, via the Sheets API."><rect class="n-box" x="580" y="240" width="514" height="112" rx="3"/><text class="n-title" x="596" y="274">📋 Watchlist · Google Sheets</text><text class="n-sub" x="596" y="300"><tspan class="n-k">WHAT</tspan><tspan x="638">One row per album wanted: peso limit, alert switch.</tspan></text><text class="n-sub" x="596" y="319"><tspan class="n-k">WHY</tspan><tspan x="638">Ian's own spreadsheet, faster to fix than any form.</tspan></text><text class="n-sub" x="1080" y="273" text-anchor="end">✅</text><text class="n-tag" x="1078" y="340" text-anchor="end">GOOGLE SHEETS API</text></g><text class="n-band" x="26" y="400">03 · Sources: who has a copy, and what’s new</text><line class="rail" x1="26" y1="408" x2="1094" y2="408"/><g class="node" tabindex="0" role="group" aria-label="📀 Discogs API. What it is: Lowest price, stock count and release metadata for every pressing, from the official API. Sanctioned endpoints only, no scraping. Why it&#x27;s there: The deepest catalogue in the business and the reference for what a pressing is worth. It answers &#x27;what does this go for&#x27;, not &#x27;who has one&#x27;. Runs on: Discogs API, free, personal access token. 60 requests a minute." data-title="📀 Discogs API" data-what="Lowest price, stock count and release metadata for every pressing, from the official API. Sanctioned endpoints only, no scraping." data-why="The deepest catalogue in the business and the reference for what a pressing is worth. It answers &#x27;what does this go for&#x27;, not &#x27;who has one&#x27;." data-stack="Discogs API, free, personal access token. 60 requests a minute."><rect class="n-box" x="26" y="418" width="252" height="124" rx="3"/><text class="n-title" x="42" y="452">📀 Discogs API</text><text class="n-sub" x="42" y="478"><tspan class="n-k">WHAT</tspan><tspan x="84">Prices, stock counts</tspan></text><text class="n-sub" x="42" y="497"><tspan class="n-k">WHY</tspan><tspan x="84">The pricing reference</tspan></text><text class="n-sub" x="264" y="451" text-anchor="end">✅</text><text class="n-tag" x="262" y="530" text-anchor="end">FREE · 60 CALLS / MIN</text></g><g class="node" tabindex="0" role="group" aria-label="🛒 eBay Browse API. What it is: Real listings: who is selling, where it ships from, what shipping to Mexico actually costs, and the copy&#x27;s condition. Sixteen marketplaces, Europe included, on one call. Why it&#x27;s there: The only source that turns two of the cost engine&#x27;s estimates, shipping and origin, into quoted facts. Runs on: eBay Browse API, free, developer account. 5,000 calls a day." data-title="🛒 eBay Browse API" data-what="Real listings: who is selling, where it ships from, what shipping to Mexico actually costs, and the copy&#x27;s condition. Sixteen marketplaces, Europe included, on one call." data-why="The only source that turns two of the cost engine&#x27;s estimates, shipping and origin, into quoted facts." data-stack="eBay Browse API, free, developer account. 5,000 calls a day."><rect class="n-box is-pending" x="298" y="418" width="252" height="124" rx="3"/><text class="n-title" x="314" y="452">🛒 eBay Browse API</text><text class="n-sub" x="314" y="478"><tspan class="n-k">WHAT</tspan><tspan x="356">Real listings, sellers</tspan></text><text class="n-sub" x="314" y="497"><tspan class="n-k">WHY</tspan><tspan x="356">Shipping as a fact</tspan></text><text class="n-sub" x="536" y="451" text-anchor="end">🔨</text><text class="n-tag" x="534" y="530" text-anchor="end">FREE · 5,000 CALLS / DAY</text></g><g class="node" tabindex="0" role="group" aria-label="🇲🇽 Mercado Libre. What it is: Domestic Mexican listings with price, seller and shipping, through the public catalogue search. Why it&#x27;s there: Skips customs, duty, the tasa global and the international lane entirely. Landed cost is price plus domestic postage: the one source where our number is exact. Runs on: Mercado Libre API, free, our own app token." data-title="🇲🇽 Mercado Libre" data-what="Domestic Mexican listings with price, seller and shipping, through the public catalogue search." data-why="Skips customs, duty, the tasa global and the international lane entirely. Landed cost is price plus domestic postage: the one source where our number is exact." data-stack="Mercado Libre API, free, our own app token."><rect class="n-box is-pending" x="570" y="418" width="252" height="124" rx="3"/><text class="n-title" x="586" y="452">🇲🇽 Mercado Libre</text><text class="n-sub" x="586" y="478"><tspan class="n-k">WHAT</tspan><tspan x="628">Mexican listings</tspan></text><text class="n-sub" x="586" y="497"><tspan class="n-k">WHY</tspan><tspan x="628">No customs, no import</tspan></text><text class="n-sub" x="808" y="451" text-anchor="end">🔨</text><text class="n-tag" x="806" y="530" text-anchor="end">FREE · OWN APP TOKEN</text></g><g class="node" tabindex="0" role="group" aria-label="📧 Bandcamp mail. What it is: No search API exists, so a dedicated mailbox receives Bandcamp follow notifications and the European shops&#x27; newsletters. We learn a record was listed: a link and a date, never a price. Why it&#x27;s there: The indie pressings that never reach Discogs, from labels Ian already follows. It answers &#x27;what&#x27;s new&#x27;, never &#x27;who has this record&#x27;. Runs on: A Google Workspace mailbox, read through the Gmail API." data-title="📧 Bandcamp mail" data-what="No search API exists, so a dedicated mailbox receives Bandcamp follow notifications and the European shops&#x27; newsletters. We learn a record was listed: a link and a date, never a price." data-why="The indie pressings that never reach Discogs, from labels Ian already follows. It answers &#x27;what&#x27;s new&#x27;, never &#x27;who has this record&#x27;." data-stack="A Google Workspace mailbox, read through the Gmail API."><rect class="n-box is-pending" x="842" y="418" width="252" height="124" rx="3"/><text class="n-title" x="858" y="452">📧 Bandcamp mail</text><text class="n-sub" x="858" y="478"><tspan class="n-k">WHAT</tspan><tspan x="900">New-release emails</tspan></text><text class="n-sub" x="858" y="497"><tspan class="n-k">WHY</tspan><tspan x="900">Leads, never prices</tspan></text><text class="n-sub" x="1080" y="451" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="530" text-anchor="end">GMAIL API · FREE</text></g><text class="n-band" x="26" y="590">04 · Identity: which record is which</text><line class="rail" x1="26" y1="598" x2="1094" y2="598"/><g class="node" tabindex="0" role="group" aria-label="🧬 MusicBrainz. What it is: Free, open, no API key. Barcodes, release groups and how pressings relate to each other, curated by people who care about exactly the distinctions a record buyer cares about. Why it&#x27;s there: It finds nothing and prices nothing, but it makes every other source match reliably. The cheapest, highest-leverage piece on the list, so it goes in first. Runs on: MusicBrainz API, free, no account. One request a second." data-title="🧬 MusicBrainz" data-what="Free, open, no API key. Barcodes, release groups and how pressings relate to each other, curated by people who care about exactly the distinctions a record buyer cares about." data-why="It finds nothing and prices nothing, but it makes every other source match reliably. The cheapest, highest-leverage piece on the list, so it goes in first." data-stack="MusicBrainz API, free, no account. One request a second."><rect class="n-box is-pending" x="26" y="608" width="252" height="112" rx="3"/><text class="n-title" x="42" y="642">🧬 MusicBrainz</text><text class="n-sub" x="42" y="668"><tspan class="n-k">WHAT</tspan><tspan x="84">Barcodes, pressings</tspan></text><text class="n-sub" x="42" y="687"><tspan class="n-k">WHY</tspan><tspan x="84">Which record is which</tspan></text><text class="n-sub" x="264" y="641" text-anchor="end">🔨</text><text class="n-tag" x="262" y="708" text-anchor="end">FREE · OPEN · NO KEY</text></g><g class="node" tabindex="0" role="group" aria-label="🔗 Matching · which record is which. What it is: Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes from MusicBrainz and Spotify make it exact where they exist; everywhere else it&#x27;s free-text matching. Why it&#x27;s there: Without it the sources can&#x27;t be compared, and a landed cost can&#x27;t be put against the right record. It is never finished, only tuned. Runs on: Barcodes from MusicBrainz and Spotify first; Gemini for fuzzy matching and title clean-up where they run out." data-title="🔗 Matching · which record is which" data-what="Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes from MusicBrainz and Spotify make it exact where they exist; everywhere else it&#x27;s free-text matching." data-why="Without it the sources can&#x27;t be compared, and a landed cost can&#x27;t be put against the right record. It is never finished, only tuned." data-stack="Barcodes from MusicBrainz and Spotify first; Gemini for fuzzy matching and title clean-up where they run out."><rect class="n-box is-unsure" x="298" y="608" width="524" height="112" rx="3"/><text class="n-title" x="314" y="642">🔗 Matching · which record is which</text><text class="n-sub" x="314" y="668"><tspan class="n-k">WHAT</tspan><tspan x="356">Is this listing the same record as that pressing?</tspan></text><text class="n-sub" x="314" y="687"><tspan class="n-k">WHY</tspan><tspan x="356">Barcodes help, free-text titles don't.</tspan></text><text class="n-sub" x="808" y="641" text-anchor="end">❓</text><text class="n-tag" x="806" y="708" text-anchor="end">BARCODES FIRST · GEMINI AFTER</text></g><g class="node" tabindex="0" role="group" aria-label="🎧 Spotify API. What it is: Canonical artist and album names plus barcodes. No vinyl in it at all: it can&#x27;t find or price a record. Why it&#x27;s there: Makes matching across the other sources more reliable, and can seed the watchlist from Ian&#x27;s saved albums instead of typing them in. Runs on: Spotify Web API, free, developer account. Five allowlisted users in development mode." data-title="🎧 Spotify API" data-what="Canonical artist and album names plus barcodes. No vinyl in it at all: it can&#x27;t find or price a record." data-why="Makes matching across the other sources more reliable, and can seed the watchlist from Ian&#x27;s saved albums instead of typing them in." data-stack="Spotify Web API, free, developer account. Five allowlisted users in development mode."><rect class="n-box is-pending" x="842" y="608" width="252" height="112" rx="3"/><text class="n-title" x="858" y="642">🎧 Spotify API</text><text class="n-sub" x="858" y="668"><tspan class="n-k">WHAT</tspan><tspan x="900">Names and barcodes</tspan></text><text class="n-sub" x="858" y="687"><tspan class="n-k">WHY</tspan><tspan x="900">Second identity check</tspan></text><text class="n-sub" x="1080" y="641" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="708" text-anchor="end">FREE · 5 USERS MAX</text></g><text class="n-band" x="26" y="768">05 · Costing</text><line class="rail" x1="26" y1="776" x2="1094" y2="776"/><g class="node" tabindex="0" role="group" aria-label="🧮 Landed cost engine. What it is: Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. Fully built. Why it&#x27;s there: It&#x27;s the reason the numbers on the buying desk mean anything, and the part that decides whether a copy is worth importing at all. Runs on: TypeScript on Node, running as Vercel functions. No framework, no build step." data-title="🧮 Landed cost engine" data-what="Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. Fully built." data-why="It&#x27;s the reason the numbers on the buying desk mean anything, and the part that decides whether a copy is worth importing at all." data-stack="TypeScript on Node, running as Vercel functions. No framework, no build step."><rect class="n-box" x="140" y="786" width="840" height="148" rx="3"/><text class="n-title" x="156" y="820">🧮 Landed cost engine</text><text class="n-sub" x="156" y="846"><tspan class="n-k">WHAT</tspan><tspan x="198">Price + shipping + duty + IVA, in pesos, for every candidate copy</tspan></text><text class="n-sub" x="156" y="865"><tspan class="n-k">WHY</tspan><tspan x="198">Why the numbers on the buying desk mean anything.</tspan></text><text class="n-sub" x="966" y="819" text-anchor="end">✅</text><text class="n-tag" x="964" y="865" text-anchor="end">TYPESCRIPT · NODE · VERCEL</text></g><g class="node" tabindex="0" role="group" aria-label="💱 FX · live ECB. What it is: Daily ECB reference rates, fetched at the start of every run. Why it&#x27;s there: Everything is priced in pesos; a stale rate is a wrong price. Runs on: Frankfurter API, free, no key, no account." data-title="💱 FX · live ECB" data-what="Daily ECB reference rates, fetched at the start of every run." data-why="Everything is priced in pesos; a stale rate is a wrong price." data-stack="Frankfurter API, free, no key, no account."><rect class="n-box" x="158" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="174" y="906">💱 FX · live ECB</text></g><g class="node" tabindex="0" role="group" aria-label="📦 Shipping · estimated. What it is: Sensible estimates by country, not a live carrier quote. Why it&#x27;s there: Labelled low-confidence everywhere it appears, and the first thing eBay&#x27;s quoted shipping replaces. Runs on: A per-country table in the code." data-title="📦 Shipping · estimated" data-what="Sensible estimates by country, not a live carrier quote." data-why="Labelled low-confidence everywhere it appears, and the first thing eBay&#x27;s quoted shipping replaces." data-stack="A per-country table in the code."><rect class="n-box is-unsure" x="433" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="449" y="906">📦 Shipping · estimated</text></g><g class="node" tabindex="0" role="group" aria-label="🛃 Customs · not broker-checked. What it is: Mexico&#x27;s 2026 de minimis, tasa global and IVA rules. Why it&#x27;s there: Implemented from public reporting, not yet confirmed by a licensed broker. Runs on: Rules in the code; a broker review is the next step." data-title="🛃 Customs · not broker-checked" data-what="Mexico&#x27;s 2026 de minimis, tasa global and IVA rules." data-why="Implemented from public reporting, not yet confirmed by a licensed broker." data-stack="Rules in the code; a broker review is the next step."><rect class="n-box is-unsure" x="708" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="724" y="906">🛃 Customs · not broker-checked</text></g><text class="n-band" x="26" y="982">06 · Surfacing: how it reaches you</text><line class="rail" x1="26" y1="990" x2="1094" y2="990"/><g class="node" tabindex="0" role="group" aria-label="🖥 Buying desk. What it is: This interface. Results stream in as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row. Why it&#x27;s there: The shortlist a person decides from. Nothing is hidden behind a summary number. Runs on: A static page plus serverless functions on Vercel. No framework, no build step." data-title="🖥 Buying desk" data-what="This interface. Results stream in as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row." data-why="The shortlist a person decides from. Nothing is hidden behind a summary number." data-stack="A static page plus serverless functions on Vercel. No framework, no build step."><rect class="n-box" x="26" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="42" y="1034">🖥 Buying desk</text><text class="n-sub" x="42" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="84">This page, cheapest first</tspan></text><text class="n-sub" x="42" y="1079"><tspan class="n-k">WHY</tspan><tspan x="84">Full cost breakdown per copy</tspan></text><text class="n-sub" x="354" y="1033" text-anchor="end">✅</text><text class="n-tag" x="352" y="1100" text-anchor="end">VERCEL · NO SERVER TO RUN</text></g><g class="node" tabindex="0" role="group" aria-label="🔔 Alerts · SMS. What it is: A text the moment a record crosses its peso limit. Simulated in the demo. Why it&#x27;s there: Rare copies go fast, and email is too slow to be the channel that catches them. An alert has to arrive fast enough to act on. Runs on: An SMS gateway, pay per message, plus a number to send from. Mexican numbers need the sender registered first." data-title="🔔 Alerts · SMS" data-what="A text the moment a record crosses its peso limit. Simulated in the demo." data-why="Rare copies go fast, and email is too slow to be the channel that catches them. An alert has to arrive fast enough to act on." data-stack="An SMS gateway, pay per message, plus a number to send from. Mexican numbers need the sender registered first."><rect class="n-box is-pending" x="389" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="405" y="1034">🔔 Alerts · SMS</text><text class="n-sub" x="405" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="447">A text when a limit is crossed</tspan></text><text class="n-sub" x="405" y="1079"><tspan class="n-k">WHY</tspan><tspan x="447">Email's too slow for rare finds</tspan></text><text class="n-sub" x="717" y="1033" text-anchor="end">🔨</text><text class="n-tag" x="715" y="1100" text-anchor="end">SMS GATEWAY · SIMULATED</text></g><g class="node" tabindex="0" role="group" aria-label="📰 Morning digest. What it is: A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore. Why it&#x27;s there: The unhurried counterpart to the alert. Most decisions don&#x27;t need a text; they need a list. Runs on: A scheduled sweep on Vercel, delivered by email." data-title="📰 Morning digest" data-what="A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore." data-why="The unhurried counterpart to the alert. Most decisions don&#x27;t need a text; they need a list." data-stack="A scheduled sweep on Vercel, delivered by email."><rect class="n-box is-pending" x="752" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="768" y="1034">📰 Morning digest</text><text class="n-sub" x="768" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="810">What moved overnight, one page</tspan></text><text class="n-sub" x="768" y="1079"><tspan class="n-k">WHY</tspan><tspan x="810">The unhurried read, with coffee</tspan></text><text class="n-sub" x="1080" y="1033" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="1100" text-anchor="end">SCHEDULED SWEEP · EMAIL</text></g><text class="n-band" x="26" y="1160">07 · The buy: a person, every time</text><line class="rail" x1="26" y1="1168" x2="1094" y2="1168"/><g class="node" tabindex="0" role="group" aria-label="🧍 Ian buys the copy. What it is: The system finds, prices and ranks. It never buys. Checkout happens on Discogs, eBay or Mercado Libre, by hand, on a card. Why it&#x27;s there: A person reads the seller, the condition and the photographs, and decides. It&#x27;s the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast. Runs on: Nothing here: the order is placed on the seller&#x27;s site. That order is what intake later reconciles the parcel against." data-title="🧍 Ian buys the copy" data-what="The system finds, prices and ranks. It never buys. Checkout happens on Discogs, eBay or Mercado Libre, by hand, on a card." data-why="A person reads the seller, the condition and the photographs, and decides. It&#x27;s the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast." data-stack="Nothing here: the order is placed on the seller&#x27;s site. That order is what intake later reconciles the parcel against."><rect class="n-box is-human" x="298" y="1178" width="524" height="112" rx="3"/><text class="n-title" x="314" y="1212">🧍 Ian buys the copy</text><text class="n-sub" x="314" y="1238"><tspan class="n-k">WHAT</tspan><tspan x="356">Checkout by hand, on a card, on Discogs or eBay.</tspan></text><text class="n-sub" x="314" y="1257"><tspan class="n-k">WHY</tspan><tspan x="356">Seller, condition, photos: a judgement worth keeping.</tspan></text><text class="n-sub" x="808" y="1211" text-anchor="end">🧍</text><text class="n-tag" x="806" y="1278" text-anchor="end">NO MONEY MOVES AUTOMATICALLY</text></g><text class="n-band" x="26" y="1338">08 · Intake: landed copies become stock</text><line class="rail" x1="26" y1="1346" x2="1094" y2="1346"/><g class="node" tabindex="0" role="group" aria-label="📥 Intake · parcel to shelf. What it is: A parcel arrives weeks after the decision to buy it. Something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it. Why it&#x27;s there: If landed copies don&#x27;t become stock, counts drift, thresholds misfire and the loop never closes. The genuinely open question. Runs on: Undecided: scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand. Writes to the inventory database." data-title="📥 Intake · parcel to shelf" data-what="A parcel arrives weeks after the decision to buy it. Something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it." data-why="If landed copies don&#x27;t become stock, counts drift, thresholds misfire and the loop never closes. The genuinely open question." data-stack="Undecided: scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand. Writes to the inventory database."><rect class="n-box is-unsure" x="140" y="1356" width="840" height="112" rx="3"/><text class="n-title" x="156" y="1390">📥 Intake · parcel to shelf</text><text class="n-sub" x="156" y="1416"><tspan class="n-k">WHAT</tspan><tspan x="198">A parcel lands; it has to become a stock row at its real landed cost.</tspan></text><text class="n-sub" x="156" y="1435"><tspan class="n-k">WHY</tspan><tspan x="198">Without it, stock counts drift and the loop never closes.</tspan></text><text class="n-sub" x="966" y="1389" text-anchor="end">❓</text><text class="n-tag" x="964" y="1456" text-anchor="end">SCAN, CONFIRM THE ORDER, OR BY HAND: UNDECIDED</text></g><path class="link is-pending" d="M540 118 L574 118" marker-end="url(#ah)"/><path class="link is-pending" d="M837 174 C 837 207.0, 283 207.0, 283 240" marker-end="url(#ah)"/><path class="link is-pending" d="M540 296 L574 296" marker-end="url(#ah)"/><path class="link" d="M837 352 C 837 385.0, 152 385.0, 152 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 424 385.0, 424 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 696 385.0, 696 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 968 385.0, 968 418" marker-end="url(#ah)"/><path class="link" d="M152 542 C 152 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M424 542 C 424 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M696 542 C 696 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M968 542 C 968 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M278 664 L294 664" marker-end="url(#ah)"/><path class="link is-pending" d="M842 664 L826 664" marker-end="url(#ah)"/><path class="link is-pending" d="M560 720 C 560 753.0, 560 753.0, 560 786" marker-end="url(#ah)"/><path class="link" d="M197 934 C 197 967.0, 197 967.0, 197 1000" marker-end="url(#ah)"/><path class="link is-pending" d="M560 934 C 560 967.0, 560 967.0, 560 1000" marker-end="url(#ah)"/><path class="link is-pending" d="M923 934 C 923 967.0, 923 967.0, 923 1000" marker-end="url(#ah)"/><path class="link" d="M197 1112 C 197 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1112 C 560 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M923 1112 C 923 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1290 C 560 1323.0, 560 1323.0, 560 1356" marker-end="url(#ah)"/><path class="link is-pending" d="M980 1412 H1120 Q1132 1412 1132 1400 V186 Q1132 174 1120 174 H1010" marker-end="url(#ah)"/><text class="n-band" x="1147" y="793" text-anchor="middle" transform="rotate(90 1147 793)">Closes the loop</text></svg>
+          <svg class="flow" viewBox="0 0 1180 1508" role="img" aria-label="System loop: sales in the shop pull stock down, low stock switches a record&#x27;s watch on, the watchlist drives Discogs, eBay, Mercado Libre and the Bandcamp mailbox, MusicBrainz and Spotify confirm which record is which, the landed-cost engine prices every copy in pesos, a person decides what to buy, and the parcel that lands becomes stock again."><defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="currentColor" opacity="0.55"/></marker></defs><text class="n-band" x="26" y="44">01 · The shop: where demand comes from</text><line class="rail" x1="26" y1="52" x2="1094" y2="52"/><g class="node" tabindex="0" role="group" aria-label="🏪 Shop floor · in person. What it is: Records are sold in person, over the counter. There is no online store, cart or checkout to build; what&#x27;s needed is a till that records which copy left the shelf. Why it&#x27;s there: Every sale over the counter is the demand signal the rest of the system runs on. Without it, nothing knows when stock is low. Runs on: A card till, Clip or Stripe (undecided), feeding the inventory database." data-title="🏪 Shop floor · in person" data-what="Records are sold in person, over the counter. There is no online store, cart or checkout to build; what&#x27;s needed is a till that records which copy left the shelf." data-why="Every sale over the counter is the demand signal the rest of the system runs on. Without it, nothing knows when stock is low." data-stack="A card till, Clip or Stripe (undecided), feeding the inventory database."><rect class="n-box is-pending" x="26" y="62" width="514" height="112" rx="3"/><text class="n-title" x="42" y="96">🏪 Shop floor · in person</text><text class="n-sub" x="42" y="122"><tspan class="n-k">WHAT</tspan><tspan x="84">Records sell over the counter. No online store.</tspan></text><text class="n-sub" x="42" y="141"><tspan class="n-k">WHY</tspan><tspan x="84">Every sale is the demand signal the rest runs on.</tspan></text><text class="n-sub" x="526" y="95" text-anchor="end">🔨</text><text class="n-tag" x="524" y="162" text-anchor="end">TILL: CLIP OR STRIPE</text></g><g class="node" tabindex="0" role="group" aria-label="📦 Inventory · database. What it is: One row per title: what it cost landed, what it&#x27;s priced at, how many are on the shelf, and the watch that re-sources it. Why it&#x27;s there: The shop floor depends on these numbers being right. A spreadsheet has no locking, no history and no constraints, so this is the one piece that has to leave Sheets. Runs on: Google Sheets today, the same sheet as the watchlist; a real database to follow." data-title="📦 Inventory · database" data-what="One row per title: what it cost landed, what it&#x27;s priced at, how many are on the shelf, and the watch that re-sources it." data-why="The shop floor depends on these numbers being right. A spreadsheet has no locking, no history and no constraints, so this is the one piece that has to leave Sheets." data-stack="Google Sheets today, the same sheet as the watchlist; a real database to follow."><rect class="n-box is-pending" x="580" y="62" width="514" height="112" rx="3"/><text class="n-title" x="596" y="96">📦 Inventory · database</text><text class="n-sub" x="596" y="122"><tspan class="n-k">WHAT</tspan><tspan x="638">One row per title: landed cost, price, stock.</tspan></text><text class="n-sub" x="596" y="141"><tspan class="n-k">WHY</tspan><tspan x="638">Stock levels the shop floor depends on.</tspan></text><text class="n-sub" x="1080" y="95" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="162" text-anchor="end">SHEETS FOR NOW · REAL DATABASE NEXT</text></g><text class="n-band" x="26" y="222">02 · What to watch</text><line class="rail" x1="26" y1="230" x2="1094" y2="230"/><g class="node" tabindex="0" role="group" aria-label="📉 Stock threshold. What it is: A minimum shelf count per title. Under it, that record&#x27;s watch and alerts turn back on by themselves. Some titles carry no threshold and are simply always watched, or toggled by hand. Why it&#x27;s there: It&#x27;s what makes this a loop: selling a copy is what starts the hunt for the next one, without anyone having to remember. Runs on: A rule in the application, checked on every scheduled sweep on Vercel." data-title="📉 Stock threshold" data-what="A minimum shelf count per title. Under it, that record&#x27;s watch and alerts turn back on by themselves. Some titles carry no threshold and are simply always watched, or toggled by hand." data-why="It&#x27;s what makes this a loop: selling a copy is what starts the hunt for the next one, without anyone having to remember." data-stack="A rule in the application, checked on every scheduled sweep on Vercel."><rect class="n-box is-pending" x="26" y="240" width="514" height="112" rx="3"/><text class="n-title" x="42" y="274">📉 Stock threshold</text><text class="n-sub" x="42" y="300"><tspan class="n-k">WHAT</tspan><tspan x="84">A floor per title, or simply "always watch".</tspan></text><text class="n-sub" x="42" y="319"><tspan class="n-k">WHY</tspan><tspan x="84">Low stock switches the watch back on by itself.</tspan></text><text class="n-sub" x="526" y="273" text-anchor="end">🔨</text><text class="n-tag" x="524" y="340" text-anchor="end">APP RULE · SCHEDULED SWEEP</text></g><g class="node" tabindex="0" role="group" aria-label="📋 Watchlist · Google Sheets. What it is: The rows of the inventory with their watch switched on, each with a peso limit and an alert switch. A record the shop wants but doesn&#x27;t own is a row with no copies yet. The app reads and writes it through the Sheets API. Why it&#x27;s there: It stays in Google Sheets deliberately: it&#x27;s the interface Ian already works in, and he can fix a row there faster than any form would let him. Runs on: The inventory sheet, via the Sheets API." data-title="📋 Watchlist · Google Sheets" data-what="The rows of the inventory with their watch switched on, each with a peso limit and an alert switch. A record the shop wants but doesn&#x27;t own is a row with no copies yet. The app reads and writes it through the Sheets API." data-why="It stays in Google Sheets deliberately: it&#x27;s the interface Ian already works in, and he can fix a row there faster than any form would let him." data-stack="The inventory sheet, via the Sheets API."><rect class="n-box" x="580" y="240" width="514" height="112" rx="3"/><text class="n-title" x="596" y="274">📋 Watchlist · Google Sheets</text><text class="n-sub" x="596" y="300"><tspan class="n-k">WHAT</tspan><tspan x="638">Inventory rows with watching on: limit, alert switch.</tspan></text><text class="n-sub" x="596" y="319"><tspan class="n-k">WHY</tspan><tspan x="638">Ian's own spreadsheet, faster to fix than any form.</tspan></text><text class="n-sub" x="1080" y="273" text-anchor="end">✅</text><text class="n-tag" x="1078" y="340" text-anchor="end">GOOGLE SHEETS API</text></g><text class="n-band" x="26" y="400">03 · Sources: who has a copy, and what’s new</text><line class="rail" x1="26" y1="408" x2="1094" y2="408"/><g class="node" tabindex="0" role="group" aria-label="📀 Discogs API. What it is: Lowest price, stock count and release metadata for every pressing, from the official API. Sanctioned endpoints only, no scraping. Why it&#x27;s there: The deepest catalogue in the business and the reference for what a pressing is worth. It answers &#x27;what does this go for&#x27;, not &#x27;who has one&#x27;. Runs on: Discogs API, free, personal access token. 60 requests a minute." data-title="📀 Discogs API" data-what="Lowest price, stock count and release metadata for every pressing, from the official API. Sanctioned endpoints only, no scraping." data-why="The deepest catalogue in the business and the reference for what a pressing is worth. It answers &#x27;what does this go for&#x27;, not &#x27;who has one&#x27;." data-stack="Discogs API, free, personal access token. 60 requests a minute."><rect class="n-box" x="26" y="418" width="252" height="124" rx="3"/><text class="n-title" x="42" y="452">📀 Discogs API</text><text class="n-sub" x="42" y="478"><tspan class="n-k">WHAT</tspan><tspan x="84">Prices, stock counts</tspan></text><text class="n-sub" x="42" y="497"><tspan class="n-k">WHY</tspan><tspan x="84">The pricing reference</tspan></text><text class="n-sub" x="264" y="451" text-anchor="end">✅</text><text class="n-tag" x="262" y="530" text-anchor="end">FREE · 60 CALLS / MIN</text></g><g class="node" tabindex="0" role="group" aria-label="🛒 eBay Browse API. What it is: Real listings: who is selling, where it ships from, what shipping to Mexico actually costs, and the copy&#x27;s condition. Sixteen marketplaces, Europe included, on one call. Why it&#x27;s there: The only source that turns two of the cost engine&#x27;s estimates, shipping and origin, into quoted facts. Runs on: eBay Browse API, free, developer account. 5,000 calls a day." data-title="🛒 eBay Browse API" data-what="Real listings: who is selling, where it ships from, what shipping to Mexico actually costs, and the copy&#x27;s condition. Sixteen marketplaces, Europe included, on one call." data-why="The only source that turns two of the cost engine&#x27;s estimates, shipping and origin, into quoted facts." data-stack="eBay Browse API, free, developer account. 5,000 calls a day."><rect class="n-box is-pending" x="298" y="418" width="252" height="124" rx="3"/><text class="n-title" x="314" y="452">🛒 eBay Browse API</text><text class="n-sub" x="314" y="478"><tspan class="n-k">WHAT</tspan><tspan x="356">Real listings, sellers</tspan></text><text class="n-sub" x="314" y="497"><tspan class="n-k">WHY</tspan><tspan x="356">Shipping as a fact</tspan></text><text class="n-sub" x="536" y="451" text-anchor="end">🔨</text><text class="n-tag" x="534" y="530" text-anchor="end">FREE · 5,000 CALLS / DAY</text></g><g class="node" tabindex="0" role="group" aria-label="🇲🇽 Mercado Libre. What it is: Domestic Mexican listings with price, seller and shipping, through the public catalogue search. Why it&#x27;s there: Skips customs, duty, the tasa global and the international lane entirely. Landed cost is price plus domestic postage: the one source where our number is exact. Runs on: Mercado Libre API, free, our own app token." data-title="🇲🇽 Mercado Libre" data-what="Domestic Mexican listings with price, seller and shipping, through the public catalogue search." data-why="Skips customs, duty, the tasa global and the international lane entirely. Landed cost is price plus domestic postage: the one source where our number is exact." data-stack="Mercado Libre API, free, our own app token."><rect class="n-box is-pending" x="570" y="418" width="252" height="124" rx="3"/><text class="n-title" x="586" y="452">🇲🇽 Mercado Libre</text><text class="n-sub" x="586" y="478"><tspan class="n-k">WHAT</tspan><tspan x="628">Mexican listings</tspan></text><text class="n-sub" x="586" y="497"><tspan class="n-k">WHY</tspan><tspan x="628">No customs, no import</tspan></text><text class="n-sub" x="808" y="451" text-anchor="end">🔨</text><text class="n-tag" x="806" y="530" text-anchor="end">FREE · OWN APP TOKEN</text></g><g class="node" tabindex="0" role="group" aria-label="📧 Bandcamp mail. What it is: No search API exists, so a dedicated mailbox receives Bandcamp follow notifications and the European shops&#x27; newsletters. We learn a record was listed: a link and a date, never a price. Why it&#x27;s there: The indie pressings that never reach Discogs, from labels Ian already follows. It answers &#x27;what&#x27;s new&#x27;, never &#x27;who has this record&#x27;. Runs on: A Google Workspace mailbox, read through the Gmail API." data-title="📧 Bandcamp mail" data-what="No search API exists, so a dedicated mailbox receives Bandcamp follow notifications and the European shops&#x27; newsletters. We learn a record was listed: a link and a date, never a price." data-why="The indie pressings that never reach Discogs, from labels Ian already follows. It answers &#x27;what&#x27;s new&#x27;, never &#x27;who has this record&#x27;." data-stack="A Google Workspace mailbox, read through the Gmail API."><rect class="n-box is-pending" x="842" y="418" width="252" height="124" rx="3"/><text class="n-title" x="858" y="452">📧 Bandcamp mail</text><text class="n-sub" x="858" y="478"><tspan class="n-k">WHAT</tspan><tspan x="900">New-release emails</tspan></text><text class="n-sub" x="858" y="497"><tspan class="n-k">WHY</tspan><tspan x="900">Leads, never prices</tspan></text><text class="n-sub" x="1080" y="451" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="530" text-anchor="end">GMAIL API · FREE</text></g><text class="n-band" x="26" y="590">04 · Identity: which record is which</text><line class="rail" x1="26" y1="598" x2="1094" y2="598"/><g class="node" tabindex="0" role="group" aria-label="🧬 MusicBrainz. What it is: Free, open, no API key. Barcodes, release groups and how pressings relate to each other, curated by people who care about exactly the distinctions a record buyer cares about. Why it&#x27;s there: It finds nothing and prices nothing, but it makes every other source match reliably. The cheapest, highest-leverage piece on the list, so it goes in first. Runs on: MusicBrainz API, free, no account. One request a second." data-title="🧬 MusicBrainz" data-what="Free, open, no API key. Barcodes, release groups and how pressings relate to each other, curated by people who care about exactly the distinctions a record buyer cares about." data-why="It finds nothing and prices nothing, but it makes every other source match reliably. The cheapest, highest-leverage piece on the list, so it goes in first." data-stack="MusicBrainz API, free, no account. One request a second."><rect class="n-box is-pending" x="26" y="608" width="252" height="112" rx="3"/><text class="n-title" x="42" y="642">🧬 MusicBrainz</text><text class="n-sub" x="42" y="668"><tspan class="n-k">WHAT</tspan><tspan x="84">Barcodes, pressings</tspan></text><text class="n-sub" x="42" y="687"><tspan class="n-k">WHY</tspan><tspan x="84">Which record is which</tspan></text><text class="n-sub" x="264" y="641" text-anchor="end">🔨</text><text class="n-tag" x="262" y="708" text-anchor="end">FREE · OPEN · NO KEY</text></g><g class="node" tabindex="0" role="group" aria-label="🔗 Matching · which record is which. What it is: Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes from MusicBrainz and Spotify make it exact where they exist; everywhere else it&#x27;s free-text matching. Why it&#x27;s there: Without it the sources can&#x27;t be compared, and a landed cost can&#x27;t be put against the right record. It is never finished, only tuned. Runs on: Barcodes from MusicBrainz and Spotify first; Gemini for fuzzy matching and title clean-up where they run out." data-title="🔗 Matching · which record is which" data-what="Deciding that an eBay listing, a Discogs pressing and a Bandcamp announcement are the same record. Barcodes from MusicBrainz and Spotify make it exact where they exist; everywhere else it&#x27;s free-text matching." data-why="Without it the sources can&#x27;t be compared, and a landed cost can&#x27;t be put against the right record. It is never finished, only tuned." data-stack="Barcodes from MusicBrainz and Spotify first; Gemini for fuzzy matching and title clean-up where they run out."><rect class="n-box is-unsure" x="298" y="608" width="524" height="112" rx="3"/><text class="n-title" x="314" y="642">🔗 Matching · which record is which</text><text class="n-sub" x="314" y="668"><tspan class="n-k">WHAT</tspan><tspan x="356">Is this listing the same record as that pressing?</tspan></text><text class="n-sub" x="314" y="687"><tspan class="n-k">WHY</tspan><tspan x="356">Barcodes help, free-text titles don't.</tspan></text><text class="n-sub" x="808" y="641" text-anchor="end">❓</text><text class="n-tag" x="806" y="708" text-anchor="end">BARCODES FIRST · GEMINI AFTER</text></g><g class="node" tabindex="0" role="group" aria-label="🎧 Spotify API. What it is: Canonical artist and album names plus barcodes. No vinyl in it at all: it can&#x27;t find or price a record. Why it&#x27;s there: Makes matching across the other sources more reliable, and can seed the watchlist from Ian&#x27;s saved albums instead of typing them in. Runs on: Spotify Web API, free, developer account. Five allowlisted users in development mode." data-title="🎧 Spotify API" data-what="Canonical artist and album names plus barcodes. No vinyl in it at all: it can&#x27;t find or price a record." data-why="Makes matching across the other sources more reliable, and can seed the watchlist from Ian&#x27;s saved albums instead of typing them in." data-stack="Spotify Web API, free, developer account. Five allowlisted users in development mode."><rect class="n-box is-pending" x="842" y="608" width="252" height="112" rx="3"/><text class="n-title" x="858" y="642">🎧 Spotify API</text><text class="n-sub" x="858" y="668"><tspan class="n-k">WHAT</tspan><tspan x="900">Names and barcodes</tspan></text><text class="n-sub" x="858" y="687"><tspan class="n-k">WHY</tspan><tspan x="900">Second identity check</tspan></text><text class="n-sub" x="1080" y="641" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="708" text-anchor="end">FREE · 5 USERS MAX</text></g><text class="n-band" x="26" y="768">05 · Costing</text><line class="rail" x1="26" y1="776" x2="1094" y2="776"/><g class="node" tabindex="0" role="group" aria-label="🧮 Landed cost engine. What it is: Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. Fully built. Why it&#x27;s there: It&#x27;s the reason the numbers on the buying desk mean anything, and the part that decides whether a copy is worth importing at all. Runs on: TypeScript on Node, running as Vercel functions. No framework, no build step." data-title="🧮 Landed cost engine" data-what="Price plus shipping plus duty plus IVA, in pesos, for every candidate copy. Fully built." data-why="It&#x27;s the reason the numbers on the buying desk mean anything, and the part that decides whether a copy is worth importing at all." data-stack="TypeScript on Node, running as Vercel functions. No framework, no build step."><rect class="n-box" x="140" y="786" width="840" height="148" rx="3"/><text class="n-title" x="156" y="820">🧮 Landed cost engine</text><text class="n-sub" x="156" y="846"><tspan class="n-k">WHAT</tspan><tspan x="198">Price + shipping + duty + IVA, in pesos, for every candidate copy</tspan></text><text class="n-sub" x="156" y="865"><tspan class="n-k">WHY</tspan><tspan x="198">Why the numbers on the buying desk mean anything.</tspan></text><text class="n-sub" x="966" y="819" text-anchor="end">✅</text><text class="n-tag" x="964" y="865" text-anchor="end">TYPESCRIPT · NODE · VERCEL</text></g><g class="node" tabindex="0" role="group" aria-label="💱 FX · live ECB. What it is: Daily ECB reference rates, fetched at the start of every run. Why it&#x27;s there: Everything is priced in pesos; a stale rate is a wrong price. Runs on: Frankfurter API, free, no key, no account." data-title="💱 FX · live ECB" data-what="Daily ECB reference rates, fetched at the start of every run." data-why="Everything is priced in pesos; a stale rate is a wrong price." data-stack="Frankfurter API, free, no key, no account."><rect class="n-box" x="158" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="174" y="906">💱 FX · live ECB</text></g><g class="node" tabindex="0" role="group" aria-label="📦 Shipping · estimated. What it is: Sensible estimates by country, not a live carrier quote. Why it&#x27;s there: Labelled low-confidence everywhere it appears, and the first thing eBay&#x27;s quoted shipping replaces. Runs on: A per-country table in the code." data-title="📦 Shipping · estimated" data-what="Sensible estimates by country, not a live carrier quote." data-why="Labelled low-confidence everywhere it appears, and the first thing eBay&#x27;s quoted shipping replaces." data-stack="A per-country table in the code."><rect class="n-box is-unsure" x="433" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="449" y="906">📦 Shipping · estimated</text></g><g class="node" tabindex="0" role="group" aria-label="🛃 Customs · not broker-checked. What it is: Mexico&#x27;s 2026 de minimis, tasa global and IVA rules. Why it&#x27;s there: Implemented from public reporting, not yet confirmed by a licensed broker. Runs on: Rules in the code; a broker review is the next step." data-title="🛃 Customs · not broker-checked" data-what="Mexico&#x27;s 2026 de minimis, tasa global and IVA rules." data-why="Implemented from public reporting, not yet confirmed by a licensed broker." data-stack="Rules in the code; a broker review is the next step."><rect class="n-box is-unsure" x="708" y="878" width="254" height="46" rx="3"/><text class="n-sub" x="724" y="906">🛃 Customs · not broker-checked</text></g><text class="n-band" x="26" y="982">06 · Surfacing: how it reaches you</text><line class="rail" x1="26" y1="990" x2="1094" y2="990"/><g class="node" tabindex="0" role="group" aria-label="🖥 Buying desk. What it is: This interface. Results stream in as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row. Why it&#x27;s there: The shortlist a person decides from. Nothing is hidden behind a summary number. Runs on: A static page plus serverless functions on Vercel. No framework, no build step." data-title="🖥 Buying desk" data-what="This interface. Results stream in as they price, cheapest first, with the full cost breakdown and a link to the listing behind each row." data-why="The shortlist a person decides from. Nothing is hidden behind a summary number." data-stack="A static page plus serverless functions on Vercel. No framework, no build step."><rect class="n-box" x="26" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="42" y="1034">🖥 Buying desk</text><text class="n-sub" x="42" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="84">This page, cheapest first</tspan></text><text class="n-sub" x="42" y="1079"><tspan class="n-k">WHY</tspan><tspan x="84">Full cost breakdown per copy</tspan></text><text class="n-sub" x="354" y="1033" text-anchor="end">✅</text><text class="n-tag" x="352" y="1100" text-anchor="end">VERCEL · NO SERVER TO RUN</text></g><g class="node" tabindex="0" role="group" aria-label="🔔 Alerts · SMS. What it is: A text the moment a record crosses its peso limit. Simulated in the demo. Why it&#x27;s there: Rare copies go fast, and email is too slow to be the channel that catches them. An alert has to arrive fast enough to act on. Runs on: An SMS gateway, pay per message, plus a number to send from. Mexican numbers need the sender registered first." data-title="🔔 Alerts · SMS" data-what="A text the moment a record crosses its peso limit. Simulated in the demo." data-why="Rare copies go fast, and email is too slow to be the channel that catches them. An alert has to arrive fast enough to act on." data-stack="An SMS gateway, pay per message, plus a number to send from. Mexican numbers need the sender registered first."><rect class="n-box is-pending" x="389" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="405" y="1034">🔔 Alerts · SMS</text><text class="n-sub" x="405" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="447">A text when a limit is crossed</tspan></text><text class="n-sub" x="405" y="1079"><tspan class="n-k">WHY</tspan><tspan x="447">Email's too slow for rare finds</tspan></text><text class="n-sub" x="717" y="1033" text-anchor="end">🔨</text><text class="n-tag" x="715" y="1100" text-anchor="end">SMS GATEWAY · SIMULATED</text></g><g class="node" tabindex="0" role="group" aria-label="📰 Morning digest. What it is: A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore. Why it&#x27;s there: The unhurried counterpart to the alert. Most decisions don&#x27;t need a text; they need a list. Runs on: A scheduled sweep on Vercel, delivered by email." data-title="📰 Morning digest" data-what="A document you read with your coffee: what moved overnight, what is newly under its limit, and what to ignore." data-why="The unhurried counterpart to the alert. Most decisions don&#x27;t need a text; they need a list." data-stack="A scheduled sweep on Vercel, delivered by email."><rect class="n-box is-pending" x="752" y="1000" width="342" height="112" rx="3"/><text class="n-title" x="768" y="1034">📰 Morning digest</text><text class="n-sub" x="768" y="1060"><tspan class="n-k">WHAT</tspan><tspan x="810">What moved overnight, one page</tspan></text><text class="n-sub" x="768" y="1079"><tspan class="n-k">WHY</tspan><tspan x="810">The unhurried read, with coffee</tspan></text><text class="n-sub" x="1080" y="1033" text-anchor="end">🔨</text><text class="n-tag" x="1078" y="1100" text-anchor="end">SCHEDULED SWEEP · EMAIL</text></g><text class="n-band" x="26" y="1160">07 · The buy: a person, every time</text><line class="rail" x1="26" y1="1168" x2="1094" y2="1168"/><g class="node" tabindex="0" role="group" aria-label="🧍 Ian buys the copy. What it is: The system finds, prices and ranks. It never buys. Checkout happens on Discogs, eBay or Mercado Libre, by hand, on a card. Why it&#x27;s there: A person reads the seller, the condition and the photographs, and decides. It&#x27;s the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast. Runs on: Nothing here: the order is placed on the seller&#x27;s site. That order is what intake later reconciles the parcel against." data-title="🧍 Ian buys the copy" data-what="The system finds, prices and ranks. It never buys. Checkout happens on Discogs, eBay or Mercado Libre, by hand, on a card." data-why="A person reads the seller, the condition and the photographs, and decides. It&#x27;s the one judgement in the loop worth keeping human, and the reason an alert has to arrive fast." data-stack="Nothing here: the order is placed on the seller&#x27;s site. That order is what intake later reconciles the parcel against."><rect class="n-box is-human" x="298" y="1178" width="524" height="112" rx="3"/><text class="n-title" x="314" y="1212">🧍 Ian buys the copy</text><text class="n-sub" x="314" y="1238"><tspan class="n-k">WHAT</tspan><tspan x="356">Checkout by hand, on a card, on Discogs or eBay.</tspan></text><text class="n-sub" x="314" y="1257"><tspan class="n-k">WHY</tspan><tspan x="356">Seller, condition, photos: a judgement worth keeping.</tspan></text><text class="n-sub" x="808" y="1211" text-anchor="end">🧍</text><text class="n-tag" x="806" y="1278" text-anchor="end">NO MONEY MOVES AUTOMATICALLY</text></g><text class="n-band" x="26" y="1338">08 · Intake: landed copies become stock</text><line class="rail" x1="26" y1="1346" x2="1094" y2="1346"/><g class="node" tabindex="0" role="group" aria-label="📥 Intake · parcel to shelf. What it is: A parcel arrives weeks after the decision to buy it. Something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it. Why it&#x27;s there: If landed copies don&#x27;t become stock, counts drift, thresholds misfire and the loop never closes. The genuinely open question. Runs on: Undecided: scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand. Writes to the inventory database." data-title="📥 Intake · parcel to shelf" data-what="A parcel arrives weeks after the decision to buy it. Something has to turn it into an inventory row carrying the real landed cost, without anyone retyping it." data-why="If landed copies don&#x27;t become stock, counts drift, thresholds misfire and the loop never closes. The genuinely open question." data-stack="Undecided: scan the barcode at the counter, confirm against the order that triggered the buy, or reconcile by hand. Writes to the inventory database."><rect class="n-box is-unsure" x="140" y="1356" width="840" height="112" rx="3"/><text class="n-title" x="156" y="1390">📥 Intake · parcel to shelf</text><text class="n-sub" x="156" y="1416"><tspan class="n-k">WHAT</tspan><tspan x="198">A parcel lands; it has to become a stock row at its real landed cost.</tspan></text><text class="n-sub" x="156" y="1435"><tspan class="n-k">WHY</tspan><tspan x="198">Without it, stock counts drift and the loop never closes.</tspan></text><text class="n-sub" x="966" y="1389" text-anchor="end">❓</text><text class="n-tag" x="964" y="1456" text-anchor="end">SCAN, CONFIRM THE ORDER, OR BY HAND: UNDECIDED</text></g><path class="link is-pending" d="M540 118 L574 118" marker-end="url(#ah)"/><path class="link is-pending" d="M837 174 C 837 207.0, 283 207.0, 283 240" marker-end="url(#ah)"/><path class="link is-pending" d="M540 296 L574 296" marker-end="url(#ah)"/><path class="link" d="M837 352 C 837 385.0, 152 385.0, 152 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 424 385.0, 424 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 696 385.0, 696 418" marker-end="url(#ah)"/><path class="link is-pending" d="M837 352 C 837 385.0, 968 385.0, 968 418" marker-end="url(#ah)"/><path class="link" d="M152 542 C 152 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M424 542 C 424 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M696 542 C 696 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M968 542 C 968 575.0, 560 575.0, 560 608" marker-end="url(#ah)"/><path class="link is-pending" d="M278 664 L294 664" marker-end="url(#ah)"/><path class="link is-pending" d="M842 664 L826 664" marker-end="url(#ah)"/><path class="link is-pending" d="M560 720 C 560 753.0, 560 753.0, 560 786" marker-end="url(#ah)"/><path class="link" d="M197 934 C 197 967.0, 197 967.0, 197 1000" marker-end="url(#ah)"/><path class="link is-pending" d="M560 934 C 560 967.0, 560 967.0, 560 1000" marker-end="url(#ah)"/><path class="link is-pending" d="M923 934 C 923 967.0, 923 967.0, 923 1000" marker-end="url(#ah)"/><path class="link" d="M197 1112 C 197 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1112 C 560 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M923 1112 C 923 1145.0, 560 1145.0, 560 1178" marker-end="url(#ah)"/><path class="link is-pending" d="M560 1290 C 560 1323.0, 560 1323.0, 560 1356" marker-end="url(#ah)"/><path class="link is-pending" d="M980 1412 H1120 Q1132 1412 1132 1400 V186 Q1132 174 1120 174 H1010" marker-end="url(#ah)"/><text class="n-band" x="1147" y="793" text-anchor="middle" transform="rotate(90 1147 793)">Closes the loop</text></svg>
         </div>
 
         <ul class="t-bullets">
           <li><strong>❓ Two boxes are still unproven.</strong> Matching: is this eBay listing the same record as that Discogs pressing? Barcodes help, free text doesn't. And intake: a parcel lands weeks after the buy and has to become a stock row without anyone retyping it.</li>
           <li><strong>🧍 One step is manual on purpose.</strong> The system shortlists and prices, then stops. Ian reads the seller, the condition and the photos, and buys or doesn't. That judgement is what makes the shortlist worth having.</li>
           <li><strong>⏱ Nothing waits for a button.</strong> Today a record is priced when someone presses <em>Check listings now</em> on its row. In the finished system a scheduled sweep does that for every watched record a few times a day, and the only thing that reaches a person is a copy under its alert price. The button stays, because whoever is at the counter should not have to wait for the next run.</li>
-          <li><strong>📋 Two kinds of storage.</strong> The watchlist stays in Google Sheets: it's the tool Ian already works in, and a row is faster to fix than any form. Inventory needs a real database, with the locking, history and constraints a sheet can't offer. Sheets holds both today; only one should stay.</li>
+          <li><strong>📋 One table, in a sheet for now.</strong> Stock and watches are one row per title: a record the shop wants is a row with no copies yet, and a sweep prices every row whose watch is on. It lives in Google Sheets because that's the tool Ian already works in, and a row is faster to fix than any form. Stock the shop floor depends on will need a real database eventually, with the locking, history and constraints a sheet can't offer.</li>
         </ul>
 
         <h3 class="t-sub">What it runs on 🧱</h3>
@@ -3918,8 +3851,8 @@
             <div class="stack-chips">
               <span tabindex="0" role="group" class="stack-chip" data-title="🟦 TypeScript · Node" data-what="The application itself. No framework, no build step, no runtime dependencies." data-why="Nothing to keep patched, nothing to break on upgrade." data-status="✅ Built and running" aria-label="🟦 TypeScript · Node. What it is: The application itself. No framework, no build step, no runtime dependencies. Why it&#x27;s there: Nothing to keep patched, nothing to break on upgrade. Status: ✅ Built and running">🟦 TypeScript · Node <span class="stack-chip-st">✅</span></span>
               <span tabindex="0" role="group" class="stack-chip" data-title="▲ Vercel" data-what="Hosting: a static page, serverless functions and the scheduled sweeps." data-why="No server to run or pay for. Free to start; about $20 a month if it needs password protection or longer runs." data-status="✅ Built and running" aria-label="▲ Vercel. What it is: Hosting: a static page, serverless functions and the scheduled sweeps. Why it&#x27;s there: No server to run or pay for. Free to start; about $20 a month if it needs password protection or longer runs. Status: ✅ Built and running">▲ Vercel <span class="stack-chip-st">✅</span></span>
-              <span tabindex="0" role="group" class="stack-chip" data-title="📋 Google Sheets" data-what="The watchlist, read and written through the Sheets API." data-why="Ian corrects a row by hand faster than any form would let him. Staying here on purpose." data-status="✅ Built and running" aria-label="📋 Google Sheets. What it is: The watchlist, read and written through the Sheets API. Why it&#x27;s there: Ian corrects a row by hand faster than any form would let him. Staying here on purpose. Status: ✅ Built and running">📋 Google Sheets <span class="stack-chip-st">✅</span></span>
-              <span tabindex="0" role="group" class="stack-chip is-pending" data-title="🗄 Inventory database" data-what="One row per copy owned: landed cost, shelf price, stock on hand, re-watch threshold." data-why="Stock the shop floor depends on needs locking, history and constraints. A sheet has none; it&#x27;s the placeholder until this exists." data-status="🔨 Known how, not built" aria-label="🗄 Inventory database. What it is: One row per copy owned: landed cost, shelf price, stock on hand, re-watch threshold. Why it&#x27;s there: Stock the shop floor depends on needs locking, history and constraints. A sheet has none; it&#x27;s the placeholder until this exists. Status: 🔨 Known how, not built">🗄 Inventory database <span class="stack-chip-st">🔨</span></span>
+              <span tabindex="0" role="group" class="stack-chip" data-title="📋 Google Sheets" data-what="The inventory: stock, watches and alert limits, one row per title, read and written through the Sheets API." data-why="Ian corrects a row by hand faster than any form would let him. Staying here on purpose." data-status="✅ Built and running" aria-label="📋 Google Sheets. What it is: The inventory: stock, watches and alert limits, one row per title, read and written through the Sheets API. Why it&#x27;s there: Ian corrects a row by hand faster than any form would let him. Staying here on purpose. Status: ✅ Built and running">📋 Google Sheets <span class="stack-chip-st">✅</span></span>
+              <span tabindex="0" role="group" class="stack-chip is-pending" data-title="🗄 Inventory database" data-what="Where the sheet&#x27;s rows go once the till feeds them: one row per copy owned, with its real landed cost." data-why="Stock the shop floor depends on needs locking, history and constraints. A sheet has none; it&#x27;s the placeholder until this exists." data-status="🔨 Known how, not built" aria-label="🗄 Inventory database. What it is: Where the sheet&#x27;s rows go once the till feeds them: one row per copy owned, with its real landed cost. Why it&#x27;s there: Stock the shop floor depends on needs locking, history and constraints. A sheet has none; it&#x27;s the placeholder until this exists. Status: 🔨 Known how, not built">🗄 Inventory database <span class="stack-chip-st">🔨</span></span>
               <span tabindex="0" role="group" class="stack-chip is-unsure" data-title="💳 Till · Clip or Stripe" data-what="Card payments at the counter, and the record of what sold." data-why="A sale is what pulls stock down and switches a watch back on. Which provider, and how it talks to the database, is undecided." data-status="❓ Still unproven" aria-label="💳 Till · Clip or Stripe. What it is: Card payments at the counter, and the record of what sold. Why it&#x27;s there: A sale is what pulls stock down and switches a watch back on. Which provider, and how it talks to the database, is undecided. Status: ❓ Still unproven">💳 Till · Clip or Stripe <span class="stack-chip-st">❓</span></span>
             </div>
           </div>
@@ -4165,10 +4098,7 @@
         data: null,
         live: [],      // results as they stream in
         running: false,
-        watchItems: [],         // full watchlist records, as the sheet holds them
-        watchError: null,       // last watchlist load failure, shown in the tab
-        sheetUrl: null,         // link to the backing Google Sheet, from the API
-        adding: false,          // an add-to-watchlist batch is in flight
+        adding: false,          // an add-records batch is in flight
         watched: new Map(),     // releaseId -> watch item id
         thresholds: new Map(),  // releaseId -> max landed MXN
         alerts: new Map(),      // releaseId -> SMS alerting on
@@ -4177,7 +4107,7 @@
         invItems: [],           // inventory rows, as the sheet holds them
         invError: null,         // last inventory load failure, shown in the tab
         invSheetUrl: null,      // link to the backing inventory sheet
-        invFilter: 'all',       // all | low | watching
+        invFilter: 'all',       // all | shelf | wanted | low | watching
         invQuery: '',           // free-text filter over artist and album
         invPage: 1,             // 1-based page of the filtered stock list
         invPerPage: 25,         // rows drawn at once; 800 at once is not a list
@@ -4253,7 +4183,7 @@
 
       // ------------------------------------------------ tabs
 
-      const TABS = ['desk', 'watch', 'inv', 'hiw', 'tech'];
+      const TABS = ['desk', 'inv', 'hiw', 'tech'];
 
       function selectTab(which) {
         TABS.forEach((t) => {
@@ -4265,7 +4195,6 @@
         // sitting off the visible end of it.
         $('tab-' + which).scrollIntoView({ block: 'nearest', inline: 'nearest' });
         // Repaint on entry: a sweep or a Watch press on the desk moves this list.
-        if (which === 'watch') renderWatchlist();
         if (which === 'inv') renderInventory();
       }
       TABS.forEach((t) => $('tab-' + t).addEventListener('click', () => selectTab(t)));
@@ -4298,7 +4227,6 @@
         $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
         if (state.data) renderResults(state.data.results, true);
         if (state.data) renderSummary(state.data);
-        renderWatchlist();
         renderInventory();
       }
       $('ccy-mxn').addEventListener('click', () => setCurrency('MXN'));
@@ -4404,44 +4332,43 @@
       });
       deskRows.add(''); deskRows.add(''); deskRows.add('');
 
-      const watchRows = createRepeater({
-        rowsId: 'wl-qrows',
-        countId: 'wl-qcount',
-        addId: 'wl-addrow',
-        submitId: 'wl-add',
+      const invRows = createRepeater({
+        rowsId: 'inv-qrows',
+        countId: 'inv-qcount',
+        addId: 'inv-addrow',
+        submitId: 'inv-add',
         placeholder: 'Artist and title, e.g. Fela Kuti Zombie',
         status: true,
         busy: () => state.adding,
-        onSubmit: () => addWatchQueries(),
+        onSubmit: () => addInvQueries(),
       });
-      watchRows.add(''); watchRows.add(''); watchRows.add('');
+      // One row, not three: on this tab adding is a side task beside the list.
+      invRows.add('');
 
-      // ------------------------------------------------ watchlist
+      // ------------------------------------------------ watching, from the desk
 
-      async function loadWatchlist() {
-        try {
-          const res = await fetch('/api/watchlist');
-          const data = await res.json();
-          if (!res.ok || (data && data.error)) throw new Error((data && data.error) || 'request failed');
-          state.watchItems = data.items || [];
-          state.sheetUrl = data.sheetUrl || null;
-          state.watchError = null;
-          state.watched.clear();
-          state.thresholds.clear();
-          state.alerts.clear();
-          (data.items || []).forEach((item) => {
-            if (item.active === false) return;
-            (item.watchedReleaseIds || []).forEach((rid) => {
-              state.watched.set(rid, item.id);
-              if (item.maxLandedMxn != null) state.thresholds.set(rid, item.maxLandedMxn);
-              if (item.alertSms) state.alerts.set(rid, true);
-            });
+      /** The pressings a sweep prices for a row. Mirrors sweepReleaseIds in
+       *  src/inventory.ts: the watched set, else the shelf pressing alone. */
+      function sweepIds(item) {
+        const ids = item.watchedReleaseIds || [];
+        if (ids.length) return ids;
+        return item.releaseId ? [item.releaseId] : [];
+      }
+
+      /** Rebuilds the per-release maps the desk paints from. One inventory row
+       *  can cover several pressings of an album, so the maps are per release. */
+      function indexWatched() {
+        state.watched.clear();
+        state.thresholds.clear();
+        state.alerts.clear();
+        (state.invItems || []).forEach((item) => {
+          if (item.active === false || !item.watching) return;
+          sweepIds(item).forEach((rid) => {
+            state.watched.set(rid, item.id);
+            if (item.maxLandedMxn != null) state.thresholds.set(rid, item.maxLandedMxn);
+            if (item.alertSms) state.alerts.set(rid, true);
           });
-        } catch (err) {
-          // A watchlist that will not load must never break pricing. The desk
-          // keeps working, and the Watchlist tab says why it is empty.
-          state.watchError = (err && err.message) || 'request failed';
-        }
+        });
       }
 
       async function toggleWatch(btn, releaseId) {
@@ -4455,34 +4382,38 @@
 
         try {
           if (wasWatched) {
-            const res = await fetch('/api/watchlist', {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ id: state.watched.get(releaseId), active: false }),
-            });
-            if (!res.ok) throw new Error('Could not remove');
+            // Stops the watch and nothing else: the row keeps its stock and
+            // prices and stays in the inventory. Texts go with the watch, the
+            // same rule the Inventory tab applies.
+            await patchInventory(state.watched.get(releaseId), { watching: false, alertSms: false });
             state.watched.delete(releaseId);
             state.thresholds.delete(releaseId);
             state.alerts.delete(releaseId);
           } else {
-            const res = await fetch('/api/watchlist', {
+            const res = await fetch('/api/inventory', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ releaseId }),
             });
             const data = await res.json();
             if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
-            (data.item.watchedReleaseIds || []).forEach((rid) => state.watched.set(rid, data.item.id));
-            if (data.plan && data.plan.needsUserSelection) {
-              const row = btn.closest('.row');
-              const metaEl = row ? row.querySelector('.row-meta') : null;
-              if (metaEl) {
+            sweepIds(data.item).forEach((rid) => state.watched.set(rid, data.item.id));
+            const row = btn.closest('.row');
+            const metaEl = row ? row.querySelector('.row-meta') : null;
+            if (metaEl) {
+              const notes = [];
+              if (data.existed && data.item.qty > 0) {
+                notes.push('On your shelf: ' + data.item.qty + (data.item.qty === 1 ? ' copy' : ' copies'));
+              }
+              if (data.plan && data.plan.needsUserSelection) {
+                notes.push('Watching 1 of ' + data.plan.totalVinylVersions + ' pressings: picker coming in the next version');
+              }
+              notes.forEach((text) => {
                 const note = document.createElement('span');
                 note.className = 'tag-approx';
-                note.textContent =
-                  'Watching 1 of ' + data.plan.totalVinylVersions + ' pressings: picker coming in the next version';
+                note.textContent = text;
                 metaEl.appendChild(note);
-              }
+              });
             }
           }
           // Clear before repainting: refreshWatchControls skips anything still in
@@ -4492,7 +4423,7 @@
           refreshWatchControls();
           // Re-read rather than patching a local copy: adding one pressing can
           // add every pressing of the master, and the sheet is the record.
-          loadWatchlist().then(renderWatchlist);
+          loadInventory().then(() => { renderInventory(); refreshWatchControls(); });
         } catch (err) {
           btn.classList.add('is-error');
           btn.textContent = 'Failed';
@@ -4517,7 +4448,16 @@
           btn.textContent = watched ? 'Watching' : 'Watch';
           const row = btn.closest('.row');
           const field = row ? row.querySelector('.threshold') : null;
-          if (field) field.hidden = !watched;
+          if (field) {
+            field.hidden = !watched;
+            // The limit can change on the Inventory tab while this row is on
+            // screen. Leave a field someone is typing in alone.
+            const input = field.querySelector('input');
+            if (input && document.activeElement !== input) {
+              const limit = state.thresholds.get(releaseId);
+              input.value = limit == null ? '' : String(limit);
+            }
+          }
           // Un-watching drops the record's alert with it, so the button must
           // not still read "SMS on" if the same record is watched again.
           const alertBtn = row ? row.querySelector('.alert-toggle') : null;
@@ -4557,71 +4497,10 @@
           : '$' + num(mxn) + ' MXN';
       }
 
-      function watchItemHtml(item) {
-        const pressings = (item.watchedReleaseIds || []).length;
-        const known = Number(item.pressingCount) || 0;
-        const meta = [
-          pressings === 1 ? '1 pressing' : pressings + ' pressings',
-          known > pressings ? '<span class="tag-approx">of ' + known + ' known</span>' : '',
-          ago(item.lastCheckedAt),
-          item.status === 'alerted' ? '<span class="wl-alerted">&#9873; Under your threshold</span>' : '',
-        ].filter(Boolean);
-
-        const best = item.bestLandedMxn == null
-          ? '<div class="wl-best is-none">n/a<span>not priced yet</span></div>'
-          : '<div class="wl-best">' + esc(moneyMxn(item.bestLandedMxn)) + '<span>best seen</span></div>';
-
-        const id = esc(item.id);
-        return '<article class="wl-item">' +
-          '<div class="wl-main">' +
-          '<span class="wl-title">' + esc(item.album || item.artist) +
-          '<span class="wl-artist">' + esc(item.artist) + '</span></span>' +
-          '<div class="wl-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
-          '<div class="threshold">' +
-          '<label for="wth-' + id + '">Alert under</label>' +
-          '<input id="wth-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
-          'placeholder="MXN" data-watch="' + id + '" value="' + (item.maxLandedMxn ?? '') + '">' +
-          '<span class="saved" data-wsaved="' + id + '"></span>' +
-          '<button class="alert-toggle" type="button" data-alert="' + id + '" ' +
-          'aria-pressed="' + (item.alertSms ? 'true' : 'false') + '" ' +
-          'title="Text the buying desk when this record crosses its limit">' +
-          (item.alertSms ? '&#9679; SMS on' : 'SMS off') + '</button>' +
-          '</div>' +
-          '</div>' +
-          best +
-          '<button class="watch-btn wl-remove" type="button" aria-pressed="true" data-watch="' + id + '">Watching</button>' +
-          '</article>';
-      }
-
-      function renderWatchlist() {
-        const list = $('wl-list');
-        if (!list) return;
-        const items = (state.watchItems || []).filter((i) => i.active !== false);
-
-        $('tab-watch').innerHTML =
-          'Watchlist' + (items.length ? '<span class="tab-count">' + items.length + '</span>' : '');
-        $('wl-count').textContent = items.length === 1 ? '1 record' : items.length + ' records';
-
-        // The whole bullet goes, not just the anchor. A sentence pointing at a
-        // link that isn't there reads worse than one bullet fewer. The sheet id
-        // arrives from the API, and WATCHLIST_SHEET_ID may simply not be set.
-        $('wl-sheet-item').hidden = !state.sheetUrl;
-        if (state.sheetUrl) $('wl-sheet').href = state.sheetUrl;
-        $('wl-run').disabled = state.running || items.length === 0;
-
-        if (state.watchError) {
-          list.innerHTML = '<p class="wl-empty">Could not load the watchlist. ' +
-            esc(state.watchError) + '</p>';
-          return;
-        }
-        if (!items.length) {
-          list.innerHTML = '<p class="wl-empty">Nothing here yet. Press <strong>Watch</strong> ' +
-            'on any priced record in the buying desk to add it.</p>';
-          return;
-        }
-
-        list.innerHTML = items.map(watchItemHtml).join('');
-        wireWatchlist(list);
+      /** Totals for the summary strip. A shelf's worth of stock does not need
+       *  cents, and six tiles across do not have room for them. */
+      function moneyMxnWhole(mxn) {
+        return moneyMxn(mxn).replace(/\.\d\d(?= )/, '');
       }
 
       function paintAlertToggle(btn, on) {
@@ -4630,23 +4509,23 @@
       }
 
       /**
-       * Turns SMS alerting on or off for one record.
+       * Turns SMS alerting on or off for a watched record, from the desk.
        *
        * Optimistic in the interface, authoritative in the sheet: the button
        * flips at once because a toggle that lags feels broken, and reverts if
        * the write is refused.
        */
-      async function toggleAlertSms(btn, watchId) {
-        const id = watchId || btn.dataset.alert;
+      async function toggleAlertSms(btn, invId) {
+        const id = invId || btn.dataset.alert;
         if (!id) return;
 
-        // Pressing Watch and then SMS immediately is faster than the watchlist
-        // re-read that follows it, so the record may not be in state.watchItems
+        // Pressing Watch and then SMS immediately is faster than the inventory
+        // re-read that follows it, so the row may not be in state.invItems
         // yet. The per-release map is written synchronously by whoever watched
         // it, which makes it the reliable read.
-        const item = (state.watchItems || []).find((i) => i.id === id) || null;
+        const item = findInvItem(id) || null;
         const releaseIds = item
-          ? item.watchedReleaseIds || []
+          ? sweepIds(item)
           : [Number(btn.dataset.alertRelease)].filter(Boolean);
         const now = item ? !!item.alertSms : releaseIds.some((rid) => state.alerts.get(rid));
         const next = !now;
@@ -4663,12 +4542,7 @@
         apply(next);
         btn.disabled = true;
         try {
-          const res = await fetch('/api/watchlist', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: id, alertSms: next }),
-          });
-          if (!res.ok) throw new Error('save failed');
+          await patchInventory(id, { alertSms: next });
           // An alert with no limit can never fire, and a toggle that looks armed
           // but is inert is the kind of thing nobody notices until it matters.
           const limit = item ? item.maxLandedMxn : state.thresholds.get(releaseIds[0]);
@@ -4676,7 +4550,7 @@
             showToast({
               to: 'no limit set',
               message: 'Alerting is on, but this record has no price limit yet. ' +
-                'set one under \u201cAlert under\u201d or nothing will ever trigger.',
+                'set one under “Alert under” or nothing will ever trigger.',
             });
           }
         } catch {
@@ -4730,166 +4604,6 @@
         while (stack.children.length > 4) stack.firstElementChild.remove();
       }
 
-      /** Saves a threshold keyed by watch id. The desk saves the same field keyed
-       *  by release id; both write through the one PATCH so the sheet stays the
-       *  single source of truth. */
-      async function saveWatchThreshold(input) {
-        const watchId = input.dataset.watch;
-        const item = (state.watchItems || []).find((i) => i.id === watchId);
-        const flag = document.querySelector('[data-wsaved="' + watchId + '"]');
-        if (!item) return;
-
-        const raw = input.value.trim();
-        const value = raw === '' ? null : Number(raw);
-        if (value !== null && (!Number.isFinite(value) || value < 0)) {
-          if (flag) { flag.classList.add('is-error'); flag.textContent = 'Invalid'; }
-          return;
-        }
-
-        state.pendingThresholds.add(watchId);
-        try {
-          const res = await fetch('/api/watchlist', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: watchId, maxLandedMxn: value }),
-          });
-          if (!res.ok) throw new Error('save failed');
-          item.maxLandedMxn = value;
-          // Keep the desk's per-release view in step without a re-read.
-          (item.watchedReleaseIds || []).forEach((rid) => {
-            if (value === null) state.thresholds.delete(rid);
-            else state.thresholds.set(rid, value);
-          });
-          if (flag) {
-            flag.classList.remove('is-error');
-            flag.textContent = 'Saved';
-            setTimeout(() => { flag.textContent = ''; }, 1500);
-          }
-        } catch {
-          if (flag) { flag.classList.add('is-error'); flag.textContent = 'Failed'; }
-        } finally {
-          state.pendingThresholds.delete(watchId);
-        }
-      }
-
-      async function removeWatchItem(btn) {
-        const watchId = btn.dataset.watch;
-        const item = (state.watchItems || []).find((i) => i.id === watchId);
-        if (!item) return;
-
-        btn.disabled = true;
-        btn.classList.remove('is-error');
-        btn.textContent = 'Removing…';
-        try {
-          const res = await fetch('/api/watchlist', {
-            method: 'PATCH',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ id: watchId, active: false }),
-          });
-          if (!res.ok) throw new Error('Could not remove');
-          item.active = false;
-          (item.watchedReleaseIds || []).forEach((rid) => {
-            state.watched.delete(rid);
-            state.thresholds.delete(rid);
-            state.alerts.delete(rid);
-          });
-          renderWatchlist();
-          refreshWatchControls();
-        } catch {
-          btn.disabled = false;
-          btn.classList.add('is-error');
-          btn.textContent = 'Failed';
-          setTimeout(renderWatchlist, 2500);
-        }
-      }
-
-      function wireWatchlist(root) {
-        root.querySelectorAll('.wl-remove').forEach((btn) => {
-          btn.addEventListener('click', () => removeWatchItem(btn));
-        });
-        root.querySelectorAll('.threshold input[data-watch]').forEach((input) => {
-          input.addEventListener('change', () => saveWatchThreshold(input));
-        });
-        root.querySelectorAll('.alert-toggle[data-alert]').forEach((btn) => {
-          btn.addEventListener('click', () => toggleAlertSms(btn));
-        });
-      }
-
-      /**
-       * Adds every typed row to the watchlist, one request at a time.
-       *
-       * Sequential on purpose: each add costs a Discogs search plus a release
-       * and a master-versions lookup, and that rate limit is shared with any
-       * sweep the same token is running. Ten rows fired at once would trip it.
-       */
-      async function addWatchQueries() {
-        if (state.adding) return;
-        const rows = watchRows.rows().filter((r) => r.querySelector('input').value.trim());
-        if (!rows.length) return;
-
-        state.adding = true;
-        watchRows.refresh();
-        $('wl-add').textContent = 'Adding…';
-
-        let added = 0;
-        let dupes = 0;
-        let failed = 0;
-
-        for (const [i, row] of rows.entries()) {
-          const query = row.querySelector('input').value.trim();
-          $('wl-add-status').textContent = 'Adding ' + (i + 1) + ' of ' + rows.length + '…';
-          watchRows.setStatus(row, 'Adding…');
-          try {
-            const res = await fetch('/api/watchlist', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ query }),
-            });
-            const data = await res.json();
-            if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
-            if (data.duplicate) {
-              dupes += 1;
-              watchRows.setStatus(row, 'Already watching');
-            } else {
-              added += 1;
-              watchRows.setStatus(row, 'Added', 'ok');
-            }
-            row.dataset.done = '1';
-          } catch (err) {
-            failed += 1;
-            const reason = (err && err.message) || 'Could not add';
-            watchRows.setStatus(row, /No vinyl release/.test(reason) ? 'No match' : 'Failed', 'error', reason);
-          }
-        }
-
-        state.adding = false;
-        $('wl-add').textContent = 'Add to watchlist';
-        await loadWatchlist();
-        renderWatchlist();
-
-        const parts = [];
-        if (added) parts.push(added === 1 ? '1 record added' : added + ' records added');
-        if (dupes) parts.push(dupes === 1 ? '1 already watching' : dupes + ' already watching');
-        if (failed) parts.push(failed === 1 ? '1 not added' : failed + ' not added');
-        $('wl-add-status').textContent = parts.join('  ·  ');
-
-        // Clear the rows that landed, but leave anything that needs another try
-        // sitting there with its message, so a typo can be fixed in place.
-        setTimeout(() => {
-          watchRows.rows().forEach((row) => { if (row.dataset.done) watchRows.remove(row); });
-        }, 1400);
-      }
-
-      $('wl-run').addEventListener('click', () => {
-        // The results render on the desk, so go there rather than duplicating them.
-        selectTab('desk');
-        run('watchlist');
-      });
-
-      $('wl-refresh').addEventListener('click', () => {
-        loadWatchlist().then(renderWatchlist);
-      });
-
       // ------------------------------------------------ inventory
 
       async function loadInventory() {
@@ -4900,9 +4614,10 @@
           state.invItems = data.items || [];
           state.invSheetUrl = data.sheetUrl || null;
           state.invError = null;
+          indexWatched();
         } catch (err) {
-          // Same policy as the watchlist: a stock list that will not load must
-          // never take the buying desk down with it.
+          // A stock list that will not load must never take the buying desk
+          // down with it. The desk keeps pricing; this tab says why it is empty.
           state.invError = (err && err.message) || 'request failed';
         }
       }
@@ -4920,19 +4635,97 @@
         return data.item;
       }
 
+      /**
+       * Adds every typed row to the inventory, one request at a time.
+       *
+       * Sequential on purpose: each add costs a Discogs search plus a release
+       * and a master-versions lookup, and that rate limit is shared with any
+       * sweep the same token is running. Ten rows fired at once would trip it.
+       */
+      async function addInvQueries() {
+        if (state.adding) return;
+        const rows = invRows.rows().filter((r) => r.querySelector('input').value.trim());
+        if (!rows.length) return;
+
+        state.adding = true;
+        invRows.refresh();
+        $('inv-add').textContent = 'Adding…';
+
+        let added = 0;
+        let existed = 0;
+        let failed = 0;
+
+        for (const [i, row] of rows.entries()) {
+          const query = row.querySelector('input').value.trim();
+          $('inv-add-status').textContent = 'Adding ' + (i + 1) + ' of ' + rows.length + '…';
+          invRows.setStatus(row, 'Adding…');
+          try {
+            const res = await fetch('/api/inventory', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ query }),
+            });
+            const data = await res.json();
+            if (!res.ok || data.error) throw new Error(data.error || 'Could not add');
+            if (data.existed) {
+              existed += 1;
+              // Three ways a title can already be here, and each gets its own
+              // words. A second row is never one of them.
+              const qty = data.item.qty || 0;
+              invRows.setStatus(row, data.wasWatching
+                ? 'Already watching'
+                : qty > 0 ? 'On the shelf, now watching' : 'Now watching');
+            } else {
+              added += 1;
+              invRows.setStatus(row, 'Added', 'ok');
+            }
+            row.dataset.done = '1';
+          } catch (err) {
+            failed += 1;
+            const reason = (err && err.message) || 'Could not add';
+            invRows.setStatus(row, /No vinyl release/.test(reason) ? 'No match' : 'Failed', 'error', reason);
+          }
+        }
+
+        state.adding = false;
+        $('inv-add').textContent = 'Add to inventory';
+        await loadInventory();
+        renderInventory();
+        refreshWatchControls();
+
+        const parts = [];
+        if (added) parts.push(added === 1 ? '1 record added' : added + ' records added');
+        if (existed) parts.push(existed === 1 ? '1 already in the inventory' : existed + ' already in the inventory');
+        if (failed) parts.push(failed === 1 ? '1 not added' : failed + ' not added');
+        $('inv-add-status').textContent = parts.join('  ·  ');
+
+        // Clear the rows that landed, but leave anything that needs another try
+        // sitting there with its message, so a typo can be fixed in place.
+        setTimeout(() => {
+          invRows.rows().forEach((row) => { if (row.dataset.done) invRows.remove(row); });
+        }, 1400);
+      }
+
       /** At or under the floor. A record with no floor set is never low. It is
        *  watched by hand or not at all. */
       function invLow(item) {
         return item.minQty != null && item.qty <= item.minQty;
       }
 
-      /** Needs a human's attention: nothing left, or down to the floor. */
+      /** Never bought: no copies, no landed cost, no purchase date. The row is
+       *  here because someone wants the record, not because it sold out. */
+      function invWanted(item) {
+        return item.qty === 0 && item.landedCostMxn == null && !item.lastPurchasedAt;
+      }
+
+      /** Needs a human's attention: nothing left, or down to the floor. A
+       *  wanted title was never stocked, so it cannot need restocking. */
       function invNeeds(item) {
-        return item.qty === 0 || invLow(item);
+        return !invWanted(item) && (item.qty === 0 || invLow(item));
       }
 
       function invStateText(item) {
-        if (item.qty === 0) return 'Out of stock';
+        if (item.qty === 0) return invWanted(item) ? 'Wanted' : 'Out of stock';
         // Names the condition, not the control that reacts to it. The sentence
         // under Watch & alerts is where what-happens-next gets explained.
         if (invLow(item)) return 'Low stock';
@@ -5071,9 +4864,19 @@
         if (item.watching && item.maxLandedMxn == null) {
           chips.push([icon('warn') + 'No alert price, every copy qualifies', true]);
         }
+        // What the last check found. The hit is the one chip here that is
+        // good news, so it gets its own colour rather than the warning's.
+        if (item.status === 'alerted') {
+          chips.push([icon('bell') + 'Under your alert price', false, 'is-hit']);
+        }
+        if (item.watching && item.bestLandedMxn != null) {
+          chips.push([icon('tag') + 'Best seen ' + esc(moneyMxn(item.bestLandedMxn)) + ' · ' +
+            esc(ago(item.lastCheckedAt).replace(/^checked /, '')), false]);
+        }
 
         return chips
-          .map(([t, warn]) => '<span class="wchip' + (warn ? ' is-warn' : '') + '">' + t + '</span>')
+          .map(([t, warn, cls]) => '<span class="wchip' + (warn ? ' is-warn' : '') +
+            (cls ? ' ' + cls : '') + '">' + t + '</span>')
           .join('');
       }
 
@@ -5108,9 +4911,40 @@
           '</span><span class="fact-v">' + value + '</span></div>';
       }
 
+      /** The price column. A title on the shelf shows its shelf price with the
+       *  best landed price seen beneath it; a wanted title has no shelf price,
+       *  so the best price seen is the figure. */
+      function invPriceHtml(item) {
+        const checked = ago(item.lastCheckedAt).replace(/^checked /, '');
+        const under = item.status === 'alerted' ? ' is-under' : '';
+        if (item.shelfPriceMxn != null) {
+          const sub = !item.watching ? ''
+            : item.bestLandedMxn == null ? '<span class="inv-best">no copy priced yet</span>'
+            : '<span class="inv-best' + under + '">best ' + esc(moneyMxn(item.bestLandedMxn)) +
+              ' &middot; ' + esc(checked) + '</span>';
+          return '<div class="inv-price">' + esc(moneyMxn(item.shelfPriceMxn)) + sub + '</div>';
+        }
+        if (item.bestLandedMxn != null) {
+          return '<div class="inv-price' + under + '">' + esc(moneyMxn(item.bestLandedMxn)) +
+            '<span class="inv-best' + under + '">best seen &middot; ' + esc(checked) + '</span></div>';
+        }
+        return '<div class="inv-price is-none">not priced' +
+          (item.watching ? '<span class="inv-best">' + esc(checked) + '</span>' : '') + '</div>';
+      }
+
+      /** How much of the album a sweep covers. Silent for the common case of
+       *  one pressing with nothing else known. */
+      function invPressingsHtml(item) {
+        const watched = sweepIds(item).length;
+        const known = Number(item.pressingCount) || 0;
+        if (watched <= 1 && known <= watched) return '';
+        return '<span class="inv-pressings">' +
+          (watched === 1 ? '1 pressing' : watched + ' pressings') + ' watched' +
+          (known > watched ? ' of ' + known + ' known' : '') + '</span>';
+      }
+
       function invDetailHtml(item, detailId) {
         const id = esc(item.id);
-        const q = [item.artist, item.album].filter(Boolean).join(' ');
 
         const pricing = invSection('tag', 'Pricing', {
           what: 'The bar splits the shelf price into what the copy cost to land in Mexico ' +
@@ -5156,17 +4990,16 @@
           '</div>');
 
         const sourcing = invSection('cart', 'Sourcing', {
-          what: 'Prices this record everywhere it can be bought right now. Discogs returns ' +
-            'a real landed figure; eBay, Mercado Libre and Bandcamp open as searches, ' +
-            'because those APIs are not built yet.',
+          what: 'Prices every watched pressing of this record everywhere it can be bought ' +
+            'right now. Discogs returns a real landed figure for the cheapest; eBay, Mercado ' +
+            'Libre and Bandcamp open as searches, because those APIs are not built yet.',
           why: 'A scheduled sweep will run this for every watched record a few times a day. ' +
             'The button stays, because whoever is at the counter should not wait for the ' +
             'next run.',
         },
           '<div class="src-head">' +
           (item.releaseId
-            ? '<button class="btn btn-ghost btn-sm" type="button" data-check="' + id + '" ' +
-              'data-release="' + esc(item.releaseId) + '" data-q="' + esc(q) + '">' +
+            ? '<button class="btn btn-ghost btn-sm" type="button" data-check="' + id + '">' +
               icon('search') + 'Check listings now</button>'
             : '<span class="src-status">No Discogs release matched, so there is nothing to price.</span>') +
           '<span class="src-status" data-srcstatus="' + id + '"></span>' +
@@ -5200,11 +5033,12 @@
 
         const discogs = invSection('disc', 'Discogs', {
           what: 'The release this copy is matched to. Sleeve and pressing year are read ' +
-            'from it, and Check listings prices this exact pressing.',
+            'from it, and a check prices every watched pressing of its album, this one included.',
         },
           item.releaseId
             ? '<a class="inv-link" href="https://www.discogs.com/release/' + esc(item.releaseId) +
-              '" target="_blank" rel="noopener noreferrer">Release ' + esc(item.releaseId) + '</a>'
+              '" target="_blank" rel="noopener noreferrer">Release ' + esc(item.releaseId) + '</a>' +
+              invPressingsHtml(item)
             : '<span class="fact-none">Not matched. Run <code>npm run enrich-inventory</code></span>',
           'is-bare is-aside');
 
@@ -5214,6 +5048,13 @@
           // and the link is four words, so giving each a full-width band of its
           // own spent a line of height on almost nothing.
           '<div class="inv-split">' + notes + discogs + '</div>' +
+          // Only a title with no copies can go: stock has to be sold or counted
+          // down first, which is the same rule a shelf applies.
+          (item.qty === 0
+            ? '<p class="inv-remove"><button class="btn-link" type="button" data-invremove="' + id + '">' +
+              'Remove from the inventory</button><span>No copies, so the row can go. ' +
+              'The sheet keeps it, marked inactive.</span></p>'
+            : '') +
           '</div>';
       }
 
@@ -5223,10 +5064,6 @@
         const detailId = 'invd-' + id;
         const byline = [item.artist, item.year].filter(Boolean).map(esc).join(' &middot; ');
         const state_ = invStateText(item);
-
-        const price = item.shelfPriceMxn == null
-          ? '<div class="inv-price is-none">not priced</div>'
-          : '<div class="inv-price">' + esc(moneyMxn(item.shelfPriceMxn)) + '</div>';
 
         return '<article class="inv-item' + (invNeeds(item) ? ' needs' : '') + '" data-invrow="' + id + '">' +
           invThumbHtml(item) +
@@ -5247,7 +5084,7 @@
           '<button class="stepper" type="button" data-inc="' + id + '" ' +
           'aria-label="One more copy of ' + label + '">+</button>' +
           '</div>' +
-          price +
+          invPriceHtml(item) +
           // Both decisions live in both places. Folded, they are the two things
           // worth changing without opening anything; open, they are labelled.
           '<div class="row-acts">' +
@@ -5272,7 +5109,7 @@
       function renderInvStats() {
         const box = $('inv-summary');
         if (!box) return;
-        const items = state.invItems || [];
+        const items = (state.invItems || []).filter((i) => i.active !== false);
         const copies = items.reduce((n, i) => n + (i.qty || 0), 0);
         const capital = items.reduce((n, i) => n + (i.landedCostMxn || 0) * (i.qty || 0), 0);
         const retail = items.reduce((n, i) => n + (i.shelfPriceMxn || 0) * (i.qty || 0), 0);
@@ -5293,19 +5130,25 @@
           '<b>' + value + '</b></div>';
 
         box.innerHTML =
-          stat('disc', items.length, 'titles') +
+          // Titles are what is or has been on the shelf. A wanted record is
+          // counted under "watched" until a copy of it lands.
+          stat('disc', items.filter((i) => !invWanted(i)).length, 'titles') +
           stat('box', copies, 'copies') +
           // Short labels, with the meaning on the dot. Spelling these out in
           // full wrapped every money column onto two lines.
-          stat('wallet', esc(moneyMxn(capital)), 'capital', {
+          stat('wallet', esc(moneyMxnWhole(capital)), 'capital', {
             what: 'Every copy on the shelf at what it actually cost to land, added up. ' +
               'Money already spent and not yet recovered.',
           }) +
-          stat('tag', esc(moneyMxn(retail)), 'retail', {
+          stat('tag', esc(moneyMxnWhole(retail)), 'retail', {
             what: 'The same copies at what they are priced at. What the shelf is worth if ' +
               'all of it sells at the marked price, which is not the same as what it will.',
           }) +
-          stat('flag', low, 'need restocking', { low: low > 0 });
+          stat('flag', low, 'need restocking', { low: low > 0 }) +
+          stat('eye', items.filter((i) => i.watching).length, 'watched', {
+            what: 'Titles the next sweep prices: anything on the shelf that has fallen to ' +
+              'its restock count, and every wanted record.',
+          });
 
         const badge = low
           ? '<span class="tab-count is-low" title="' + low + ' title' + (low === 1 ? '' : 's') +
@@ -5314,14 +5157,21 @@
         $('tab-inv').innerHTML = 'Inventory' + badge;
       }
 
+      /** Rows the current view shows. Newest first, so a record just added
+       *  lands at the top of the page rather than on the last one. */
       function invVisible() {
         const q = state.invQuery.trim().toLowerCase();
-        return (state.invItems || []).filter((item) => {
-          if (state.invFilter === 'low' && !invNeeds(item)) return false;
-          if (state.invFilter === 'watching' && !item.watching) return false;
-          if (!q) return true;
-          return (item.artist + ' ' + item.album).toLowerCase().includes(q);
-        });
+        return (state.invItems || [])
+          .filter((item) => {
+            if (item.active === false) return false;
+            if (state.invFilter === 'shelf' && !(item.qty > 0)) return false;
+            if (state.invFilter === 'wanted' && !invWanted(item)) return false;
+            if (state.invFilter === 'low' && !invNeeds(item)) return false;
+            if (state.invFilter === 'watching' && !item.watching) return false;
+            if (!q) return true;
+            return (item.artist + ' ' + item.album).toLowerCase().includes(q);
+          })
+          .sort((a, b) => (b.addedAt || '').localeCompare(a.addedAt || ''));
       }
 
       /**
@@ -5405,6 +5255,8 @@
 
         $('inv-sheet-item').hidden = !state.invSheetUrl;
         if (state.invSheetUrl) $('inv-sheet').href = state.invSheetUrl;
+        $('inv-run').disabled = state.running ||
+          !(state.invItems || []).some((i) => i.active !== false && i.watching);
 
         document.querySelectorAll('[data-invfilter]').forEach((chip) => {
           chip.setAttribute('aria-pressed', String(chip.dataset.invfilter === state.invFilter));
@@ -5418,11 +5270,14 @@
           return;
         }
 
-        const total = (state.invItems || []).length;
+        // "Records", not "titles": the strip above counts titles on the shelf,
+        // and this list also holds the wanted ones, so the two would disagree
+        // by exactly the number of records the shop is still looking for.
+        const total = (state.invItems || []).filter((i) => i.active !== false).length;
         const shown = invVisible();
         $('inv-count').textContent = shown.length === total
-          ? (total === 1 ? '1 title' : total + ' titles')
-          : shown.length + ' of ' + total + ' titles';
+          ? (total === 1 ? '1 record' : total + ' records')
+          : shown.length + ' of ' + total + ' records';
 
         if (!total) {
           $('inv-pager').hidden = true;
@@ -5467,6 +5322,10 @@
             flag.hidden = !stateText;
             flag.title = stateText;
           }
+          // The price column carries what the last check found, so it moves
+          // whenever a check or a sweep has written to the row.
+          const priceEl = row.querySelector('.inv-price');
+          if (priceEl) priceEl.outerHTML = invPriceHtml(item);
           const statusEl = row.querySelector('[data-istatus="' + item.id + '"]');
           if (statusEl) statusEl.innerHTML = invWatchStatus(item);
           row.querySelectorAll('[data-invalert="' + item.id + '"]').forEach((btn) => {
@@ -5495,6 +5354,11 @@
           });
         }
         renderInvStats();
+        // The desk paints its Watch, SMS and limit controls from per-release
+        // maps. Every write that lands here can move one of them, so rebuild
+        // the maps and repaint rather than wait for the next full reload.
+        indexWatched();
+        refreshWatchControls();
       }
 
       /**
@@ -5680,6 +5544,9 @@
         root.querySelectorAll('[data-check]').forEach((btn) => {
           btn.addEventListener('click', () => checkListings(btn));
         });
+        root.querySelectorAll('[data-invremove]').forEach((btn) => {
+          btn.addEventListener('click', () => removeInvItem(btn));
+        });
       }
 
       /**
@@ -5723,6 +5590,28 @@
           setTimeout(() => btn.classList.remove('is-error'), 1500);
         } finally {
           btn.disabled = false;
+        }
+      }
+
+      /** Soft delete. Only a title with no copies offers this, and the sheet
+       *  keeps the row: deleting sheet rows is what the row-number logic in
+       *  src/inventory.ts exists to avoid. */
+      async function removeInvItem(btn) {
+        const item = findInvItem(btn.dataset.invremove);
+        if (!item || item.qty !== 0) return;
+        btn.disabled = true;
+        btn.textContent = 'Removing…';
+        try {
+          Object.assign(item, await patchInventory(item.id, { active: false, watching: false, alertSms: false }));
+          indexWatched();
+          renderInventory();
+          refreshWatchControls();
+          showToast({ plain: true, icon: '✅', message: (item.album || item.artist) + ' removed from the inventory.' });
+        } catch (err) {
+          btn.disabled = false;
+          btn.textContent = 'Remove from the inventory';
+          showToast({ plain: true, icon: '⚠️',
+            message: 'Could not remove it: ' + ((err && err.message) || 'save failed') });
         }
       }
 
@@ -5773,16 +5662,16 @@
 
         const status = document.querySelector('[data-srcstatus="' + item.id + '"]');
         const out = document.querySelector('[data-srcout="' + item.id + '"]');
+        const n = sweepIds(item).length;
         btn.disabled = true;
         btn.textContent = 'Checking…';
-        if (status) { status.classList.remove('is-error'); status.textContent = 'Asking Discogs…'; }
+        if (status) {
+          status.classList.remove('is-error');
+          status.textContent = n > 1 ? 'Pricing ' + n + ' pressings…' : 'Asking Discogs…';
+        }
 
         try {
-          const params = new URLSearchParams({
-            releaseId: String(btn.dataset.release),
-            q: btn.dataset.q || '',
-          });
-          const res = await fetch('/api/sourcing?' + params);
+          const res = await fetch('/api/sourcing?' + new URLSearchParams({ id: item.id }));
           // A 404 here is plain text, not JSON: the route only exists on a
           // server started since it was added, and res.json() on "Not found"
           // reports a parse error instead of the thing that actually went
@@ -5798,8 +5687,13 @@
           }
           if (!res.ok || data.error) throw new Error(data.error || 'check failed');
 
+          // The check wrote best price, status and time back to the row. Take
+          // the row as written, so the folded line and the chips repaint from
+          // the same figures a sweep would have left.
+          if (data.item) { Object.assign(item, data.item); repaintInvRow(item); }
+
           const d = data.discogs;
-          const under = d.totalMxn != null && item.maxLandedMxn != null && d.totalMxn <= item.maxLandedMxn;
+          const under = !!data.under;
 
           const offers = [{
             platform: 'Discogs', iconName: 'disc',
@@ -5808,11 +5702,14 @@
             live: true,
             under: under,
             note: d.available
-              ? 'Landed in Mexico, cheapest of ' + d.numForSale +
-                (d.numForSale === 1 ? ' copy' : ' copies') +
-                (d.originLabel ? ' &middot; ships from ' + esc(d.originLabel) : '') +
-                (under ? ' &middot; <b>under your alert price</b>' : '')
-              : 'No copies listed right now',
+              ? [
+                'Landed in Mexico',
+                data.checked > 1 ? 'cheapest of ' + data.checked + ' pressings' : '',
+                d.numForSale + (d.numForSale === 1 ? ' copy' : ' copies') + ' listed',
+                d.originLabel ? 'ships from ' + esc(d.originLabel) : '',
+                under ? '<b>under your alert price</b>' : '',
+              ].filter(Boolean).join(' &middot; ')
+              : esc(d.reason || 'No copies listed right now'),
           }].concat((data.links || []).map((l) => ({
             platform: l.platform, iconName: PLATFORM_ICON[l.platform] || 'disc',
             url: l.url, price: null, live: false, under: false, note: esc(l.note),
@@ -5857,8 +5754,14 @@
         renderInventory();
       });
 
+      $('inv-run').addEventListener('click', () => {
+        // The results render on the desk, so go there rather than duplicating them.
+        selectTab('desk');
+        run('watchlist');
+      });
+
       $('inv-refresh').addEventListener('click', () => {
-        loadInventory().then(renderInventory);
+        loadInventory().then(() => { renderInventory(); refreshWatchControls(); });
       });
 
       // ------------------------------------------------ rendering
@@ -6241,14 +6144,12 @@
             }
             state.pendingThresholds.add(watchId);
             try {
-              const res = await fetch('/api/watchlist', {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ id: watchId, maxLandedMxn: value }),
-              });
-              if (!res.ok) throw new Error('save failed');
+              await patchInventory(watchId, { maxLandedMxn: value });
               if (value === null) state.thresholds.delete(releaseId);
               else state.thresholds.set(releaseId, value);
+              // Keep the Inventory tab's copy of the row in step without a re-read.
+              const inv = findInvItem(watchId);
+              if (inv) inv.maxLandedMxn = value;
               if (flag) {
                 flag.classList.remove('is-error');
                 flag.textContent = 'Saved';
@@ -6332,7 +6233,7 @@
         $('go').disabled = true;
         $('godemo').disabled = true;
         $('gowatch').disabled = true;
-        $('wl-run').disabled = true;
+        $('inv-run').disabled = true;
         $('idle').hidden = true;
         $('error').hidden = true;
         $('legend').hidden = true;
@@ -6366,7 +6267,7 @@
           renderSummary(state.data);
           finish(es);
           // A sweep writes best price, status and last-checked back to the sheet.
-          if (mode === 'watchlist') loadWatchlist().then(renderWatchlist);
+          if (mode === 'watchlist') loadInventory().then(() => { renderInventory(); refreshWatchControls(); });
         });
 
         es.addEventListener('failed', (e) => {
@@ -6392,18 +6293,19 @@
         $('loading').hidden = true;
         $('godemo').disabled = false;
         $('gowatch').disabled = false;
-        renderWatchlist();
+        renderInventory();
         deskRows.refresh();
       }
 
       $('godemo').addEventListener('click', () => run('demo'));
       $('gowatch').addEventListener('click', () => run('watchlist'));
 
-      loadInventory().then(renderInventory);
-
-      // Restore a previous run if the server still has one cached.
-      loadWatchlist().then(() => {
-        renderWatchlist();
+      // Restore a previous run if the server still has one cached. The
+      // inventory loads first, so the restored rows paint their Watch buttons
+      // from the sheet rather than from nothing.
+      loadInventory().then(() => {
+        renderInventory();
+        refreshWatchControls();
         return fetch('/api/results').then((r) => r.json()).then((data) => {
           if (data && data.results && data.results.length) {
             state.data = data;
