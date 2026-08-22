@@ -477,21 +477,26 @@
        landed cost against margin, the desk's is the record plus the three
        costs stacked on it. It thickens on hover, and that plus the arrow is
        all the movement this page has. */
+    /* The box keeps the height the bar grows into, so the fill can thicken
+       without moving the heading under it. Growing the box itself pushed the
+       whole card down 5px on hover. */
     .tile-bar {
       display: flex;
+      align-items: flex-start;
+      height: 14px;
+      margin: 0 -24px 15px;
+    }
+
+    /* No track behind them: the segments always sum to the full width, so the
+       only thing a background could show is the strip left above hover. */
+    .tile-bar i {
+      display: block;
       height: 9px;
-      margin: 0 -24px 20px;
-      background: var(--kraft-deep);
       transition: height 140ms ease;
     }
 
-    .tile:hover .tile-bar {
+    .tile:hover .tile-bar i {
       height: 14px;
-    }
-
-    .tile-bar i {
-      display: block;
-      height: 100%;
     }
 
     /* The destination's own name, in the face its page is titled in, so a tile
@@ -571,7 +576,7 @@
     @media (prefers-reduced-motion: reduce) {
 
       .tile,
-      .tile-bar,
+      .tile-bar i,
       .tile-go::after {
         transition: none;
       }
@@ -580,7 +585,7 @@
         transform: none;
       }
 
-      .tile:hover .tile-bar {
+      .tile:hover .tile-bar i {
         height: 9px;
       }
 
@@ -3535,6 +3540,57 @@
         transition: none;
       }
     }
+
+    /* ---------------------------------------------------- footer */
+
+    .foot {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px 26px;
+      margin-top: 64px;
+      padding-top: 16px;
+      border-top: 1px solid var(--kraft-deep);
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      letter-spacing: 0.04em;
+      color: var(--carbon);
+    }
+
+    .foot p {
+      margin: 0;
+    }
+
+    .foot-note {
+      max-width: 80ch;
+    }
+
+    .foot-v {
+      display: inline-block;
+      margin-right: 8px;
+      padding: 2px 7px;
+      border: 1px solid var(--kraft-deep);
+      border-radius: 2px;
+      font-weight: 700;
+      color: var(--ink);
+    }
+
+    .foot a {
+      color: var(--ink);
+      font-weight: 700;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    .foot a:hover {
+      text-decoration-thickness: 2px;
+    }
+
+    .foot a:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
   </style>
 </head>
 
@@ -4122,6 +4178,13 @@
         </ul>
       </section>
     </div>
+
+    <!-- Sits outside the panels, so it holds on every tab. Bump the version
+         here when the demo moves on; nothing reads it programmatically. -->
+    <footer class="foot">
+      <p class="foot-note"><span class="foot-v">v0.4</span> Demo build. Discogs prices and exchange rates are live; shipping and customs figures are estimates, not quotes.</p>
+      <p class="foot-by">Built by <a href="https://www.thetomorrowshop.com/" target="_blank" rel="noopener noreferrer">The Tomorrow Shop</a></p>
+    </footer>
 
   </div>
 
