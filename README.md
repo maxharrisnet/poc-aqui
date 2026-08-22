@@ -27,8 +27,8 @@ npm install
 DISCOGS_TOKEN=your_token npm run serve
 ```
 
-Then open http://localhost:4173 and press **Check prices now**. The check
-runs on button press rather than page load, so the live data arriving is
+Then open http://localhost:4173, open the **Buying desk** tab and press
+**Use the demo list**. The check runs on button press rather than page load, so the live data arriving is
 something you can show happening in the room. Results are cached in memory,
 so reloading the page doesn't burn Discogs rate limit.
 
