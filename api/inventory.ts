@@ -4,6 +4,7 @@ import {
   patchInventoryItem,
   type InventoryItem,
 } from "../src/inventory.js";
+import { publicSheetsError } from "../src/sheets.js";
 
 function json(res: ServerResponse, status: number, body: unknown): void {
   res.writeHead(status, { "Content-Type": "application/json", "Cache-Control": "no-store" });
@@ -29,6 +30,8 @@ function publicErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   console.error(`Inventory API error: ${message}`);
   if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
+  const sheets = publicSheetsError(message);
+  if (sheets) return sheets;
   return "Request failed. Check the server logs.";
 }
 

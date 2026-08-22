@@ -1,5 +1,6 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 import { runDemo, runSearch, runWatchlist, MAX_QUERIES } from "../src/run.js";
+import { publicSheetsError } from "../src/sheets.js";
 
 /**
  * Server-Sent Events endpoint.
@@ -45,6 +46,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
     // Config guidance carries no secrets and is how an operator diagnoses a
   // broken deploy: pass it through rather than hiding it behind the log.
   if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
+  const sheets = publicSheetsError(message);
+  if (sheets) return sheets;
     return "Request failed. Check the server logs.";
   };
 

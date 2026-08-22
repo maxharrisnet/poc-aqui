@@ -180,6 +180,48 @@ async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
   return res.json() as Promise<T>;
 }
 
+/**
+ * Turns an internal Sheets failure into a sentence that is safe to put in a
+ * browser, and useless to anyone who is not the operator.
+ *
+ * The handlers replace unrecognised errors with "check the server logs", which
+ * is right for anything that might carry data but wrong for the three ways a
+ * deployment is misconfigured: those are exactly what someone staring at a 500
+ * needs to know, and reading them should not require shell access to the logs.
+ *
+ * Deliberately says nothing the raw error would: no spreadsheet id, no service
+ * account address, no response body. The status code is enough to name the
+ * problem, and the fix is the same whichever sheet it was.
+ *
+ * Returns null when the message is not a Sheets failure at all.
+ */
+export function publicSheetsError(message: string): string | null {
+  const match = /^Sheets API \S+ -> (\d{3})/.exec(message);
+  if (!match) return null;
+
+  switch (match[1]) {
+    case "401":
+      return (
+        "Google rejected the service account credentials. Check GOOGLE_SERVICE_ACCOUNT_EMAIL " +
+        "and GOOGLE_PRIVATE_KEY in this deployment's environment."
+      );
+    case "403":
+      return (
+        "The spreadsheet exists, but this deployment is not allowed to read it. Share it " +
+        "with the service account as an Editor. Note that a deployment can use a different " +
+        "service account from your machine."
+      );
+    case "404":
+      return (
+        "No spreadsheet with that id. Check WATCHLIST_SHEET_ID and INVENTORY_SHEET_ID in " +
+        "this deployment's environment, and remember that changing them needs a redeploy " +
+        "to take effect."
+      );
+    default:
+      return `Google Sheets returned ${match[1]}. See the server logs for the response.`;
+  }
+}
+
 const tabNameCache = new Map<string, string>();
 
 /** The first tab's actual title. Cached per instance. Never assume "Sheet1":

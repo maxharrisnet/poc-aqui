@@ -8,6 +8,7 @@ import {
 } from "../src/watchlist.js";
 import { getRelease, getMasterVersions, searchRelease } from "../src/discogs.js";
 import { planPressings, AUTO_WATCH_LIMIT } from "../src/pressings.js";
+import { publicSheetsError } from "../src/sheets.js";
 
 const MAX_WATCHED_RELEASE_IDS = 200;
 const MAX_MIN_CONDITION_LENGTH = 32;
@@ -47,6 +48,8 @@ function publicErrorMessage(err: unknown): string {
   // Config guidance carries no secrets and is how an operator diagnoses a
   // broken deploy: pass it through rather than hiding it behind the log.
   if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
+  const sheets = publicSheetsError(message);
+  if (sheets) return sheets;
   return "Request failed. Check the server logs.";
 }
 
