@@ -4,7 +4,12 @@ import { fetchFxSnapshot, type FxSnapshot } from "./fx.js";
 import { estimateShippingUsd } from "./shipping.js";
 import { calculateCustoms, CUSTOMS_RULES_2026 } from "./customsRules.js";
 import { resolveOrigin } from "./countries.js";
-import { listWatchItems, patchWatchItem, type WatchItem } from "./watchlist.js";
+import {
+  listInventoryItems,
+  patchInventoryItem,
+  sweepReleaseIds,
+  type InventoryItem,
+} from "./inventory.js";
 
 export const MAX_QUERIES = 10;
 
@@ -21,7 +26,7 @@ export interface CostBreakdown {
 }
 
 export interface CheckResult {
-  /** What the user asked for. The search text, or the watchlist note. */
+  /** What the user asked for. The search text, or the record's own note. */
   requested: string;
   /** Why this record is in the demo set. Absent for user searches. */
   note?: string;
@@ -79,11 +84,11 @@ export interface RunSummary {
 export type ProgressFn = (event: { index: number; total: number; label: string }) => void;
 
 /** A sheet write failing must not discard results we already paid Discogs for. */
-async function safePatch(id: string, patch: Partial<WatchItem>): Promise<void> {
+async function safePatch(id: string, patch: Partial<InventoryItem>): Promise<void> {
   try {
-    await patchWatchItem(id, patch);
+    await patchInventoryItem(id, patch);
   } catch (err) {
-    console.error(`Watchlist write failed for ${id}: ${(err as Error).message}`);
+    console.error(`Inventory write failed for ${id}: ${(err as Error).message}`);
   }
 }
 
@@ -91,7 +96,7 @@ async function safePatch(id: string, patch: Partial<WatchItem>): Promise<void> {
  *  numbers from configuration; the demo needs something to show on screen. */
 const ALERT_RECIPIENT = process.env.ALERT_SMS_TO ?? "the buying desk";
 
-function composeAlert(item: WatchItem, best: CheckResult): NonNullable<CheckResult["alert"]> {
+function composeAlert(item: InventoryItem, best: CheckResult): NonNullable<CheckResult["alert"]> {
   const price = best.totalMxn == null ? "" : ` at ${Math.round(best.totalMxn).toLocaleString("en-US")} MXN landed`;
   const limit = item.maxLandedMxn == null ? "" : ` (under your ${Math.round(item.maxLandedMxn).toLocaleString("en-US")} limit)`;
   return {
@@ -275,97 +280,126 @@ export async function runSearch(
   return summarise("search", fx, results);
 }
 
+export interface SweepOutcome {
+  result: CheckResult;
+  /** Pressings actually priced. Fewer than asked when Discogs failed on some. */
+  checked: number;
+  /** The cheapest copy landed at or under the record's alert price. */
+  under: boolean;
+  /** The row as written back. */
+  item: InventoryItem;
+}
+
 /**
- * Prices every watched pressing of every active watch item.
+ * Prices every watched pressing of one record, keeps the cheapest, and writes
+ * what it found back to the row.
  *
- * Writes each item's result back to the sheet as it completes rather than at
- * the end, so a function timeout costs the tail of the sweep instead of all of
- * it. The sheet doubles as the checkpoint. See spec v0.2 §5.1.
+ * One function for both callers on purpose. The Check listings button on an
+ * inventory row and the scheduled sweep have to land on the same number, or
+ * the figure a person saw at the counter is not the figure the alert fired on.
  */
-export async function runWatchlist(
+export async function sweepRecord(item: InventoryItem, fx: FxSnapshot): Promise<SweepOutcome> {
+  const label = `${item.artist}: ${item.album}`;
+  const releaseIds = sweepReleaseIds(item);
+  const checkedAt = new Date().toISOString();
+
+  let best: CheckResult | null = null;
+  let checkError: string | null = null;
+  let checked = 0;
+
+  for (const releaseId of releaseIds) {
+    try {
+      const result = await costRelease(releaseId, label, fx, item.notes || undefined);
+      checked += 1;
+      if (result.cost && (!best?.cost || result.cost.totalUsd < best.cost.totalUsd)) {
+        best = result;
+      }
+    } catch (err) {
+      // Remember why, but keep trying the other pressings.
+      checkError = (err as Error).message;
+    }
+  }
+
+  if (best) {
+    const under =
+      best.totalMxn != null && item.maxLandedMxn != null && best.totalMxn <= item.maxLandedMxn;
+    // Only on the crossing, not on every sweep of an already-alerted record:
+    // a nightly re-alert for the same copy is how a team learns to ignore the
+    // channel.
+    if (under && item.alertSms && item.status !== "alerted") {
+      best.alert = composeAlert(item, best);
+    }
+    const patch: Partial<InventoryItem> = {
+      lastCheckedAt: checkedAt,
+      bestLandedMxn: best.totalMxn ?? null,
+      bestReleaseId: best.discogsId ?? null,
+      status: under ? "alerted" : "watching",
+    };
+    await safePatch(item.id, patch);
+    return { result: best, checked, under, item: { ...item, ...patch } };
+  }
+
+  if (checkError) {
+    // Could not reach Discogs. Record that we tried; change nothing else.
+    // Nulling the stored best price here would destroy a real alert.
+    const failed: CheckResult = {
+      requested: label,
+      matched: false,
+      unmatchedReason: checkError,
+      available: false,
+      numForSale: 0,
+    };
+    const patch: Partial<InventoryItem> = { lastCheckedAt: checkedAt };
+    await safePatch(item.id, patch);
+    return { result: failed, checked, under: false, item: { ...item, ...patch } };
+  }
+
+  // Genuinely checked, genuinely nothing listed. Or nothing to check at all.
+  const none: CheckResult = {
+    requested: label,
+    matched: false,
+    unmatchedReason:
+      releaseIds.length === 0
+        ? "No Discogs release matched, so there is nothing to price"
+        : "No copies listed for any watched pressing",
+    available: false,
+    numForSale: 0,
+  };
+  const patch: Partial<InventoryItem> = {
+    lastCheckedAt: checkedAt,
+    bestLandedMxn: null,
+    bestReleaseId: null,
+    status: "watching",
+  };
+  await safePatch(item.id, patch);
+  return { result: none, checked, under: false, item: { ...item, ...patch } };
+}
+
+/**
+ * Sweeps every active record whose watch is on.
+ *
+ * Writes each record's result back as it completes rather than at the end, so
+ * a function timeout costs the tail of the sweep instead of all of it. The
+ * sheet doubles as the checkpoint.
+ */
+export async function runWatched(
   onProgress?: ProgressFn,
   onResult?: (r: CheckResult) => void,
 ): Promise<RunSummary> {
   const fx = await fetchFxSnapshot();
-  const active = (await listWatchItems()).filter((w) => w.active);
+  const watched = (await listInventoryItems()).filter((i) => i.active && i.watching);
   // Oldest-checked first, never-checked before that, so a capped run always
   // makes progress on the tail instead of re-sweeping the same prefix.
-  active.sort((a, b) => (a.lastCheckedAt ?? "").localeCompare(b.lastCheckedAt ?? ""));
-  const items = active.slice(0, MAX_SWEEP_ITEMS);
-  const skipped = active.length - items.length;
+  watched.sort((a, b) => (a.lastCheckedAt ?? "").localeCompare(b.lastCheckedAt ?? ""));
+  const items = watched.slice(0, MAX_SWEEP_ITEMS);
+  const skipped = watched.length - items.length;
   const results: CheckResult[] = [];
 
   for (const [i, item] of items.entries()) {
     onProgress?.({ index: i + 1, total: items.length, label: `${item.artist}: ${item.album}` });
-
-    let best: CheckResult | null = null;
-    let checkError: string | null = null;
-
-    for (const releaseId of item.watchedReleaseIds) {
-      try {
-        const result = await costRelease(
-          releaseId,
-          `${item.artist}: ${item.album}`,
-          fx,
-          item.notes || undefined,
-        );
-        if (result.cost && (!best?.cost || result.cost.totalUsd < best.cost.totalUsd)) {
-          best = result;
-        }
-      } catch (err) {
-        // Remember why, but keep trying the other pressings.
-        checkError = (err as Error).message;
-      }
-    }
-
-    if (best) {
-      results.push(best);
-      onResult?.(best);
-      const belowThreshold =
-        best.totalMxn != null && item.maxLandedMxn != null && best.totalMxn <= item.maxLandedMxn;
-      // Only on the crossing, not on every sweep of an already-alerted record:
-      // a nightly re-alert for the same copy is how a team learns to ignore the
-      // channel.
-      if (belowThreshold && item.alertSms && item.status !== "alerted") {
-        best.alert = composeAlert(item, best);
-      }
-      await safePatch(item.id, {
-        lastCheckedAt: new Date().toISOString(),
-        bestLandedMxn: best.totalMxn ?? null,
-        bestReleaseId: best.discogsId ?? null,
-        status: belowThreshold ? "alerted" : item.status === "alerted" ? "watching" : item.status,
-      });
-    } else if (checkError) {
-      // Could not reach Discogs. Record that we tried; change nothing else.
-      // Nulling the stored best price here would destroy a real alert.
-      const failed: CheckResult = {
-        requested: `${item.artist}: ${item.album}`,
-        matched: false,
-        unmatchedReason: checkError,
-        available: false,
-        numForSale: 0,
-      };
-      results.push(failed);
-      onResult?.(failed);
-      await safePatch(item.id, { lastCheckedAt: new Date().toISOString() });
-    } else {
-      // Genuinely checked, genuinely nothing listed.
-      const none: CheckResult = {
-        requested: `${item.artist}: ${item.album}`,
-        matched: false,
-        unmatchedReason: "No copies listed for any watched pressing",
-        available: false,
-        numForSale: 0,
-      };
-      results.push(none);
-      onResult?.(none);
-      await safePatch(item.id, {
-        lastCheckedAt: new Date().toISOString(),
-        bestLandedMxn: null,
-        bestReleaseId: null,
-        status: item.status === "alerted" ? "watching" : item.status,
-      });
-    }
+    const { result } = await sweepRecord(item, fx);
+    results.push(result);
+    onResult?.(result);
   }
 
   if (skipped > 0) {
