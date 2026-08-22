@@ -359,42 +359,229 @@
       display: none;
     }
 
+    /* ---------------------------------------------------- home */
+
+    /* The landing page: what this is, then four doors. Centred, because it is
+       the one screen with nothing to scan down a column. */
+    .splash {
+      padding: 40px 0 24px;
+      text-align: center;
+    }
+
+    .splash-logo {
+      margin: 0 auto;
+      max-width: min(520px, 84vw);
+    }
+
+    .splash-logo img {
+      display: block;
+      width: 100%;
+      height: auto;
+      filter: invert(var(--logo-invert));
+    }
+
+    .splash-lede {
+      margin: 32px auto 0;
+      max-width: 60ch;
+      font-size: 1.16rem;
+      font-weight: 500;
+      color: var(--carbon);
+    }
+
+    .splash-lede strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    /* Two columns of short bullets rather than one long stack: at this width a
+       single column would push the tiles below the fold, which is the one
+       thing this page exists to prevent. */
+    .splash-points {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 10px 34px;
+      max-width: 900px;
+      margin: 28px auto 0;
+      padding: 0;
+      list-style: none;
+      text-align: left;
+    }
+
+    .splash-points li {
+      position: relative;
+      padding-left: 20px;
+      font-size: 0.98rem;
+      color: var(--carbon);
+    }
+
+    .splash-points li::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 0.6em;
+      width: 8px;
+      height: 8px;
+      border-radius: 1px;
+      background: var(--c-record);
+    }
+
+    .splash-points strong {
+      color: var(--ink);
+      font-weight: 700;
+    }
+
+    .tiles {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(268px, 1fr));
+      gap: 14px;
+      margin-top: 34px;
+      text-align: left;
+    }
+
+    .tiles.is-minor {
+      margin-top: 14px;
+    }
+
+    .tile {
+      display: grid;
+      gap: 7px;
+      align-content: start;
+      padding: 18px 20px 16px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 3px;
+      background: var(--paper);
+      font: inherit;
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color 120ms ease, transform 120ms ease;
+    }
+
+    .tile:hover {
+      border-color: var(--ink);
+      transform: translateY(-2px);
+    }
+
+    .tile:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
+
+    /* The two working tabs carry the ink edge the callout uses, so the pair
+       that does something reads apart from the pair that explains it. */
+    .tile.is-major {
+      padding: 24px 24px 20px;
+      border-left-width: 6px;
+      border-left-color: var(--ink);
+    }
+
+    .tile-k {
+      font-family: var(--mono);
+      font-size: 0.76rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--carbon);
+    }
+
+    .tile-h {
+      font-size: 1.24rem;
+      font-weight: 700;
+      line-height: 1.22;
+      color: var(--ink);
+    }
+
+    .tile-d {
+      font-size: 0.97rem;
+      color: var(--carbon);
+    }
+
+    .tile-stat {
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.05em;
+      color: var(--carbon);
+    }
+
+    .tile-go {
+      margin-top: 3px;
+      font-family: var(--mono);
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--ink);
+    }
+
+    .tile-go::after {
+      content: " \2192";
+    }
+
+    .callout.is-splash {
+      margin: 30px auto 0;
+      text-align: left;
+    }
+
     /* ---------------------------------------------------- hero */
 
     .hero {
       padding: 48px 0 30px;
     }
 
-    /* The landing hero, on the Inventory tab: logo left, copy right. Every
-     other tab opens on a text headline in the plain single-column flow. */
-    .hero:has(.hero-logo) {
-      display: grid;
-      grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
-      gap: 44px;
+    /* The heading and the guide switch share a line; the switch keeps its
+       size when the heading wraps. */
+    .hero-head {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 18px 24px;
+      flex-wrap: wrap;
+      margin-bottom: 22px;
+    }
+
+    .hero-head h1 {
+      margin-bottom: 0;
+    }
+
+    .howto-toggle {
+      display: inline-flex;
       align-items: center;
+      gap: 7px;
+      flex: none;
+      font-family: var(--mono);
+      font-size: 0.78rem;
+      font-weight: 600;
+      letter-spacing: 0.09em;
+      text-transform: uppercase;
+      padding: 6px 11px;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--carbon);
+      cursor: pointer;
     }
 
-    .hero-logo {
-      margin: 0;
+    .howto-toggle:hover {
+      border-color: var(--ink);
+      color: var(--ink);
     }
 
-    .hero-logo img {
-      display: block;
-      width: 100%;
-      max-width: 440px;
-      height: auto;
-      filter: invert(var(--logo-invert));
+    .howto-toggle:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
     }
 
-    @media (max-width: 720px) {
-      .hero:has(.hero-logo) {
-        grid-template-columns: 1fr;
-        gap: 26px;
-      }
+    .howto-caret {
+      flex: none;
+      transition: transform 0.12s ease;
+    }
 
-      .hero-logo img {
-        width: min(380px, 82vw);
-      }
+    .howto-toggle[aria-expanded="true"] .howto-caret {
+      transform: rotate(90deg);
+    }
+
+    .howto[hidden] {
+      display: none;
     }
 
     .hero .lede {
@@ -414,8 +601,8 @@
       font-weight: 700;
     }
 
-    /* The text headline the other tabs open on. */
-    .hero h1:not(.hero-logo) {
+    /* The headline every tab below the splash opens on. */
+    .hero h1 {
       font-family: var(--display);
       font-size: clamp(2.3rem, 6vw, 3.8rem);
       font-weight: 400;
@@ -3300,7 +3487,8 @@
     </header>
 
     <div class="tabs" role="tablist">
-      <button class="tab" id="tab-inv" role="tab" aria-selected="true" aria-controls="panel-inv">Inventory</button>
+      <button class="tab" id="tab-home" role="tab" aria-selected="true" aria-controls="panel-home">Home</button>
+      <button class="tab" id="tab-inv" role="tab" aria-selected="false" aria-controls="panel-inv">Inventory</button>
       <button class="tab" id="tab-desk" role="tab" aria-selected="false" aria-controls="panel-desk">Buying desk</button>
       <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
       <button class="tab tab-info" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
@@ -3310,9 +3498,15 @@
     <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk" hidden>
 
       <section class="hero">
-        <h1>What it costs to land.</h1>
+        <div class="hero-head">
+          <h1>What it costs to land.</h1>
+          <button class="howto-toggle" type="button" aria-expanded="true" aria-controls="howto-desk">
+            <svg class="howto-caret" viewBox="0 0 24 24" width="9" height="9" aria-hidden="true" fill="currentColor"><path d="M7 3 L19 12 L7 21 Z"/></svg>
+            <span class="howto-label">Hide the guide</span>
+          </button>
+        </div>
         <p class="lede"><strong>A buying desk for importing vinyl into Mexico.</strong> It looks up each record on Discogs and adds shipping, duty and IVA to the listed price, so you see the real landed cost before you buy.</p>
-        <ul class="howto">
+        <ul class="howto" id="howto-desk">
           <li><strong>Type up to ten records</strong>: artist and title, then press <em>Check these records</em>. No list of your own? Press <em>Use the demo list</em>.</li>
           <li><strong>Read the price as one number.</strong> Every result is the total to get that record to your door, cheapest first.</li>
           <li><strong>Hover the coloured bar</strong> to see what each part of that total costs, or open a row for the full breakdown and a link to the listing.</li>
@@ -3352,12 +3546,6 @@
 
       <div class="state state-err" id="error" hidden></div>
 
-      <div class="callout">
-        <p><strong>Demo, not a quote.</strong> Discogs prices, stock and exchange rates are live. Shipping is estimated
-          and the customs rules aren't broker-validated, so treat the totals as close, not final:
-          <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</p>
-      </div>
-
       <div class="legend" id="legend" hidden>
         <span class="legend-lead"><i style="background:var(--c-record)"></i>Record</span>
         <span class="legend-sep">+ what it costs to land it:</span>
@@ -3369,18 +3557,80 @@
 
       <section class="results" id="results"></section>
 
+      <div class="callout">
+        <p><strong>Demo, not a quote.</strong> Discogs prices, stock and exchange rates are live. Shipping is estimated
+          and the customs rules aren't broker-validated, so treat the totals as close, not final:
+          <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</p>
+      </div>
+
+    </div>
+
+    <!-- ========================= HOME ========================= -->
+    <div class="panel" id="panel-home" role="tabpanel" aria-labelledby="tab-home">
+
+      <section class="splash">
+        <h1 class="splash-logo">
+          <img src="/aqui-ahora-logo.png" alt="Aquí Ahora: Vinyl Art + Culture" width="520" height="278">
+        </h1>
+
+        <p class="splash-lede"><strong>A sourcing engine for a record shop in Mexico City.</strong> It watches what the shelf is running out of, finds copies to replace them, and prices each one all the way to the door: listed price plus shipping, duty and IVA.</p>
+
+        <ul class="splash-points">
+          <li><strong>Real prices, real rules.</strong> Live Discogs listings, today's ECB exchange rate and Mexico's 2026 customs logic, added into one peso figure.</li>
+          <li><strong>One list for stock and wants.</strong> Every record the shop owns or is hunting is a row in the same sheet, and a watch hangs off either kind.</li>
+          <li><strong>Nothing buys anything.</strong> When a copy lands under its price the desk gets a text, and a person makes the call.</li>
+          <li><strong>Small on purpose.</strong> No framework, no build step, every API on it free: a static page and a handful of functions.</li>
+        </ul>
+
+        <div class="tiles">
+          <button class="tile is-major" type="button" data-tile="inv">
+            <span class="tile-k">Inventory</span>
+            <span class="tile-h">What's on the shelf, and what's wanted</span>
+            <span class="tile-d">Stock counts, what each copy cost to land and what it sells for. Set the count that starts a hunt and the price worth a text.</span>
+            <span class="tile-stat" id="tile-inv-stat">Loading the sheet…</span>
+            <span class="tile-go" aria-hidden="true">Open</span>
+          </button>
+          <button class="tile is-major" type="button" data-tile="desk">
+            <span class="tile-k">Buying desk</span>
+            <span class="tile-h">Price any record, landed in Mexico</span>
+            <span class="tile-d">Type up to ten records, or use the demo list. Results stream in cheapest first, with the cost split into record, shipping, duty and IVA.</span>
+            <span class="tile-stat">Live Discogs data · about 20 seconds a run</span>
+            <span class="tile-go" aria-hidden="true">Open</span>
+          </button>
+        </div>
+
+        <div class="tiles is-minor">
+          <button class="tile" type="button" data-tile="hiw">
+            <span class="tile-k">How it works</span>
+            <span class="tile-d">The whole chain in eight steps, and which numbers are real versus illustrative.</span>
+            <span class="tile-go" aria-hidden="true">Read</span>
+          </button>
+          <button class="tile" type="button" data-tile="tech">
+            <span class="tile-k">Technical</span>
+            <span class="tile-d">The system diagram, every data source, what is built and what it costs to run.</span>
+            <span class="tile-go" aria-hidden="true">Read</span>
+          </button>
+        </div>
+
+        <div class="callout is-splash">
+          <p><strong>Demo, not a quote.</strong> Discogs prices, stock and exchange rates are live. Shipping is estimated and the customs rules aren't broker-validated, so treat the totals as close, not final: <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</p>
+        </div>
+      </section>
     </div>
 
     <!-- ========================= INVENTORY ========================= -->
-    <div class="panel" id="panel-inv" role="tabpanel" aria-labelledby="tab-inv">
+    <div class="panel" id="panel-inv" role="tabpanel" aria-labelledby="tab-inv" hidden>
 
       <section class="hero">
-        <h1 class="hero-logo">
-          <img src="/aqui-ahora-logo.png" alt="Aquí Ahora: Vinyl Art + Culture">
-        </h1>
-        <div class="hero-copy">
-        <p class="lede"><strong>What's on the shelf, and what the shop is looking for.</strong> Every copy it owns: what it cost to land, what it's priced at, and how many are left. Tell a record when to start looking and what price is worth waking you for, and it does the looking.</p>
-        <ul class="howto">
+        <div class="hero-head">
+          <h1>What's on the shelf.</h1>
+          <button class="howto-toggle" type="button" aria-expanded="true" aria-controls="howto-inv">
+            <svg class="howto-caret" viewBox="0 0 24 24" width="9" height="9" aria-hidden="true" fill="currentColor"><path d="M7 3 L19 12 L7 21 Z"/></svg>
+            <span class="howto-label">Hide the guide</span>
+          </button>
+        </div>
+        <p class="lede"><strong>Every record the shop owns or is looking for.</strong> What each copy cost to land, what it's priced at, and how many are left. Tell a record when to start looking and what price is worth waking you for, and it does the looking.</p>
+        <ul class="howto" id="howto-inv">
           <li><strong>Adjust stock with &minus; and +</strong> as copies sell or a parcel lands. Every change writes straight to the sheet.</li>
           <li><strong>Add records by name</strong> under <em>Add records</em>. Each one is looked up on Discogs and joins the list as wanted, with its watch switched on, so the next sweep looks for a copy. Pressing <em>Watch</em> on the buying desk does the same.</li>
           <li><strong>Open a row</strong> for its margin, its watch and alert settings, the best price seen for it, and where a copy could be bought. Folded, a row is a sleeve, a name, a count and a price, so a few hundred of them still scan.</li>
@@ -3389,7 +3639,6 @@
           <li><strong>Press Check listings now</strong> to price every watched pressing of a record this second, or <em>Check my watchlist</em> to do that for everything being watched. Discogs comes back with a real landed figure; the other platforms open as searches, because their APIs aren't built yet. Read it alongside <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</li>
           <li id="inv-sheet-item" hidden><strong>Stock and watches live in one Google Sheet</strong>: <a id="inv-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand. A record the shop wants is a row with no copies yet. Stock counts belong in a real database eventually; the sheet is what got the demo standing up.</li>
         </ul>
-        </div>
       </section>
 
       <div class="inv-summary" id="inv-summary"></div>
@@ -3430,6 +3679,13 @@
           <button class="btn-link" id="inv-refresh" type="button">Refresh from the sheet</button>
         </div>
       </section>
+
+      <div class="callout">
+        <p><strong>Demo stock, live checks.</strong> The counts, landed costs and shelf prices in this list are seeded
+          sample data standing in for a real shop's books. What's real is everything a check does with them: Discogs
+          listings, today's exchange rate and the customs maths:
+          <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</p>
+      </div>
     </div>
 
     <!-- ========================= HOW IT WORKS ========================= -->
@@ -3918,7 +4174,7 @@
 
       // ------------------------------------------------ tabs
 
-      const TABS = ['inv', 'desk', 'hiw', 'tech'];
+      const TABS = ['home', 'inv', 'desk', 'hiw', 'tech'];
 
       function selectTab(which) {
         TABS.forEach((t) => {
@@ -3948,6 +4204,56 @@
           target.scrollIntoView({ block: 'start' });
         });
       });
+
+      /** The home tiles. A tile is the same door as its tab, so it goes through
+       *  selectTab; the scroll is what a tab click does not do, because a tile
+       *  is halfway down a page and the panel it opens starts at the top. */
+      document.querySelectorAll('[data-tile]').forEach((tile) => {
+        tile.addEventListener('click', () => {
+          selectTab(tile.dataset.tile);
+          window.scrollTo({ top: 0 });
+        });
+      });
+
+      // ------------------------------------------------ the guide
+
+      const HOWTO_KEY = 'aqui-ahora:howto';
+
+      /** One setting for every tab that carries a guide: someone who folds it
+       *  away on the inventory has said what they think of it, and being asked
+       *  again on the desk is the interface not listening. */
+      function loadHowto() {
+        try {
+          return localStorage.getItem(HOWTO_KEY) !== 'closed';
+        } catch {
+          return true;
+        }
+      }
+
+      function setHowto(open, persist) {
+        if (persist) {
+          try {
+            localStorage.setItem(HOWTO_KEY, open ? 'open' : 'closed');
+          } catch {
+            // Storage unavailable. The choice just won't survive a reload.
+          }
+        }
+        document.querySelectorAll('.howto-toggle').forEach((btn) => {
+          btn.setAttribute('aria-expanded', String(open));
+          const list = $(btn.getAttribute('aria-controls'));
+          if (list) list.hidden = !open;
+          const label = btn.querySelector('.howto-label');
+          if (label) label.textContent = open ? 'Hide the guide' : 'How to use this';
+        });
+      }
+
+      document.querySelectorAll('.howto-toggle').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          setHowto(btn.getAttribute('aria-expanded') !== 'true', true);
+        });
+      });
+
+      setHowto(loadHowto(), false);
 
       // ------------------------------------------------ currency
 
@@ -4970,6 +5276,19 @@
             ' at or under the restock floor">' + low + '</span>'
           : '';
         $('tab-inv').innerHTML = 'Inventory' + badge;
+
+        // The home tile says what is actually in the sheet, so the landing page
+        // is never a brochure for an empty list.
+        const tileStat = $('tile-inv-stat');
+        if (tileStat) {
+          tileStat.textContent = state.invError
+            ? 'The sheet could not be read'
+            : [
+              items.length + (items.length === 1 ? ' record' : ' records'),
+              copies + (copies === 1 ? ' copy on the shelf' : ' copies on the shelf'),
+              low ? low + ' to restock' : '',
+            ].filter(Boolean).join(' · ');
+        }
       }
 
       /** Rows the current view shows. Newest first, so a record just added

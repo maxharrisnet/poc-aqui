@@ -249,13 +249,23 @@ because they're necessarily what Ian would watch:
 
 ## The interface
 
-Four tabs, and the page opens on the first. **Inventory** is every record the
-shop owns or wants, with its watches; **Buying desk** prices; **How it works**
-explains the whole chain in eight steps so the client can understand it
-without us narrating; **Technical** is every moving part, what it runs on and
-what it costs. A record is drawn the same way on both working tabs: sleeve,
-title, one figure, and the eye and phone switches that watch it and text about
-it.
+Five tabs, and the page opens on **Home**: the logo, what the system is in one
+paragraph and four bullets, then two large tiles for the working tabs and two
+small ones for the reference tabs. The Inventory tile carries the live count
+from the sheet, so the landing page can never advertise a list that isn't
+there.
+
+**Inventory** is every record the shop owns or wants, with its watches;
+**Buying desk** prices; **How it works** explains the whole chain in eight
+steps so the client can understand it without us narrating; **Technical** is
+every moving part, what it runs on and what it costs. A record is drawn the
+same way on both working tabs: sleeve, title, one figure, and the eye and
+phone switches that watch it and text about it.
+
+Both working tabs carry a guide of bullets under the headline, folded away by
+the button beside it. The choice is one setting for both tabs, stored under
+`aqui-ahora:howto`, so folding it once keeps the lists above the fold
+everywhere.
 
 On the desk you can either type up to ten records into the search rows, or
 press **Use the demo list** for the eight curated pressings. Results stream
