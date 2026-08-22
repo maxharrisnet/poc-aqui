@@ -4,9 +4,9 @@ import { createVerify, generateKeyPairSync } from "node:crypto";
 import { base64url, buildJwt, normalisePrivateKey, nextFreeRow, rowRange, qualifyRange } from "./sheets.js";
 
 test("base64url replaces url-unsafe characters and strips padding", () => {
-  // 0xfb 0xff 0xbf is base64 "+/+/" — exercises both substitutions.
+  // 0xfb 0xff 0xbf is base64 "+/+/": exercises both substitutions.
   assert.equal(base64url(Buffer.from([0xfb, 0xff, 0xbf])), "-_-_");
-  // A one-byte input base64s to "+w==" — exercises padding removal too.
+  // A one-byte input base64s to "+w==": exercises padding removal too.
   assert.equal(base64url(Buffer.from([0xfb])), "-w");
   assert.equal(
     Buffer.from(base64url('{"alg":"RS256","typ":"JWT"}'), "base64url").toString(),
@@ -76,7 +76,7 @@ test("buildJwt produces three signed segments with the right claims", () => {
 test("nextFreeRow returns the row below all data, ignoring interior blanks", () => {
   assert.equal(nextFreeRow([]), 1);
   assert.equal(nextFreeRow([["header"]]), 2);
-  // Header, two rows, a blank, another row — next free is 6, not 5.
+  // Header, two rows, a blank, another row: next free is 6, not 5.
   assert.equal(nextFreeRow([["h"], ["a"], ["b"], [], ["d"]]), 6);
 });
 

@@ -1,8 +1,8 @@
 {
   // Visit https://aka.ms/tsconfig to read more about this file
-  "include": ["src/**/*", "api/**/*"],
+  "include": ["src/**/*", "api/**/*", "scripts/**/*"],
   "compilerOptions": {
-    // File Layout — rootDir spans both src/ and api/ so the Vercel functions
+    // File Layout: rootDir spans both src/ and api/ so the Vercel functions
     // are typechecked alongside the modules they import.
     "rootDir": ".",
     "outDir": "dist",

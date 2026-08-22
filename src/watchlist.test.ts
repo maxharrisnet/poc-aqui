@@ -63,7 +63,7 @@ test("resolveRowNumber returns the true sheet row, not the filtered index", () =
   assert.equal(resolveRowNumber(grid, "a"), 2);
   assert.equal(resolveRowNumber(grid, "b"), 3);
   // The regression: filtering would put d at index 2 and e at index 3,
-  // yielding rows 4 and 5 — d's row and, fatally, d's row again for e.
+  // yielding rows 4 and 5: d's row and, fatally, d's row again for e.
   assert.equal(resolveRowNumber(grid, "d"), 5);
   assert.equal(resolveRowNumber(grid, "e"), 6);
 });

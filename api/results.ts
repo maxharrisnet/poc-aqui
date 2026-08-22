@@ -3,7 +3,7 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 /**
  * The local dev server keeps the last run in memory so a page reload doesn't
  * re-spend Discogs rate limit. Serverless has no shared memory between
- * invocations, so there is genuinely nothing to hand back — each visitor runs
+ * invocations, so there is genuinely nothing to hand back. Each visitor runs
  * their own check.
  *
  * Returns null rather than a 404 so the client behaves identically in both

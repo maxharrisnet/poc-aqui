@@ -10,7 +10,7 @@ Ordered by what it costs us to guess wrong.
 
 ---
 
-## 1. The German VAT question 💶 — money, possibly today
+## 1. The German VAT question 💶: money, possibly today
 
 **Ask:** When you buy from a German or other EU seller on Discogs, has anyone
 ever deducted VAT from the price because you're outside the EU? Can you pull up
@@ -23,7 +23,7 @@ appears to be VAT-inclusive, with Mexican IVA charged on top. If that is what
 has been happening, he has been taxed twice on every German purchase.
 
 **Caveat, and the reason this is a question rather than a finding.** We could
-not confirm it from Discogs' published documentation — the page that would
+not confirm it from Discogs' published documentation. The page that would
 settle it is behind a seller login. His actual orders are the fastest way to
 know.
 
@@ -41,10 +41,10 @@ cost breakdown rather than an invisible part of the price.
 ## 2. Which sources actually matter to him 🌍
 
 **Ask:** Roughly what share of your buying is Discogs, eBay, direct from
-European shops, and Bandcamp? And which specific shops — HHV, Hard Wax, Decks,
+European shops, and Bandcamp? And which specific shops: HHV, Hard Wax, Decks,
 someone else?
 
-**Why it matters.** We can build eBay for Germany almost free — it's one
+**Why it matters.** We can build eBay for Germany almost free: it's one
 parameter on an integration already planned. The big European specialists have
 no APIs at all and each needs its own newsletter parser, so the shop list has to
 be worth the work. Naming five shops is a different project from naming twenty.
@@ -57,7 +57,7 @@ be worth the work. Naming five shops is a different project from naming twenty.
 that a real source of stock or a rounding error?
 
 **Why it matters.** Domestic listings skip customs, import duty and the
-international shipping lane entirely — the cost engine collapses to price plus
+international shipping lane entirely. The cost engine collapses to price plus
 domestic postage, and the answer is available today rather than after an
 integration. If he buys domestically at all, Mercado Libre may be worth more
 than eBay. If he never does, it drops down the list.
@@ -76,7 +76,7 @@ watchlist he maintains and one that maintains itself.
 
 ---
 
-## 5. Intake — how a parcel becomes stock 📥
+## 5. Intake: how a parcel becomes stock 📥
 
 **Ask:** When a record arrives, what happens now? Who touches it, and where does
 it get written down?
@@ -85,14 +85,14 @@ it get written down?
 system. A parcel lands weeks after the decision to buy it, and something has to
 turn it into an inventory row carrying its real landed cost without anyone
 retyping it. Scanning a barcode at the counter, confirming against the order
-that triggered the buy, and reconciling by hand are all plausible — his actual
+that triggered the buy, and reconciling by hand are all plausible. His actual
 handling routine decides which.
 
 ---
 
 ## 6. Who receives the alerts 🔔
 
-**Ask:** Whose phone should a rare-find alert reach — just yours, or the shop's
+**Ask:** Whose phone should a rare-find alert reach, just yours, or the shop's
 as well? Are the numbers Mexican?
 
 **Why it matters.** Practical, and it costs money: texting Mexican numbers is
@@ -124,4 +124,4 @@ and it needs his explicit sign-in, so it's worth asking before building.
 
 ## Answered
 
-*Nothing yet — move items here with the answer and the date.*
+*Nothing yet: move items here with the answer and the date.*

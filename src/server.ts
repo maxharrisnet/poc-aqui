@@ -21,6 +21,8 @@ const ROUTES: Record<string, () => Promise<{ default: ApiHandler }>> = {
   "/api/stream": () => import("../api/stream.js"),
   "/api/results": () => import("../api/results.js"),
   "/api/watchlist": () => import("../api/watchlist.js"),
+  "/api/inventory": () => import("../api/inventory.js"),
+  "/api/sourcing": () => import("../api/sourcing.js"),
 };
 
 const server = createServer(async (req, res) => {
@@ -67,6 +69,7 @@ const server = createServer(async (req, res) => {
         ".webp": "image/webp",
         ".svg": "image/svg+xml",
         ".ico": "image/x-icon",
+        ".webmanifest": "application/manifest+json",
         ".css": "text/css; charset=utf-8",
         ".js": "text/javascript; charset=utf-8",
       };
@@ -87,7 +90,7 @@ const server = createServer(async (req, res) => {
 server.on("error", (err: NodeJS.ErrnoException) => {
   if (err.code === "EADDRINUSE") {
     console.error(
-      `Port ${PORT} is already in use — an older copy of this server is probably still running.\n` +
+      `Port ${PORT} is already in use. An older copy of this server is probably still running.\n` +
         `  Stop it with:  lsof -ti :${PORT} | xargs kill\n` +
         `  Or use another port:  PORT=4174 npm run serve`,
     );
@@ -97,8 +100,8 @@ server.on("error", (err: NodeJS.ErrnoException) => {
 });
 
 server.listen(PORT, () => {
-  console.log(`Aqui Ahora buying desk — http://localhost:${PORT}`);
+  console.log(`Aqui Ahora buying desk: http://localhost:${PORT}`);
   if (!process.env.DISCOGS_TOKEN) {
-    console.warn("WARNING: DISCOGS_TOKEN not set — checks will fail until it is.");
+    console.warn("WARNING: DISCOGS_TOKEN not set. Checks will fail until it is set.");
   }
 });

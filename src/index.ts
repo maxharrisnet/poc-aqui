@@ -8,7 +8,7 @@ import { renderDigest } from "./digest.js";
 const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function main() {
-  console.log(`Aqui Ahora — sourcing engine PoC`);
+  console.log(`Aqui Ahora: sourcing engine PoC`);
   console.log(`Watching ${WATCHLIST.length} releases\n`);
 
   console.log("Fetching FX rates (Frankfurter, ECB reference)...");
@@ -18,7 +18,7 @@ async function main() {
   const results: LandedCostResult[] = [];
 
   for (const release of WATCHLIST) {
-    process.stdout.write(`Checking ${release.artist} — ${release.title}... `);
+    process.stdout.write(`Checking ${release.artist}: ${release.title}... `);
     try {
       const stats = await getMarketplaceStats(release.discogsId);
       const result = computeLandedCost(release, stats, fx);

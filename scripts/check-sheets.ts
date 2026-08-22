@@ -9,7 +9,7 @@ import { getRows } from "../src/sheets.js";
  * Two classes of problem, both of which have actually happened:
  *
  * 1. Access. The overwhelmingly common failure is a 403, which is almost never
- *    a bad key — it means the spreadsheets have not been shared with the
+ *    a bad key. It means the spreadsheets have not been shared with the
  *    service account. src/sheets.ts distinguishes that case.
  *
  * 2. Stray data outside the app's column range. The old values.append call
@@ -19,7 +19,7 @@ import { getRows } from "../src/sheets.js";
  *    therefore deliberately reads WIDER than the app does.
  */
 
-const APP_LAST_COLUMN_INDEX = 16; // Q — the watchlist is A:Q
+const APP_LAST_COLUMN_INDEX = 17; // R. The widest sheet is the watchlist, A:R
 const WIDE_RANGE = "A1:BZ200";
 
 const colName = (index: number): string => {
@@ -61,11 +61,11 @@ for (const [name, id] of targets) {
       }
     }
 
-    console.log(`${name}: OK — reachable, ${populated === 0 ? "empty" : `${populated} populated row(s)`}`);
+    console.log(`${name}: OK: reachable, ${populated === 0 ? "empty" : `${populated} populated row(s)`}`);
 
     if (rightmost > APP_LAST_COLUMN_INDEX) {
       console.error(
-        `${name}: WARNING — data found in column ${colName(rightmost)}, beyond the app's ` +
+        `${name}: WARNING: data found in column ${colName(rightmost)}, beyond the app's ` +
           `range (A:${colName(APP_LAST_COLUMN_INDEX)}). The app cannot see it, so it will ` +
           `never be swept or cleaned. Clear columns ${colName(APP_LAST_COLUMN_INDEX + 1)} ` +
           `onward unless you put it there on purpose.`,
@@ -73,7 +73,7 @@ for (const [name, id] of targets) {
       failed = true;
     }
   } catch (err) {
-    console.error(`${name}: FAILED — ${(err as Error).message}`);
+    console.error(`${name}: FAILED: ${(err as Error).message}`);
     failed = true;
   }
 }

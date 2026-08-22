@@ -33,7 +33,7 @@ export async function fetchFxSnapshot(): Promise<FxSnapshot> {
 
   const usd = inverted.USD;
   if (usd === undefined) {
-    throw new Error("Frankfurter response did not include a USD rate — cannot compute landed cost in USD");
+    throw new Error("Frankfurter response did not include a USD rate: cannot compute landed cost in USD");
   }
 
   return { date: body.date, ratesToMxn: { ...inverted, USD: usd } };

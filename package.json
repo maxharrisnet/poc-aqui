@@ -1,7 +1,7 @@
 {
   "name": "aqui-ahora-poc",
   "version": "1.0.0",
-  "description": "Aqui Ahora sourcing engine proof of concept — Discogs + landed cost",
+  "description": "Aqui Ahora sourcing engine proof of concept. Discogs + landed cost",
   "type": "module",
   "private": true,
   "scripts": {
@@ -10,6 +10,8 @@
     "smoketest": "tsx src/smoketest.ts",
     "test": "tsx --test src/*.test.ts",
     "check-sheets": "tsx --env-file-if-exists=.env.local scripts/check-sheets.ts",
+    "seed-inventory": "tsx --env-file-if-exists=.env.local scripts/seed-inventory.ts",
+    "enrich-inventory": "tsx --env-file-if-exists=.env.local scripts/enrich-inventory.ts",
     "typecheck": "tsc --noEmit"
   },
   "author": "",

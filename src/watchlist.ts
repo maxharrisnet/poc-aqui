@@ -23,11 +23,11 @@ export interface WatchItem {
   status: WatchStatus;
   notes: string;
   /** Send the team an SMS when this record drops under its threshold.
-   *  v0.3 simulates the send in the interface — see docs/data-source-limitations.md. */
+   *  v0.3 simulates the send in the interface: see docs/data-source-limitations.md. */
   alertSms: boolean;
 }
 
-/** Column order is the sheet contract. Append only — never reorder. */
+/** Column order is the sheet contract. Append only, never reorder. */
 export const WATCHLIST_HEADERS = [
   "id",
   "artist",
@@ -49,7 +49,7 @@ export const WATCHLIST_HEADERS = [
   "alert_sms",
 ] as const;
 
-/** A:R — eighteen columns. Update if headers are appended. */
+/** A:R: eighteen columns. Update if headers are appended. */
 export const WATCHLIST_RANGE = "A:R";
 const HEADER_RANGE = "A1:R1";
 
@@ -144,7 +144,7 @@ function sheetId(): string {
  * Ensures row 1 holds the header. Safe to call repeatedly.
  *
  * Refuses to touch a row 1 that holds something other than the expected
- * header — if it were blindly overwritten, a deleted header row or a row
+ * header: if it were blindly overwritten, a deleted header row or a row
  * inserted above it would cause the next write to permanently destroy a
  * real record.
  */
@@ -153,7 +153,7 @@ export async function ensureHeaders(): Promise<void> {
   const existing = rows[0] ?? [];
   if (existing[0] === WATCHLIST_HEADERS[0]) {
     // A sheet created before a column was appended still carries the older,
-    // shorter header. Extending it is safe — the columns it names are blank —
+    // shorter header. Extending it is safe. The columns it names are blank:
     // and without this the new column stays permanently unlabelled.
     if (existing.length < WATCHLIST_HEADERS.length) {
       await updateRange(sheetId(), HEADER_RANGE, [[...WATCHLIST_HEADERS]]);
@@ -165,7 +165,7 @@ export async function ensureHeaders(): Promise<void> {
   if (!isEmpty) {
     throw new Error(
       `Row 1 of the watchlist sheet holds "${existing[0]}" instead of the expected header. ` +
-        `Refusing to overwrite it — restore the header row, or clear row 1, before adding records.`,
+        `Refusing to overwrite it: restore the header row, or clear row 1, before adding records.`,
     );
   }
   await updateRange(sheetId(), HEADER_RANGE, [[...WATCHLIST_HEADERS]]);
@@ -194,7 +194,7 @@ export async function addWatchItem(item: WatchItem): Promise<WatchItem> {
   if (id !== item.id) {
     throw new Error(
       `Watchlist write verification failed: expected id "${item.id}" at row ${rowNumber}, ` +
-        `found "${id}". The sheet may be in an inconsistent state — check it before retrying.`,
+        `found "${id}". The sheet may be in an inconsistent state: check it before retrying.`,
     );
   }
   return item;

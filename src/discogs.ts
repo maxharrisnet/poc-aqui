@@ -1,16 +1,16 @@
 /**
- * Minimal Discogs API client — sanctioned endpoints only, per the spec's
+ * Minimal Discogs API client: sanctioned endpoints only, per the spec's
  * decision to stay inside Discogs' Terms of Use (§4.1 of the brief).
  *
- *   - GET /database/search                       — resolve a text query to a release
- *   - GET /releases/{id}                         — metadata, cover art
- *   - GET /marketplace/stats/{id}?curr_abbr=USD  — lowest_price, num_for_sale
+ *   - GET /database/search                      : resolve a text query to a release
+ *   - GET /releases/{id}                        : metadata, cover art
+ *   - GET /marketplace/stats/{id}?curr_abbr=USD : lowest_price, num_for_sale
  *
- * No marketplace listing search — that endpoint does not exist in the
+ * No marketplace listing search. That endpoint does not exist in the
  * official API and is not attempted here.
  *
  * NOTE: /releases/{id} also carries a `lowest_price`, but it ignores the
- * curr_abbr parameter (verified — USD and EUR return an identical figure),
+ * curr_abbr parameter (verified: USD and EUR return an identical figure),
  * so it can't be trusted for a currency-correct number. The explicit
  * /marketplace/stats call is the authoritative source; hence two requests
  * per record rather than one.
@@ -36,7 +36,7 @@ async function throttle(): Promise<void> {
 function requireToken(): string {
   const token = process.env.DISCOGS_TOKEN;
   if (!token) {
-    // Phrased for both environments — this surfaces in the browser, and on a
+    // Phrased for both environments. This surfaces in the browser, and on a
     // deployed site "npm run serve" would be misleading advice.
     throw new Error(
       "DISCOGS_TOKEN is not configured on the server. Generate a personal access " +
@@ -56,7 +56,7 @@ async function discogsFetch<T>(path: string): Promise<T> {
   });
 
   if (res.status === 429) {
-    throw new Error("Discogs rate limit hit — wait a minute and try again");
+    throw new Error("Discogs rate limit hit: wait a minute and try again");
   }
   if (!res.ok) {
     const body = await res.text();
@@ -201,7 +201,7 @@ interface RawVersionsResponse {
 /**
  * Vinyl versions of a master. Note that /masters/{id} also exposes
  * lowest_price, but it ignores curr_abbr and spans every format including CD,
- * so it must not be used for pricing — see spec v0.2 §4.1.
+ * so it must not be used for pricing: see spec v0.2 §4.1.
  *
  * Capped at one page (100) deliberately: a master with more pressings than
  * that is always user-selected, never auto-watched.

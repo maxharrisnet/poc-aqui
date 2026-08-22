@@ -13,7 +13,7 @@ export function base64url(input: string | Buffer): string {
 
 /**
  * Vercel stores multi-line env vars with escaped newlines. Signing fails with
- * an opaque error unless they are restored first — see spec v0.2 §7.
+ * an opaque error unless they are restored first: see spec v0.2 §7.
  */
 /**
  * Coaxes a service-account PEM into the shape `createSign` will accept.
@@ -24,7 +24,7 @@ export function base64url(input: string | Buffer): string {
  *
  *   - Surrounding quotes. `.env` files need them; Vercel's dashboard does not,
  *     and pasting the quoted form stores the quotes as part of the key. This
- *     is the one that cost an evening — the failure surfaces as an opaque
+ *     is the one that cost an evening. The failure surfaces as an opaque
  *     DECODER error with nothing pointing at punctuation.
  *   - Escaped newlines, singly or doubly. `\n` is the normal single-line form;
  *     `\\n` appears when the value passes through JSON encoding twice.
@@ -32,7 +32,7 @@ export function base64url(input: string | Buffer): string {
  *
  * Deliberately not handled: a truncated key. Interactive `vercel env add`
  * reads one line from a prompt, so pasting a real multi-line PEM silently
- * keeps only the first line. Nothing can reconstruct the rest — see the
+ * keeps only the first line. Nothing can reconstruct the rest: see the
  * README for the piped form that avoids it.
  */
 export function normalisePrivateKey(key: string): string {
@@ -71,7 +71,7 @@ export function buildJwt(email: string, privateKey: string, nowSeconds: number):
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     throw new Error(
-      "GOOGLE_PRIVATE_KEY could not be used for signing — check it is the full PEM including " +
+      "GOOGLE_PRIVATE_KEY could not be used for signing: check it is the full PEM including " +
         `BEGIN/END lines, with \\n sequences intact. Underlying error: ${message}`,
     );
   }
@@ -120,7 +120,7 @@ async function requestAccessToken(now: number): Promise<{ value: string; expires
   const body = (await res.json()) as { access_token?: unknown; expires_in?: unknown };
   if (typeof body.access_token !== "string" || typeof body.expires_in !== "number") {
     throw new Error(
-      "Google token response was malformed — expected access_token and expires_in, got keys: " +
+      "Google token response was malformed: expected access_token and expires_in, got keys: " +
         Object.keys(body).join(", "),
     );
   }
@@ -162,7 +162,7 @@ async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (res.status === 401) {
     cachedToken = null;
     throw new Error(
-      `Sheets API ${path} -> 401: the access token was rejected. The cache has been cleared — retrying will fetch a fresh token.`,
+      `Sheets API ${path} -> 401: the access token was rejected. The cache has been cleared: retrying will fetch a fresh token.`,
     );
   }
   if (res.status === 403) {
@@ -170,7 +170,7 @@ async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
     const isSharingProblem =
       body.includes("PERMISSION_DENIED") || body.includes("caller does not have permission");
     const hint = isSharingProblem
-      ? ` The service account most likely has not been granted access — share the spreadsheet with ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL} as an Editor.`
+      ? ` The service account most likely has not been granted access: share the spreadsheet with ${process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL} as an Editor.`
       : "";
     throw new Error(`Sheets API ${path} -> 403: ${body.slice(0, 200)}${hint}`);
   }
@@ -182,7 +182,7 @@ async function sheetsFetch<T>(path: string, init?: RequestInit): Promise<T> {
 
 const tabNameCache = new Map<string, string>();
 
-/** The first tab's actual title. Cached per instance. Never assume "Sheet1" —
+/** The first tab's actual title. Cached per instance. Never assume "Sheet1":
  *  a Spanish-locale spreadsheet calls it "Hoja 1". */
 export async function firstTabName(spreadsheetId: string): Promise<string> {
   const cached = tabNameCache.get(spreadsheetId);
@@ -225,7 +225,7 @@ export async function getRows(spreadsheetId: string, range: string): Promise<str
 
 /**
  * The first row below all existing data. getRows omits trailing empty rows,
- * so grid.length + 1 is always free — blank rows *within* the data are left
+ * so grid.length + 1 is always free: blank rows *within* the data are left
  * alone rather than reused, which keeps this deterministic.
  */
 export function nextFreeRow(grid: string[][]): number {
@@ -248,7 +248,7 @@ export function rowRange(columnRange: string, rowNumber: number): string {
  *
  * Deliberately does NOT use Sheets' values.append. With an open-ended range and
  * a blank row anywhere in the table, append's table detection silently writes
- * only part of the row and shifts it into the wrong columns — verified
+ * only part of the row and shifts it into the wrong columns: verified
  * reproducibly: a 17-column row landed as 2 values in columns P and Q, and the
  * API still returned 200. Explicit addressing is the only reliable option.
  *

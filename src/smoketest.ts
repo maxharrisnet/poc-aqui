@@ -1,5 +1,5 @@
 /**
- * Exercises the full pipeline — FX, customs, shipping, digest rendering —
+ * Exercises the full pipeline: FX, customs, shipping, digest rendering:
  * with mocked Discogs responses, so everything except the live API call
  * is verified before DISCOGS_TOKEN is available. Not part of the real run.
  */
@@ -12,7 +12,7 @@ import type { MarketplaceStats } from "./discogs.js";
 const MOCK_PRICES_USD = [45, 180, 30, 120, 60, 55, 25, 15]; // rough plausible spread
 
 async function main() {
-  console.log("SMOKETEST — mocked Discogs data, real FX + customs + digest logic\n");
+  console.log("SMOKETEST: mocked Discogs data, real FX + customs + digest logic\n");
 
   const fx = await fetchFxSnapshot();
   console.log(`FX ok: 1 USD = ${fx.ratesToMxn.USD.toFixed(4)} MXN (${fx.date})\n`);
@@ -53,7 +53,7 @@ async function main() {
 
   const digest = renderDigest(results, fx);
   console.log(`\n✓ Digest rendered, ${digest.length} chars, ${digest.split("\n").length} lines`);
-  console.log("\nSMOKETEST PASSED — pipeline is sound; only the live Discogs call is unverified.");
+  console.log("\nSMOKETEST PASSED: pipeline is sound; only the live Discogs call is unverified.");
 }
 
 main().catch((err) => {

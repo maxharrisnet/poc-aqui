@@ -8,7 +8,7 @@ const fmt = (n: number, ccy: string) =>
 /**
  * Renders exactly what would be appended to Ian's Google Doc digest (spec
  * §8.1). This PoC writes Markdown to a file instead of calling the Google
- * Docs API — the API call itself is a small, mechanical piece of Phase 1
+ * Docs API. The API call itself is a small, mechanical piece of Phase 1
  * work; what needed proving here is the sourcing and cost logic upstream
  * of it, not the delivery mechanism.
  */
@@ -20,12 +20,12 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
 
   const lines: string[] = [];
 
-  lines.push(`# Aqui Ahora — Sourcing Digest (Proof of Concept)`);
+  lines.push(`# Aqui Ahora: Sourcing Digest (Proof of Concept)`);
   lines.push("");
   lines.push(`Generated ${new Date().toISOString().slice(0, 16).replace("T", " ")} UTC`);
   lines.push(`FX date: ${fx.date} · Source: Frankfurter (ECB reference rates)`);
   lines.push(
-    `Customs rules: \`${CUSTOMS_RULES_2026.version}\` — **not yet broker-validated, ` +
+    `Customs rules: \`${CUSTOMS_RULES_2026.version}\`, **not yet broker-validated, ` +
       `see caveat at the foot of this document**`,
   );
   lines.push("");
@@ -34,12 +34,12 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
 
   lines.push(`## Sorted by landed cost (${sorted.length} of ${results.length} available)`);
   lines.push("");
-  lines.push("| Landed (MXN) | Artist — Title | Origin | Price | Shipping | Duty+IVA | Formal entry? |");
+  lines.push("| Landed (MXN) | Artist: Title | Origin | Price | Shipping | Duty+IVA | Formal entry? |");
   lines.push("|---|---|---|---|---|---|---|");
   for (const r of sorted) {
     const flag = r.requiresFormalEntry ? "⚠️ yes" : "no";
     lines.push(
-      `| **${fmt(r.totalMxn!, "MXN")}** | ${r.release.artist} — ${r.release.title} | ` +
+      `| **${fmt(r.totalMxn!, "MXN")}** | ${r.release.artist}: ${r.release.title} | ` +
         `${r.release.originCountry} | ${fmt(r.priceUsd!, "USD")} | ${fmt(r.shippingUsd, "USD")} | ` +
         `${fmt(r.dutyUsd + r.ivaUsd, "USD")} | ${flag} |`,
     );
@@ -50,12 +50,12 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
     lines.push(`### ⚠️ Formal entry required (${formalEntry.length})`);
     lines.push("");
     lines.push(
-      `Crosses the ${CUSTOMS_RULES_2026.formalEntryThresholdUsd} USD threshold — this needs a ` +
+      `Crosses the ${CUSTOMS_RULES_2026.formalEntryThresholdUsd} USD threshold. This needs a ` +
         `licensed broker and will take longer, not just cost more.`,
     );
     lines.push("");
     for (const r of formalEntry) {
-      lines.push(`- ${r.release.artist} — ${r.release.title} (${fmt(r.totalMxn!, "MXN")} landed)`);
+      lines.push(`- ${r.release.artist}: ${r.release.title} (${fmt(r.totalMxn!, "MXN")} landed)`);
     }
     lines.push("");
   }
@@ -65,14 +65,14 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
   lines.push("## Full breakdown");
   lines.push("");
   for (const r of sorted) {
-    lines.push(`### ${r.release.artist} — ${r.release.title} (${r.release.year})`);
+    lines.push(`### ${r.release.artist}: ${r.release.title} (${r.release.year})`);
     lines.push("");
     lines.push(`*${r.release.note}*`);
     lines.push("");
     lines.push(`- **${r.numForSale}** copies for sale on Discogs, from ${r.release.originCountry}`);
     lines.push(`- Lowest listed price: ${fmt(r.priceUsd!, "USD")}`);
     lines.push(
-      `- Shipping estimate: ${fmt(r.shippingUsd, "USD")} (confidence: ${r.shippingConfidence} — ` +
+      `- Shipping estimate: ${fmt(r.shippingUsd, "USD")} (confidence: ${r.shippingConfidence}: ` +
         `illustrative, not a live carrier quote)`,
     );
     lines.push(`- Customs rule applied: \`${r.customsRuleApplied}\``);
@@ -87,14 +87,14 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
     lines.push(`## No copies currently listed (${unavailable.length})`);
     lines.push("");
     for (const r of unavailable) {
-      lines.push(`- ${r.release.artist} — ${r.release.title}`);
+      lines.push(`- ${r.release.artist}: ${r.release.title}`);
     }
     lines.push("");
   }
 
   lines.push("---");
   lines.push("");
-  lines.push("## Caveats — read before trusting these numbers");
+  lines.push("## Caveats: read before trusting these numbers");
   lines.push("");
   lines.push(
     "- **Customs rules are not broker-validated.** Figures come from public reporting on " +
@@ -109,7 +109,7 @@ export function renderDigest(results: LandedCostResult[], fx: FxSnapshot): strin
       "and only surfaces genuinely new or below-threshold hits.",
   );
   lines.push(
-    "- **No identity resolution beyond the exact release ID** — this PoC does not yet " +
+    "- **No identity resolution beyond the exact release ID**. This PoC does not yet " +
       "attempt to match reissues, repressings or regional variants against each other.",
   );
 

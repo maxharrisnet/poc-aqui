@@ -1,6 +1,6 @@
 # Where the listing data can and cannot come from
 
-**Status: draft — for review. Findings are settled; the Discogs recommendation is not.**
+**Status: draft, for review. Findings are settled; the Discogs recommendation is not.**
 
 Version 0.2 prices a record from Discogs' published *marketplace statistics*:
 for a given pressing, the lowest asking price and how many copies are for
@@ -9,8 +9,8 @@ runs on today.
 
 What it is not is a *listing*. A listing is a specific copy, offered by a
 specific seller, in a stated condition, shipping from a known place, at a
-known shipping cost. Everything the buying desk still does by hand — judging
-condition, judging the seller, knowing what shipping will really cost —
+known shipping cost. Everything the buying desk still does by hand: judging
+condition, judging the seller, knowing what shipping will really cost:
 depends on listing-level data.
 
 This document records what each source will and will not give us, so the
@@ -26,11 +26,11 @@ Sources we intend to use, and what each one can actually answer.
 | Source | Listing-level data? | Role |
 |---|---|---|
 | **eBay** | **Yes** | Real listings, seller location, quoted shipping to Mexico. One integration covers Germany, the UK, France, Italy and the Netherlands |
-| **Mercado Libre** | **Yes** | Domestic Mexican listings — no customs, no import duty, no international lane |
+| **Mercado Libre** | **Yes** | Domestic Mexican listings, no customs, no import duty, no international lane |
 | **Discogs** | **No** | Aggregate statistics only: lowest price and stock count. The deepest catalogue and the deepest German seller base, without per-copy detail |
 | **Bandcamp** | **Announcements only** | Follow notifications to a dedicated mailbox. Tells us a record was listed, never what it costs |
 | **EU specialist shops** | **Announcements only** | HHV, Hard Wax, Decks and similar. No APIs; newsletters into the same mailbox |
-| **MusicBrainz** | **n/a** | Free open identity data — barcodes and release relationships. Underpins matching |
+| **MusicBrainz** | **n/a** | Free open identity data: barcodes and release relationships. Underpins matching |
 | **Spotify** | **No** | No vinyl at all. Canonical names and barcodes for matching |
 | **Instagram** | **No** | Closed to us. The stores behind the accounts are the readable surface |
 
@@ -49,23 +49,23 @@ Its official Browse API returns real listings and, for each one:
   by us
 
 That last point matters more than it sounds. Two of the three "illustrative"
-figures in the current model — shipping cost, and the country used to decide
-customs treatment — become real numbers for any record found on eBay.
+figures in the current model: shipping cost, and the country used to decide
+customs treatment: become real numbers for any record found on eBay.
 
 **What it needs from you:** an eBay developer account and a set of production
 API credentials. Registration is free and self-service. There is nothing to
 negotiate and no partnership to apply for.
 
 **One integration covers Europe.** The same API serves each national
-marketplace through a single parameter — Germany, the UK, France, Italy, the
+marketplace through a single parameter: Germany, the UK, France, Italy, the
 Netherlands. Given how much of Ian's buying is European, and German in
 particular, this is the cheapest coverage available to us anywhere on this
 list: it is a query parameter, not a project.
 
 **What it costs us in effort:** eBay listings are free text. They carry no
 release identifier, so there is no direct join between "this exact pressing on
-Discogs" and "these listings on eBay". Matching them — and being honest about
-confidence when the match is uncertain — is the substantial engineering work
+Discogs" and "these listings on eBay". Matching them, and being honest about
+confidence when the match is uncertain: is the substantial engineering work
 in this phase, considerably more than the API integration itself.
 
 ## Discogs
@@ -73,8 +73,8 @@ in this phase, considerably more than the API integration itself.
 **Discogs' official API does not expose marketplace listings, and no
 workaround exists inside their terms of use.**
 
-The API publishes aggregate statistics for a pressing — lowest price, number
-of copies for sale — and that is the whole of it. There is no endpoint that
+The API publishes aggregate statistics for a pressing: lowest price, number
+of copies for sale, and that is the whole of it. There is no endpoint that
 returns "the copies currently for sale for this release". Condition,
 seller location, and per-copy shipping are not available to us at all.
 
@@ -84,7 +84,7 @@ against their terms of use, which puts the account and the data supply at
 risk. Version 0.1 was built on sanctioned endpoints only, deliberately, and
 that position is why the integration has been stable.
 
-There are narrower routes worth weighing later — reading the buyer's own
+There are narrower routes worth weighing later: reading the buyer's own
 account data through an authorised login, or tracking the inventories of a
 short list of known-good sellers. Both are limited, and neither is a general
 answer.
@@ -129,8 +129,8 @@ cannot tell us what it will cost to have it.
 Four further limits, all found in the sample emails rather than assumed:
 
 - **The link points at the release, not the item.** One email listed three
-  distinct items — a denim vinyl LP, a signed copy of it, and a test pressing
-  — all linking to the same page. The email cannot say which is which.
+  distinct items. A denim vinyl LP, a signed copy of it, and a test pressing
+ . All linking to the same page. The email cannot say which is which.
 - **Format is free text, not a field.** The same batch mixed vinyl, a test
   pressing and two hardcover books. Filtering down to records means reading
   titles, and it will occasionally be wrong in both directions.
@@ -145,7 +145,7 @@ Four further limits, all found in the sample emails rather than assumed:
 ### Managing the follow list
 
 Following an artist is not something an outside application can do. Bandcamp
-has no fan-side API — no way to follow a label, and no way to ask whether we
+has no fan-side API, no way to follow a label, and no way to ask whether we
 already do. The follow button on the website is driven by a logged-in browser
 session, and automating that would mean operating Ian's personal account on
 his behalf: fragile, and outside their terms.
@@ -165,8 +165,8 @@ to a label he has never followed.
 ## Spotify
 
 Spotify is worth addressing because its API is genuinely open and generous,
-and because the obvious hope — that it could reach the vinyl and merchandise
-sold on artist pages — does not survive contact with it.
+and because the obvious hope. That it could reach the vinyl and merchandise
+sold on artist pages: does not survive contact with it.
 
 **Spotify is a streaming catalogue. It has no concept of a physical record.**
 No format, no pressing, no stock, no price, no seller. It cannot tell us that a
@@ -175,7 +175,7 @@ record exists on vinyl, let alone what a copy costs.
 **The merchandise on artist pages is not available through the API.** It is
 sold through a third-party storefront integration rather than by Spotify
 itself, and no public endpoint exposes it. It is visible on the page and
-unreadable by us — a frustrating combination, but a firm one.
+unreadable by us. A frustrating combination, but a firm one.
 
 What Spotify is genuinely good for is the problem sitting underneath
 everything else: **knowing that two records are the same record.**
@@ -189,14 +189,14 @@ everything else: **knowing that two records are the same record.**
   album, to reconcile eBay's free-text listing titles and Discogs' disambiguated
   names ("Atmosphere (2)") against.
 - **Seeding the watchlist.** With Ian's permission, his saved albums and
-  followed artists could populate the watchlist directly — a considerably
+  followed artists could populate the watchlist directly. A considerably
   better start than typing records in one at a time.
 
 Two constraints to plan around: Spotify withdrew several endpoints from new
 applications in late 2024, including recommendations and audio features, so
 nothing should be built on those; and an application in development mode is
 limited to **five** authenticated users, each allowlisted by hand. Extended
-quota is no longer realistically available — since May 2025 Spotify has only
+quota is no longer realistically available: since May 2025 Spotify has only
 accepted applications from organisations with around 250,000 monthly users.
 
 Five is enough for Ian and for us. It does mean this can never become a feature
@@ -215,10 +215,10 @@ eBay, and arguably before it.
 
 **Domestic listings skip the entire import problem.** No customs, no duty, no
 tasa global, no international shipping lane, no formal-entry threshold. The
-landed cost collapses to the price plus domestic postage — which means it is
+landed cost collapses to the price plus domestic postage, which means it is
 also the one source where our number is exact rather than estimated.
 
-Its catalogue search is a public resource in the sense that matters — no
+Its catalogue search is a public resource in the sense that matters, no
 seller's authorisation is needed to read active listings, only our own
 application token. (Tested: the endpoint returns 403 without one, so "public"
 should not be read as "open".) The matching problem is the same free-text one
@@ -247,7 +247,7 @@ answer rather than being folded into "shops".
 
 **We tested the obvious route and it does not work.** Most independent
 retailers worldwide run Shopify, which publishes a full product catalogue as
-JSON on the shop's own domain, with no key and no login — an excellent,
+JSON on the shop's own domain, with no key and no login. An excellent,
 sanctioned feed. We checked nine of the shops that matter here: HHV, Hard Wax,
 Decks, Deejay, Rush Hour, Clone, Phonica, Boomkat and Juno. **None of them runs
 Shopify, and none exposed a usable product feed.** They are all bespoke
@@ -268,7 +268,7 @@ Separate from any integration, and worth more than most of them.
 
 **A German seller's listed price includes 19% VAT.** Discogs provides no
 mechanism for an EU seller to deduct that VAT at checkout for a buyer outside
-the EU, and its Seller Policy requires that the listed price be final — a
+the EU, and its Seller Policy requires that the listed price be final. A
 seller may not adjust tax after purchase. So the price a Mexican buyer pays
 appears to be the VAT-inclusive one, with Mexican IVA applied on top.
 
@@ -276,7 +276,7 @@ appears to be the VAT-inclusive one, with Mexican IVA applied on top.
 are not going to assert it to a client on inference alone. The article that
 would settle it sits behind a seller login. This needs checking against two or
 three of Ian's actual German orders before it goes any further than a
-hypothesis — which is why it is the first question on the list for him.
+hypothesis, which is why it is the first question on the list for him.
 
 Two consequences, one operational and one for the software:
 
@@ -298,7 +298,7 @@ Worth recording so the same ground is not covered twice.
 us.** Yahoo! Auctions is the venue that matters; API access for non-Japanese
 entities is restrictive, and most foreign buyers go through proxy services that
 publish no APIs at all. Rakuten's item search API explicitly excludes auction
-and C2C listings — precisely the inventory worth having. Treat Japan as a
+and C2C listings: precisely the inventory worth having. Treat Japan as a
 manual lane.
 
 **Instagram is a shop window, not a stock feed.** A great deal of dealing
@@ -312,8 +312,8 @@ surface.
 
 **Two we have not verified and would want to before recommending:** Catawiki,
 the Dutch auction house that moves a lot of collectible vinyl, and CDandLP, the
-largest European used marketplace after Discogs. Kleinanzeigen — Germany's
-classifieds, and full of cheap used records — has no public API and is a dead
+largest European used marketplace after Discogs. Kleinanzeigen: Germany's
+classifieds, and full of cheap used records: has no public API and is a dead
 end.
 
 ## What the interface can honestly promise
@@ -332,20 +332,20 @@ actually known:
 Only the eBay figure is a landed cost. The Discogs figure is a market price
 with the import cost estimated around it. The Bandcamp entry is a lead.
 
-This also means a record found only on Bandcamp has no cost breakdown to show —
+This also means a record found only on Bandcamp has no cost breakdown to show,
 no price, no origin, therefore no duty and no tax. **Agreed treatment: that row
 drops the cost bar entirely, says plainly that pricing is not available, and
 offers the buy buttons underneath.** An empty bar or a zeroed one would both
 read as information; a sentence saying we do not know is the only honest
-version, and it costs the desk nothing — the link is what they wanted anyway.
+version, and it costs the desk nothing. The link is what they wanted anyway.
 
 ---
 
 ## What this means for scope
 
 1. **eBay is the source that upgrades the product**, and it covers Europe for
-   free. It converts the two softest numbers in the model — shipping and origin
-   — from estimates into quoted facts, across every marketplace Ian buys from.
+   free. It converts the two softest numbers in the model: shipping and origin
+  : from estimates into quoted facts, across every marketplace Ian buys from.
 2. **Mercado Libre is the one source with no import problem at all.** Worth
    confirming how much Ian buys domestically before ranking it.
 3. **MusicBrainz first, because everything else depends on it.** Matching is
@@ -360,6 +360,6 @@ version, and it costs the desk nothing — the link is what they wanted anyway.
 7. **Japan and Instagram are out of reach.** Both are real sources of records
    and neither is addressable; recorded here so the ground is not covered twice.
 
-The open questions that need Ian rather than research — the German VAT
+The open questions that need Ian rather than research. The German VAT
 position, how much he buys domestically, and which specific shops are worth a
-parser — are collected in `questions-for-ian.md`.
+parser: are collected in `questions-for-ian.md`.

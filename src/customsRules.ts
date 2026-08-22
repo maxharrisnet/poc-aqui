@@ -1,12 +1,12 @@
 /**
- * Mexico customs rules — versioned, exactly as the spec requires (§7, §3.3).
+ * Mexico customs rules: versioned, exactly as the spec requires (§7, §3.3).
  * These are NOT hardcoded into the calculation logic; they live here as a
  * single dated version so a broker can review and correct them without
  * touching the engine. In the real system this is a database table with
  * effective_from/effective_to; here it's one object because the PoC only
  * needs to prove the *shape* of the rule, not the storage mechanism.
  *
- * SOURCES — verified during spec research, NOT confirmed by a customs broker:
+ * SOURCES: verified during spec research, NOT confirmed by a customs broker:
  *   - Mexico's 2026 Customs Law: de minimis exemption largely eliminated
  *   - Formal customs entry (licensed broker) required above ~USD $250
  *   - Non-US/Canada courier shipments: ~19% flat "tasa global"
@@ -40,7 +40,7 @@ export const CUSTOMS_RULES_2026: CustomsRuleVersion = {
   brokerValidated: false,
   notes:
     "Derived from public reporting on Mexico's 2026 Customs Law. Not yet " +
-    "confirmed by a licensed customs broker — do not rely on these figures " +
+    "confirmed by a licensed customs broker: do not rely on these figures " +
     "for a real purchase decision until validated.",
 };
 
@@ -52,7 +52,7 @@ export interface CustomsResult {
 }
 
 /**
- * Domestic (Mexico-origin) purchases pass through with no import cost —
+ * Domestic (Mexico-origin) purchases pass through with no import cost:
  * this is the control case in the watchlist (La Revolución de Emiliano
  * Zapata) that proves the engine is conditional, not a flat markup.
  */
@@ -73,8 +73,8 @@ export function calculateCustoms(
     return { dutyUsd: 0, ivaUsd: 0, requiresFormalEntry, ruleApplied: "usmca_de_minimis" };
   }
 
-  // Everything else — including USMCA-origin shipments over the de minimis
-  // threshold — falls to the simplified courier regime in this PoC. A real
+  // Everything else: including USMCA-origin shipments over the de minimis
+  // threshold: falls to the simplified courier regime in this PoC. A real
   // USMCA duty schedule by HS code is a broker question, not a default we
   // should silently assume; flagging that explicitly rather than guessing.
   const dutyUsd = customsValue * rules.tasaGlobalRate;

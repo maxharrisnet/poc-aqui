@@ -31,7 +31,7 @@ async function readBody(req: IncomingMessage): Promise<Record<string, unknown>> 
   }
 }
 
-/** A landed-cost threshold must be a real, non-negative number — NaN or
+/** A landed-cost threshold must be a real, non-negative number: NaN or
  *  Infinity would either compare as always-alerted or never-alerted. */
 function isValidThreshold(v: number): boolean {
   return Number.isFinite(v) && v >= 0;
@@ -39,13 +39,13 @@ function isValidThreshold(v: number): boolean {
 
 /** Config-guidance messages (missing env vars) carry no secret and are how an
  *  operator diagnoses a broken deploy, so they pass through verbatim. Every
- *  other error — which may embed a spreadsheet id or service-account email —
+ *  other error, which may embed a spreadsheet id or service-account email:
  *  is replaced with a generic body after being logged server-side. */
 function publicErrorMessage(err: unknown): string {
   const message = err instanceof Error ? err.message : String(err);
   console.error(`Watchlist API error: ${message}`);
   // Config guidance carries no secrets and is how an operator diagnoses a
-  // broken deploy — pass it through rather than hiding it behind the log.
+  // broken deploy: pass it through rather than hiding it behind the log.
   if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
   return "Request failed. Check the server logs.";
 }
@@ -54,8 +54,8 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   try {
     if (req.method === "GET") {
       // The sheet id rides along so the page can link straight to it. It is not
-      // a credential — the sheet is only readable by whoever Google has already
-      // granted access to — but it does name the document, so it goes out only
+      // a credential. The sheet is only readable by whoever Google has already
+      // granted access to, but it does name the document, so it goes out only
       // on this authenticated-by-obscurity POC surface.
       const sheetId = process.env.WATCHLIST_SHEET_ID;
       json(res, 200, {
@@ -88,7 +88,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
         }
       }
 
-      // Typing the same record twice is easy — and a second row for it would
+      // Typing the same record twice is easy, and a second row for it would
       // double every sweep's work while splitting its threshold in two. Report
       // the existing item instead of appending a duplicate.
       const existingWatch = (await listWatchItems()).find(

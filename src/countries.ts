@@ -6,7 +6,7 @@
  *   Customs treatment depends on where the SELLER SHIPS FROM, not where the
  *   record was pressed. A German pressing may well be sold by someone in
  *   Guadalajara. The official Discogs API does not expose seller location
- *   for marketplace listings — that is precisely the gap eBay's Browse API
+ *   for marketplace listings. That is precisely the gap eBay's Browse API
  *   fills in Phase 1 (see the brief, §4.1).
  *
  * So: treat origin here as indicative. It is right often enough to prove
@@ -52,7 +52,7 @@ const EXACT: Record<string, string> = {
   Chile: "CL",
 };
 
-/** Multi-country pressings — we pick a representative and flag it. */
+/** Multi-country pressings. We pick a representative and flag it. */
 const REGIONAL: Record<string, string> = {
   Europe: "DE",
   "UK & Europe": "GB",
@@ -65,14 +65,14 @@ const REGIONAL: Record<string, string> = {
 
 export function resolveOrigin(discogsCountry: string | undefined): OriginResolution {
   if (!discogsCountry) {
-    return { iso: "DE", approximate: true, label: "Unknown — assumed EU" };
+    return { iso: "DE", approximate: true, label: "Unknown: assumed EU" };
   }
 
   const exact = EXACT[discogsCountry];
   if (exact) return { iso: exact, approximate: false, label: discogsCountry };
 
   const regional = REGIONAL[discogsCountry];
-  if (regional) return { iso: regional, approximate: true, label: `${discogsCountry} — assumed ${regional}` };
+  if (regional) return { iso: regional, approximate: true, label: `${discogsCountry}: assumed ${regional}` };
 
-  return { iso: "DE", approximate: true, label: `${discogsCountry} — assumed EU` };
+  return { iso: "DE", approximate: true, label: `${discogsCountry}: assumed EU` };
 }

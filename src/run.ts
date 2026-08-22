@@ -21,7 +21,7 @@ export interface CostBreakdown {
 }
 
 export interface CheckResult {
-  /** What the user asked for — the search text, or the watchlist note. */
+  /** What the user asked for. The search text, or the watchlist note. */
   requested: string;
   /** Why this record is in the demo set. Absent for user searches. */
   note?: string;
@@ -54,7 +54,7 @@ export interface CheckResult {
   shippingNote?: string;
 
   /** Present when this sweep crossed the record's threshold and SMS alerting
-   *  is switched on for it. v0.3 does not send anything — the interface shows
+   *  is switched on for it. v0.3 does not send anything. The interface shows
    *  the message that would go out, so the team can see and agree the wording
    *  before a real gateway is wired in. */
   alert?: { channel: "sms"; to: string; message: string };
@@ -97,12 +97,17 @@ function composeAlert(item: WatchItem, best: CheckResult): NonNullable<CheckResu
   return {
     channel: "sms",
     to: ALERT_RECIPIENT,
-    message: `Aqui Ahora: ${item.artist} — ${item.album}${price}${limit}.`,
+    message: `Aqui Ahora: ${item.artist}: ${item.album}${price}${limit}.`,
   };
 }
 
-/** Turns a resolved release id into a fully costed result. */
-async function costRelease(
+/** Turns a resolved release id into a fully costed result.
+ *
+ *  Exported because the inventory page prices one release at a time, on demand,
+ *  rather than sweeping a list. Same two Discogs calls, same customs ruleset,
+ *  same FX snapshot: a figure quoted on the shelf has to be the figure the
+ *  buying desk would quote, or the two pages disagree in front of a customer. */
+export async function costRelease(
   discogsId: number,
   requested: string,
   fx: FxSnapshot,
@@ -192,17 +197,17 @@ function summarise(
   };
 }
 
-/** The curated demo list — release ids already known, so no search step. */
+/** The curated demo list: release ids already known, so no search step. */
 export async function runDemo(onProgress?: ProgressFn, onResult?: (r: CheckResult) => void): Promise<RunSummary> {
   const fx = await fetchFxSnapshot();
   const results: CheckResult[] = [];
 
   for (const [i, entry] of WATCHLIST.entries()) {
-    onProgress?.({ index: i + 1, total: WATCHLIST.length, label: `${entry.artist} — ${entry.title}` });
+    onProgress?.({ index: i + 1, total: WATCHLIST.length, label: `${entry.artist}: ${entry.title}` });
     try {
       const result = await costRelease(
         entry.discogsId,
-        `${entry.artist} — ${entry.title}`,
+        `${entry.artist}: ${entry.title}`,
         fx,
         entry.note,
         entry.originCountry,
@@ -211,7 +216,7 @@ export async function runDemo(onProgress?: ProgressFn, onResult?: (r: CheckResul
       onResult?.(result);
     } catch (err) {
       const failed: CheckResult = {
-        requested: `${entry.artist} — ${entry.title}`,
+        requested: `${entry.artist}: ${entry.title}`,
         matched: false,
         unmatchedReason: (err as Error).message,
         available: false,
@@ -275,7 +280,7 @@ export async function runSearch(
  *
  * Writes each item's result back to the sheet as it completes rather than at
  * the end, so a function timeout costs the tail of the sweep instead of all of
- * it — the sheet doubles as the checkpoint. See spec v0.2 §5.1.
+ * it. The sheet doubles as the checkpoint. See spec v0.2 §5.1.
  */
 export async function runWatchlist(
   onProgress?: ProgressFn,
@@ -291,7 +296,7 @@ export async function runWatchlist(
   const results: CheckResult[] = [];
 
   for (const [i, item] of items.entries()) {
-    onProgress?.({ index: i + 1, total: items.length, label: `${item.artist} — ${item.album}` });
+    onProgress?.({ index: i + 1, total: items.length, label: `${item.artist}: ${item.album}` });
 
     let best: CheckResult | null = null;
     let checkError: string | null = null;
@@ -300,7 +305,7 @@ export async function runWatchlist(
       try {
         const result = await costRelease(
           releaseId,
-          `${item.artist} — ${item.album}`,
+          `${item.artist}: ${item.album}`,
           fx,
           item.notes || undefined,
         );
@@ -318,7 +323,7 @@ export async function runWatchlist(
       onResult?.(best);
       const belowThreshold =
         best.totalMxn != null && item.maxLandedMxn != null && best.totalMxn <= item.maxLandedMxn;
-      // Only on the crossing, not on every sweep of an already-alerted record —
+      // Only on the crossing, not on every sweep of an already-alerted record:
       // a nightly re-alert for the same copy is how a team learns to ignore the
       // channel.
       if (belowThreshold && item.alertSms && item.status !== "alerted") {
@@ -334,7 +339,7 @@ export async function runWatchlist(
       // Could not reach Discogs. Record that we tried; change nothing else.
       // Nulling the stored best price here would destroy a real alert.
       const failed: CheckResult = {
-        requested: `${item.artist} — ${item.album}`,
+        requested: `${item.artist}: ${item.album}`,
         matched: false,
         unmatchedReason: checkError,
         available: false,
@@ -346,7 +351,7 @@ export async function runWatchlist(
     } else {
       // Genuinely checked, genuinely nothing listed.
       const none: CheckResult = {
-        requested: `${item.artist} — ${item.album}`,
+        requested: `${item.artist}: ${item.album}`,
         matched: false,
         unmatchedReason: "No copies listed for any watched pressing",
         available: false,

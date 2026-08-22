@@ -3,7 +3,7 @@ import type { PressingScope } from "./watchlist.js";
 
 /**
  * At or below this many vinyl pressings we watch all of them; above it the
- * user picks. Config, not a constant of nature — see spec v0.2 §4.
+ * user picks. Config, not a constant of nature: see spec v0.2 §4.
  */
 const DEFAULT_AUTO_WATCH_LIMIT = 10;
 
@@ -14,7 +14,7 @@ function readAutoWatchLimit(): number {
   const parsed = Number(raw);
   if (!Number.isInteger(parsed) || parsed < 1) {
     console.warn(
-      `PRESSING_AUTO_WATCH_LIMIT must be a positive integer — got "${raw}". ` +
+      `PRESSING_AUTO_WATCH_LIMIT must be a positive integer: got "${raw}". ` +
         `Falling back to ${DEFAULT_AUTO_WATCH_LIMIT}.`,
     );
     return DEFAULT_AUTO_WATCH_LIMIT;
@@ -32,7 +32,7 @@ export interface PressingPlan {
   /** Populated only when the user must choose. */
   choices: MasterVersion[];
   /**
-   * True when `choices` holds fewer pressings than `totalVinylVersions` — we
+   * True when `choices` holds fewer pressings than `totalVinylVersions`. We
    * fetch a single 100-item page. The UI must say so rather than implying the
    * list is complete.
    */
