@@ -162,13 +162,68 @@
     }
 
     /* Mark and tabs on one line, sitting on the rule together. Aligned to the
-       bottom, so the logo rests on the same edge the active tab underlines. */
+       bottom, so the logo rests on the same edge the active tab underlines.
+       Sticky, because the Technical page is several screens long and the way
+       between pages should not be one of them. The negative margin and the
+       matching padding bleed its ground to the viewport edges, or content
+       would scroll through the shell's 24px gutters beside it. */
     .nav {
+      position: sticky;
+      top: 0;
+      z-index: 15;
       display: flex;
       align-items: flex-end;
       gap: 26px;
-      padding-top: 12px;
+      margin: 0 -24px;
+      padding: 12px 24px 0;
+      background: var(--kraft);
       border-bottom: 1.5px solid var(--ink);
+    }
+
+    /* Hidden until the row is too narrow to hold everything. */
+    .navmenu-btn {
+      display: none;
+      flex: none;
+      place-items: center;
+      width: 38px;
+      height: 38px;
+      padding: 0;
+      border: 1.5px solid var(--kraft-deep);
+      border-radius: 2px;
+      background: transparent;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .navmenu-btn:hover {
+      border-color: var(--ink);
+    }
+
+    .navmenu-btn:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 2px;
+    }
+
+    /* Answers "where am I" while the page you are on is folded inside it. */
+    .navmenu-btn.is-active {
+      border-color: var(--ink);
+      background: var(--ink);
+      color: var(--kraft);
+    }
+
+    .navmenu-btn .i-close,
+    .navmenu-btn[aria-expanded="true"] .i-bars {
+      display: none;
+    }
+
+    .navmenu-btn[aria-expanded="true"] .i-close {
+      display: block;
+    }
+
+    /* Wide: the pair lays out as if the wrapper were not there at all, so the
+       auto margin that pushes them to the far end still sees the tab row. */
+    .tabs-info {
+      display: contents;
     }
 
     .brand {
@@ -198,21 +253,6 @@
       outline-offset: 3px;
     }
 
-    /* The tab row scrolls at this width, so the mark gives back the space it
-       was taking from the tabs people are actually reaching for. */
-    @media (max-width: 560px) {
-      .nav {
-        gap: 16px;
-      }
-
-      .brand {
-        padding-bottom: 8px;
-      }
-
-      .brand img {
-        width: 74px;
-      }
-    }
 
     @media (prefers-reduced-motion: reduce) {
       .brand img {
@@ -324,22 +364,15 @@
 
     /* ---------------------------------------------------- tabs */
 
-    /* Five tabs no longer fit a phone. The strip scrolls rather than wrapping:
-       a wrapped row would put the underline through the middle of it, and
-       shrink-to-fit breaks two-word labels across lines. */
-    /* The rule belongs to the row now, so the mark shares it. */
+    /* The rule belongs to the row now, so the mark shares it. Two tabs fit
+       any width once the reference pair moves into the menu, so nothing here
+       scrolls sideways any more. */
     .tabs {
       display: flex;
       align-items: flex-end;
       gap: 26px;
       flex: 1 1 auto;
       min-width: 0;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-
-    .tabs::-webkit-scrollbar {
-      display: none;
     }
 
     .tab {
@@ -359,22 +392,9 @@
       cursor: pointer;
     }
 
-    /* Icon in place of a word, so the way back does not spend a whole tab's
-       worth of the row on saying so. The glyph sits on the same baseline the
-       words do rather than centred in the taller box they set. */
-    .tab-icon {
-      display: inline-flex;
-      align-items: flex-end;
-      padding-bottom: 9px;
-    }
-
-    .tab-icon svg {
-      display: block;
-    }
-
     @media (max-width: 720px) {
       .tabs {
-        gap: 18px;
+        gap: 22px;
       }
 
       .tab {
@@ -409,13 +429,67 @@
       font-weight: 700;
     }
 
+    /* Narrow: the mark and the menu take the first line, the two working tabs
+       the second, and the reference pair moves inside the menu. Nothing
+       scrolls sideways, and the tabs a person came here to press are the ones
+       still spelled out. */
     @media (max-width: 720px) {
+      .nav {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 11px 16px;
+        padding-top: 10px;
+      }
 
-      /* The row scrolls at this width, so an auto margin would strand the
-         reference tabs off the end of a track nobody scrolls to the bottom of. */
-      .tab:not(.tab-info)+.tab-info {
-        margin-left: 4px;
-        padding-left: 18px;
+      .brand {
+        padding-bottom: 0;
+      }
+
+      .navmenu-btn {
+        display: grid;
+        justify-self: end;
+      }
+
+      .tabs {
+        grid-column: 1 / -1;
+        align-self: end;
+      }
+
+      /* Hung off the row's bottom edge, under the button that opens it. */
+      .tabs-info {
+        display: none;
+        position: absolute;
+        top: 100%;
+        right: 0;
+        z-index: 20;
+        min-width: 13rem;
+        padding: 5px 0;
+        background: var(--kraft);
+        border: 1.5px solid var(--ink);
+        border-top: 0;
+        border-radius: 0 0 3px 3px;
+        box-shadow: 0 14px 28px rgba(10, 10, 10, 0.13);
+      }
+
+      .tabs-info.is-open {
+        display: block;
+      }
+
+      /* Rows in a menu, not tabs on a rule. */
+      .tabs-info .tab,
+      .tabs-info .tab-info:first-of-type {
+        display: block;
+        width: 100%;
+        margin: 0;
+        padding: 10px 16px;
+        border: 0;
+        text-align: left;
+        font-size: 0.92rem;
+      }
+
+      .tabs-info .tab[aria-selected="true"] {
+        background: var(--wash);
       }
     }
 
@@ -2986,20 +3060,35 @@
        Nothing is dropped and nothing is squeezed to the point of breaking
        mid-word. */
     @media (max-width: 720px) {
+
+      /* Two lines: the record names itself beside its own sleeve, then the
+         count and the price sit together underneath.
+
+         The title spans both remaining columns on purpose. Sharing a column
+         with the price meant the price's width set the title's, which left
+         79px for a name and wrapped every artist across four lines. */
       .inv-item {
         grid-template-columns: 46px minmax(0, 1fr) auto;
         grid-template-areas:
-          "head   head   watch"
-          "thumb  qty    qty"
-          "thumb  price  price"
+          "thumb head head"
+          "qty   qty  price"
           "detail detail detail";
-        row-gap: 9px;
-        align-items: start;
+        column-gap: 10px;
+        row-gap: 8px;
+        align-items: center;
+        padding: 9px 0 10px 10px;
       }
 
-      .inv-qty,
-      .inv-price {
-        align-self: center;
+      .inv-thumb,
+      .inv-thumb-none {
+        align-self: start;
+      }
+
+      /* The two switches are the one thing here with a full, labelled twin a
+         tap away: the row's own Watch & alerts section. At this width they
+         were costing the title the room it needed to be read at all. */
+      .row-acts {
+        display: none;
       }
 
       /* Vertical space is cheaper than an artist nobody can read: on a phone
@@ -3012,8 +3101,16 @@
         overflow-wrap: anywhere;
       }
 
+      /* The byline is the first thing to give up room when a long title and
+         a stepper are competing for the same 190px. */
+      .inv-artist {
+        font-size: 0.82rem;
+        letter-spacing: 0.04em;
+      }
+
       .inv-qty {
         justify-self: start;
+        gap: 4px;
       }
 
       .inv-price {
@@ -3117,11 +3214,16 @@
       font-size: 1em;
     }
 
+    /* Bowlby One at body line-height leaves a gap the size of a line between
+       the rows of a wrapped heading, which only shows once it wraps: on a
+       phone, where it always does. Set tight, like every other display line
+       on the page, and sized so it wraps less to begin with. */
     .hiw-h2 {
       font-family: var(--display);
       text-transform: uppercase;
-      font-size: 2.35rem;
+      font-size: clamp(1.75rem, 5.6vw, 2.35rem);
       font-weight: 400;
+      line-height: 0.98;
       letter-spacing: 0;
       margin-bottom: 12px;
       text-wrap: balance;
@@ -3664,6 +3766,47 @@
       outline: 2px solid var(--ink);
       outline-offset: 3px;
     }
+
+    /* ---------------------------------------------------- back to top */
+
+    /* Only on the two reference pages, and only once there is a way back to
+       speak of. The sticky row already carries the tabs; this is for the
+       Technical page, which runs several screens past its own headline. */
+    .totop {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 40;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 14px;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      background: var(--ink);
+      color: var(--kraft);
+      font-family: var(--mono);
+      font-size: 0.74rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(10, 10, 10, 0.18);
+    }
+
+    .totop[hidden] {
+      display: none;
+    }
+
+    .totop:hover {
+      background: var(--carbon);
+      border-color: var(--carbon);
+    }
+
+    .totop:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 3px;
+    }
   </style>
 </head>
 
@@ -3687,26 +3830,37 @@
       </div>
     </header>
 
-    <!-- One row: the mark, then the tabs, sharing the rule they sit on. The
-         mark doubles as the way back, which is where a person reaches for it
-         whatever the tabs say, and the Home tab stays in the tablist beside
-         it so the panel keeps its place in the keyboard order. -->
+    <!-- The mark is the way home, on every width: a logo that goes home is
+         the one navigation convention nobody has to be taught, and it frees
+         the row for the pages that need naming.
+
+         Wide: mark, the two working tabs, then the two reference tabs at the
+         far end. Narrow: mark and menu on one line, the working tabs on the
+         next, and the reference pair inside the menu, which is where pages
+         you read once belong when the row is only 375px wide. -->
     <nav class="nav">
-      <button class="brand" id="brand" type="button" aria-label="Aquí Ahora: home">
+      <button class="brand" id="brand" type="button" aria-label="Aquí Ahora: home" aria-current="page">
         <img src="/aqui-ahora-logo.png" alt="" width="1093" height="597">
       </button>
 
+      <button class="navmenu-btn" id="navmenu-btn" type="button" aria-expanded="false" aria-controls="navmenu" aria-label="More pages">
+        <svg class="i-bars" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <path d="M3.5 7h17M3.5 12h17M3.5 17h17"/>
+        </svg>
+        <svg class="i-close" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round">
+          <path d="M5.5 5.5l13 13M18.5 5.5l-13 13"/>
+        </svg>
+      </button>
+
       <div class="tabs" role="tablist">
-        <button class="tab tab-icon" id="tab-home" role="tab" aria-selected="true" aria-controls="panel-home" aria-label="Home" title="Home">
-          <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 10.6 12 3.6l9 7"/>
-            <path d="M5.7 9.3V20.4h12.6V9.3"/>
-          </svg>
-        </button>
         <button class="tab" id="tab-inv" role="tab" aria-selected="false" aria-controls="panel-inv">Inventory</button>
         <button class="tab" id="tab-desk" role="tab" aria-selected="false" aria-controls="panel-desk">Buying desk</button>
-        <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
-        <button class="tab tab-info" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
+        <!-- Laid out as if these two were direct children of the row until the
+             menu takes them, so one pair of buttons serves both widths. -->
+        <div class="tabs-info" id="navmenu" role="presentation">
+          <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
+          <button class="tab tab-info" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
+        </div>
       </div>
     </nav>
 
@@ -3782,7 +3936,7 @@
     </div>
 
     <!-- ========================= HOME ========================= -->
-    <div class="panel" id="panel-home" role="tabpanel" aria-labelledby="tab-home">
+    <div class="panel" id="panel-home" role="tabpanel" aria-label="Home">
 
       <section class="splash">
         <h1 class="splash-logo">
@@ -4277,6 +4431,14 @@
 
   </div>
 
+  <button class="totop" id="totop" type="button" hidden>
+    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 19.5V5.2"/>
+      <path d="M5.6 11.6 12 5.2l6.4 6.4"/>
+    </svg>
+    Top
+  </button>
+
   <script>
     (() => {
       const $ = (id) => document.getElementById(id);
@@ -4409,21 +4571,75 @@
 
       // ------------------------------------------------ tabs
 
+      /** Home has no tab of its own: the mark in the row is its door, so every
+       *  lookup here tolerates a panel whose tab does not exist. */
       const TABS = ['home', 'inv', 'desk', 'hiw', 'tech'];
+      const INFO_TABS = ['hiw', 'tech'];
+
+      const navMenu = $('navmenu');
+      const navMenuBtn = $('navmenu-btn');
+      const toTop = $('totop');
+
+      const reduceMotion = () =>
+        window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function setMenu(open) {
+        navMenuBtn.setAttribute('aria-expanded', String(open));
+        navMenu.classList.toggle('is-open', open);
+      }
+
+      /** Shown once there is a screen or so to come back from, and only on the
+       *  two pages long enough to need it. */
+      function syncToTop() {
+        const onInfo = INFO_TABS.some((t) => !$('panel-' + t).hidden);
+        toTop.hidden = !(onInfo && window.scrollY > 600);
+      }
 
       function selectTab(which) {
         TABS.forEach((t) => {
           const on = t === which;
-          $('tab-' + t).setAttribute('aria-selected', String(on));
+          const tab = $('tab-' + t);
+          if (tab) tab.setAttribute('aria-selected', String(on));
           $('panel-' + t).hidden = !on;
         });
-        // Narrow screens scroll this row, and a cross-tab link can select a tab
-        // sitting off the visible end of it.
-        $('tab-' + which).scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        // A cross-tab link can select a tab sitting off the visible end of the
+        // row; home's door is the mark, which is always in view.
+        const active = $('tab-' + which);
+        if (active) active.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        // Picking a page from the menu closes it, and the button carries the
+        // active mark while the page it opened is folded inside it.
+        setMenu(false);
+        navMenuBtn.classList.toggle('is-active', INFO_TABS.includes(which));
+        if (which === 'home') $('brand').setAttribute('aria-current', 'page');
+        else $('brand').removeAttribute('aria-current');
+        syncToTop();
         // Repaint on entry: a sweep or a Watch press on the desk moves this list.
         if (which === 'inv') renderInventory();
       }
-      TABS.forEach((t) => $('tab-' + t).addEventListener('click', () => selectTab(t)));
+      TABS.forEach((t) => {
+        const tab = $('tab-' + t);
+        if (tab) tab.addEventListener('click', () => selectTab(t));
+      });
+
+      navMenuBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        setMenu(navMenuBtn.getAttribute('aria-expanded') !== 'true');
+      });
+
+      // A menu that only closes by its own button is a menu people leave open.
+      document.addEventListener('click', (e) => {
+        if (!e.target.closest('#navmenu, #navmenu-btn')) setMenu(false);
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') setMenu(false);
+      });
+
+      toTop.addEventListener('click', () => {
+        window.scrollTo({ top: 0, behavior: reduceMotion() ? 'auto' : 'smooth' });
+      });
+
+      window.addEventListener('scroll', syncToTop, { passive: true });
 
       /** Cross-tab links: switch to the panel holding the named section and land
        *  on it. The panel is read off the target rather than hardcoded, because
