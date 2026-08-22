@@ -1,23 +1,24 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { costRelease } from "../src/run.js";
+import { sweepRecord } from "../src/run.js";
 import { fetchFxSnapshot } from "../src/fx.js";
+import { listInventoryItems } from "../src/inventory.js";
+import { publicSheetsError } from "../src/sheets.js";
 
 /**
- * Prices one release on demand, for the Sourcing section of an inventory row.
+ * Prices one inventory row on demand, for the Sourcing section of that row.
  *
- *   GET /api/sourcing?releaseId=2164&q=Basic%20Channel%20Q%201.1
+ *   GET /api/sourcing?id=i_abc123
  *
- * Two Discogs calls, so about 2.2 seconds at the client's pacing. Deliberately
- * one release rather than a list: this is the "check this record now" button,
- * and a person is waiting for it.
+ * Runs the same per-record sweep a scheduled run would, over every watched
+ * pressing, and writes the result back to the row. Two Discogs calls per
+ * pressing at the client's pacing, so a six-pressing album takes about
+ * thirteen seconds. A person is waiting for it, which is why the page says
+ * how many pressings it is pricing.
  *
  * Only Discogs returns a real price. eBay, Mercado Libre and Bandcamp are
  * search links rather than results, and are labelled that way in the response
  * so the interface cannot quietly present a search as a listing. When those
  * APIs are built, they move from `links` to `offers` and nothing else changes.
- *
- * In the finished system this endpoint is also what a scheduled sweep calls,
- * a few times a day per watched record, instead of a person pressing a button.
  */
 
 function json(res: ServerResponse, status: number, body: unknown): void {
@@ -56,40 +57,62 @@ function searchLinks(query: string): { platform: string; url: string; note: stri
   ];
 }
 
+/** Same policy as api/inventory.ts: config guidance passes through, everything
+ *  else is logged and replaced with a generic body. */
+function publicErrorMessage(err: unknown): string {
+  const message = err instanceof Error ? err.message : String(err);
+  console.error(`Sourcing check failed: ${message}`);
+  if (/^(DISCOGS_TOKEN|GOOGLE_|INVENTORY_SHEET_ID)/.test(message)) return message;
+  const sheets = publicSheetsError(message);
+  if (sheets) return sheets;
+  return "Could not check listings. See the server logs.";
+}
+
 export default async function handler(req: IncomingMessage, res: ServerResponse): Promise<void> {
   const url = new URL(req.url ?? "/", `http://${req.headers.host ?? "localhost"}`);
-  const releaseId = Number(url.searchParams.get("releaseId"));
-  const query = (url.searchParams.get("q") ?? "").trim();
+  const id = (url.searchParams.get("id") ?? "").trim();
 
-  if (!Number.isInteger(releaseId) || releaseId <= 0) {
-    json(res, 400, { error: "releaseId must be a positive whole number" });
+  if (!id) {
+    json(res, 400, { error: "id is required" });
     return;
   }
 
   try {
+    const item = (await listInventoryItems()).find((i) => i.id === id);
+    if (!item) {
+      json(res, 404, { error: "Not found" });
+      return;
+    }
+
     const fx = await fetchFxSnapshot();
-    const result = await costRelease(releaseId, query || String(releaseId), fx);
+    const outcome = await sweepRecord(item, fx);
+    const r = outcome.result;
+    const query = `${item.artist} ${item.album}`.trim() || String(item.releaseId ?? "");
 
     json(res, 200, {
-      checkedAt: new Date().toISOString(),
+      checkedAt: outcome.item.lastCheckedAt,
       fxDate: fx.date,
+      checked: outcome.checked,
+      under: outcome.under,
       discogs: {
-        available: result.available,
-        numForSale: result.numForSale,
-        totalMxn: result.totalMxn ?? null,
-        cost: result.cost ?? null,
-        originLabel: result.originLabel ?? null,
-        shippingConfidence: result.shippingConfidence ?? null,
-        buyUrl: result.buyUrl ?? null,
-        releaseUrl: result.releaseUrl ?? null,
+        available: r.available,
+        numForSale: r.numForSale,
+        totalMxn: r.totalMxn ?? null,
+        cost: r.cost ?? null,
+        originLabel: r.originLabel ?? null,
+        shippingConfidence: r.shippingConfidence ?? null,
+        buyUrl: r.buyUrl ?? null,
+        releaseUrl:
+          r.releaseUrl ??
+          (item.releaseId ? `https://www.discogs.com/release/${item.releaseId}` : null),
+        releaseId: r.discogsId ?? null,
+        reason: r.matched ? null : (r.unmatchedReason ?? null),
       },
-      links: searchLinks(query || String(releaseId)),
+      alert: r.alert ?? null,
+      item: outcome.item,
+      links: searchLinks(query),
     });
   } catch (err) {
-    const message = err instanceof Error ? err.message : String(err);
-    console.error(`Sourcing check failed: ${message}`);
-    json(res, 500, {
-      error: /^DISCOGS_TOKEN/.test(message) ? message : "Could not check listings. See the server logs.",
-    });
+    json(res, 500, { error: publicErrorMessage(err) });
   }
 }

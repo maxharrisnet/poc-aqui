@@ -1,5 +1,5 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
-import { runDemo, runSearch, runWatchlist, MAX_QUERIES } from "../src/run.js";
+import { runDemo, runSearch, runWatched, MAX_QUERIES } from "../src/run.js";
 import { publicSheetsError } from "../src/sheets.js";
 
 /**
@@ -43,11 +43,9 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
   const publicErrorMessage = (err: unknown): string => {
     const message = err instanceof Error ? err.message : String(err);
     console.error(`Stream run failed: ${message}`);
-    // Config guidance carries no secrets and is how an operator diagnoses a
-  // broken deploy: pass it through rather than hiding it behind the log.
-  if (/^(DISCOGS_TOKEN|GOOGLE_|WATCHLIST_SHEET_ID|INVENTORY_SHEET_ID)/.test(message)) return message;
-  const sheets = publicSheetsError(message);
-  if (sheets) return sheets;
+    if (/^(DISCOGS_TOKEN|GOOGLE_|INVENTORY_SHEET_ID)/.test(message)) return message;
+    const sheets = publicSheetsError(message);
+    if (sheets) return sheets;
     return "Request failed. Check the server logs.";
   };
 
@@ -64,7 +62,7 @@ export default async function handler(req: IncomingMessage, res: ServerResponse)
             (r) => send("result", r),
           )
         : mode === "watchlist"
-          ? await runWatchlist(
+          ? await runWatched(
               (e) => send("progress", e),
               (r) => send("result", r),
             )

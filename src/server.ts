@@ -20,7 +20,6 @@ type ApiHandler = (req: IncomingMessage, res: ServerResponse) => Promise<void> |
 const ROUTES: Record<string, () => Promise<{ default: ApiHandler }>> = {
   "/api/stream": () => import("../api/stream.js"),
   "/api/results": () => import("../api/results.js"),
-  "/api/watchlist": () => import("../api/watchlist.js"),
   "/api/inventory": () => import("../api/inventory.js"),
   "/api/sourcing": () => import("../api/sourcing.js"),
 };
