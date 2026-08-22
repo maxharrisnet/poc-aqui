@@ -152,15 +152,52 @@
 
     /* ---------------------------------------------------- top bar */
 
-    /* Empty while dark mode is parked; it exists only to hold that toggle when
-       it comes back, so it takes no vertical space in the meantime. */
     .topbar {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 14px;
       flex-wrap: wrap;
-      padding: 18px 0 0;
+      padding: 16px 0 14px;
+    }
+
+    .brand {
+      display: block;
+      padding: 0;
+      border: 0;
+      background: none;
+      line-height: 0;
+      cursor: pointer;
+    }
+
+    .brand img {
+      display: block;
+      width: 116px;
+      height: auto;
+      filter: invert(var(--logo-invert));
+      transition: opacity 120ms ease;
+    }
+
+    .brand:hover img {
+      opacity: 0.7;
+    }
+
+    .brand:focus-visible {
+      outline: 2px solid var(--ink);
+      outline-offset: 4px;
+    }
+
+    /* Home's own hero is this mark at full size, and the two of them stacked
+       read as a mistake. Hidden rather than removed, so the bar keeps its
+       height and the tabs do not jump on the way back. */
+    .brand.is-home {
+      visibility: hidden;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .brand img {
+        transition: none;
+      }
     }
 
     .wordmark span {
@@ -299,6 +336,19 @@
       cursor: pointer;
     }
 
+    /* Icon in place of a word, so the way back does not spend a whole tab's
+       worth of the row on saying so. The glyph sits on the same baseline the
+       words do rather than centred in the taller box they set. */
+    .tab-icon {
+      display: inline-flex;
+      align-items: flex-end;
+      padding-bottom: 9px;
+    }
+
+    .tab-icon svg {
+      display: block;
+    }
+
     @media (max-width: 720px) {
       .tabs {
         gap: 18px;
@@ -364,7 +414,7 @@
     /* The landing page: what this is, then four doors. Centred, because it is
        the one screen with nothing to scan down a column. */
     .splash {
-      padding: 40px 0 24px;
+      padding: 14px 0 24px;
       text-align: center;
     }
 
@@ -3598,7 +3648,14 @@
   <div class="shell">
 
     <header class="topbar">
-      <div></div>
+      <!-- The mark doubles as the way back, which is where everyone reaches
+           for it anyway. The Home tab stays in the tablist beside it, so the
+           panel is reachable by keyboard in the same order as the rest. -->
+      <!-- is-home from the start: the page opens on home, and selectTab keeps
+           the class in step from there. -->
+      <button class="brand is-home" id="brand" type="button" aria-label="Aquí Ahora: home">
+        <img src="/aqui-ahora-logo.png" alt="" width="1093" height="597">
+      </button>
       <div class="topbar-right">
         <!--
         <button class="theme" id="theme" type="button" aria-label="Switch to dark mode">
@@ -3615,7 +3672,12 @@
     </header>
 
     <div class="tabs" role="tablist">
-      <button class="tab" id="tab-home" role="tab" aria-selected="true" aria-controls="panel-home">Home</button>
+      <button class="tab tab-icon" id="tab-home" role="tab" aria-selected="true" aria-controls="panel-home" aria-label="Home" title="Home">
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 10.6 12 3.6l9 7"/>
+          <path d="M5.7 9.3V20.4h12.6V9.3"/>
+        </svg>
+      </button>
       <button class="tab" id="tab-inv" role="tab" aria-selected="false" aria-controls="panel-inv">Inventory</button>
       <button class="tab" id="tab-desk" role="tab" aria-selected="false" aria-controls="panel-desk">Buying desk</button>
       <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
@@ -3774,7 +3836,7 @@
           <li><strong>Add records by name</strong> under <em>Add records</em>. Each one is looked up on Discogs and joins the list as wanted, with its watch switched on, so the next sweep looks for a copy. Pressing <em>Watch</em> on the buying desk does the same.</li>
           <li><strong>Open a row</strong> for its margin, its watch and alert settings, the best price seen for it, and where a copy could be bought. Folded, a row is a sleeve, a name, a count and a price, so a few hundred of them still scan.</li>
           <li><strong>Say when to start looking</strong> under <em>Watch when stock hits</em>. Fall to that count and the record arms its own watch: that's the loop the <button class="lnk-inline" type="button" data-goto="flow">system diagram</button> turns on.</li>
-          <li><strong>Say what's worth interrupting you for</strong> under <em>Alert under</em>: the landed price below which a copy is worth a text. Nothing here buys anything, so the alert exists to put a person in front of the decision.</li>
+          <li><strong>Say what's worth interrupting you for</strong> under <em>Alert under</em>: the landed price below which a copy is worth a text. The alert puts the decision in front of you while the copy is still there, and whether this one is worth having is your call.</li>
           <li><strong>Press Check listings now</strong> to price every watched pressing of a record this second, or <em>Check my watchlist</em> to do that for everything being watched. Discogs comes back with a real landed figure; the other platforms open as searches, because their APIs aren't built yet. Read it alongside <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</li>
           <li id="inv-sheet-item" hidden><strong>Stock and watches live in one Google Sheet</strong>: <a id="inv-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand. A record the shop wants is a row with no copies yet. Stock counts belong in a real database eventually; the sheet is what got the demo standing up.</li>
         </ul>
@@ -3947,7 +4009,7 @@
         <ul class="t-bullets">
           <li><strong>Sales pull stock down.</strong> Low stock switches a record's watch back on by itself.</li>
           <li><strong>Watched records drive the sources.</strong> Four places to find a copy, two to confirm which record it is, one engine to price it in pesos.</li>
-          <li><strong>A person buys.</strong> Nothing here spends money by itself. The parcel that lands becomes stock, and the loop closes.</li>
+          <li><strong>A person buys.</strong> The shortlist arrives priced and ranked, and which copy is actually worth having is a judgement call. The parcel that lands becomes stock, and the loop closes.</li>
         </ul>
 
         <div class="status-key">
@@ -3963,7 +4025,7 @@
 
         <ul class="t-bullets">
           <li><strong>❓ Two boxes are still unproven.</strong> Matching: is this eBay listing the same record as that Discogs pressing? Barcodes help, free text doesn't. And intake: a parcel lands weeks after the buy and has to become a stock row without anyone retyping it.</li>
-          <li><strong>🧍 One step is manual on purpose.</strong> The system shortlists and prices, then stops. Ian reads the seller, the condition and the photos, and buys or doesn't. That judgement is what makes the shortlist worth having.</li>
+          <li><strong>🧍 The last step belongs to a person, by design.</strong> The system shortlists and prices, then stops. Ian reads the seller, the condition and the photos, and buys or doesn't. That judgement is what makes the shortlist worth having.</li>
           <li><strong>⏱ Nothing waits for a button.</strong> Today a record is priced when someone presses <em>Check listings now</em> on its row. In the finished system a scheduled sweep does that for every watched record a few times a day, and the only thing that reaches a person is a copy under its alert price. The button stays, because whoever is at the counter should not have to wait for the next run.</li>
           <li><strong>📋 One table, in a sheet for now.</strong> Stock and watches are one row per title: a record the shop wants is a row with no copies yet, and a sweep prices every row whose watch is on. It lives in Google Sheets because that's the tool Ian already works in, and a row is faster to fix than any form. Stock the shop floor depends on will need a real database eventually, with the locking, history and constraints a sheet can't offer.</li>
         </ul>
@@ -4331,6 +4393,8 @@
         // Narrow screens scroll this row, and a cross-tab link can select a tab
         // sitting off the visible end of it.
         $('tab-' + which).scrollIntoView({ block: 'nearest', inline: 'nearest' });
+        // The mark in the bar steps aside for the one on the page below it.
+        $('brand').classList.toggle('is-home', which === 'home');
         // Repaint on entry: a sweep or a Watch press on the desk moves this list.
         if (which === 'inv') renderInventory();
       }
@@ -4349,6 +4413,13 @@
           // couple of thousand pixels after it just makes the link feel slow.
           target.scrollIntoView({ block: 'start' });
         });
+      });
+
+      /** The mark in the top bar is the way home, which is where a person
+       *  reaches for it whatever the tabs say. */
+      $('brand').addEventListener('click', () => {
+        selectTab('home');
+        window.scrollTo({ top: 0 });
       });
 
       /** The home tiles. A tile is the same door as its tab, so it goes through
@@ -5225,8 +5296,8 @@
             'decides which of the copies found are worth a text. When one turns up under ' +
             'that limit the desk gets a message. The two switches move together: texting ' +
             'on starts the watch, and stopping the watch stops the texts.',
-          why: 'Nothing here buys anything. The alert exists to put a person in front of ' +
-            'the decision while the copy is still there.',
+          why: 'It puts the decision in front of you while the copy is still there. ' +
+            'Whether this seller and this sleeve are worth it is your call to make.',
         },
           '<p class="inv-status" data-istatus="' + id + '">' + invWatchStatus(item) + '</p>' +
           // Switches first, then the numbers that qualify them: whether to look
@@ -6089,8 +6160,8 @@
             'pressing of it. The peso limit decides which copies found are worth a ' +
             'text. The two switches move together: texting on starts the watch, ' +
             'and stopping the watch stops the texts.',
-          why: 'Nothing here buys anything. The alert exists to put a person in front ' +
-            'of the decision while the copy is still there.',
+          why: 'It puts the decision in front of you while the copy is still there. ' +
+            'Whether this seller and this sleeve are worth it is your call to make.',
         },
           '<p class="inv-status" data-deskstatus="' + rid + '">' + deskStatusChips(rid) + '</p>' +
           '<div class="inv-toggles">' +
