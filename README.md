@@ -249,10 +249,13 @@ because they're necessarily what Ian would watch:
 
 ## The interface
 
-Four tabs. **Buying desk** prices; **Inventory** is every record the shop owns
-or wants, with its watches; **How it works** explains the whole chain in eight
-steps so the client can understand it without us narrating; **Technical** is
-every moving part, what it runs on and what it costs.
+Four tabs, and the page opens on the first. **Inventory** is every record the
+shop owns or wants, with its watches; **Buying desk** prices; **How it works**
+explains the whole chain in eight steps so the client can understand it
+without us narrating; **Technical** is every moving part, what it runs on and
+what it costs. A record is drawn the same way on both working tabs: sleeve,
+title, one figure, and the eye and phone switches that watch it and text about
+it.
 
 On the desk you can either type up to ten records into the search rows, or
 press **Use the demo list** for the eight curated pressings. Results stream

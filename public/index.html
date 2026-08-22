@@ -365,8 +365,8 @@
       padding: 48px 0 30px;
     }
 
-    /* Desk hero: logo left, copy right. The "How it works" hero has no logo
-     and keeps the plain single-column flow. */
+    /* The landing hero, on the Inventory tab: logo left, copy right. Every
+     other tab opens on a text headline in the plain single-column flow. */
     .hero:has(.hero-logo) {
       display: grid;
       grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
@@ -414,7 +414,7 @@
       font-weight: 700;
     }
 
-    /* "How it works" still uses a text headline. */
+    /* The text headline the other tabs open on. */
     .hero h1:not(.hero-logo) {
       font-family: var(--display);
       font-size: clamp(2.3rem, 6vw, 3.8rem);
@@ -784,17 +784,24 @@
       margin-top: 40px;
     }
 
-    /* The row itself is the grid, so the sleeve can stretch the full height of
-     the header + bar + meta block. The detail panel sits on its own track. */
+    /* The desk row is the inventory row with a cost bar under the title: same
+       sleeve, same head, same price column, same switches, so a record reads
+       the same on both tabs. The bar and the tags take a second and third
+       line to the right of the sleeve; the detail panel sits on its own
+       track below. */
     .row {
       display: grid;
-      grid-template-columns: 2.2rem 86px minmax(0, 1fr) auto;
+      grid-template-columns: 46px minmax(0, 1fr) auto auto;
       grid-template-areas:
-        "rank thumb main   watch"
-        ".    .     detail detail";
-      column-gap: 14px;
+        "thumb head   price  watch"
+        "thumb bar    bar    bar"
+        "thumb meta   meta   meta"
+        ".     detail detail detail";
+      column-gap: 12px;
+      align-items: center;
       border-top: 1px solid var(--kraft-deep);
-      padding: 17px 0 15px;
+      padding: 9px 0 11px 12px;
+      box-shadow: inset 3px 0 0 transparent;
     }
 
     .row:last-child {
@@ -805,61 +812,32 @@
       opacity: 0.72;
     }
 
-    .row-rank {
-      grid-area: rank;
+    /* The sleeve tops the three lines rather than floating between them. A
+       miss has no bar and no tags, so there it sits centred like an inventory
+       row's. */
+    .row .inv-thumb,
+    .row .inv-thumb-none {
       align-self: start;
-      padding-top: 3px;
+      margin-top: 3px;
     }
 
-    .row-main {
-      grid-area: main;
-      min-width: 0;
+    .row.is-miss .inv-thumb,
+    .row.is-miss .inv-thumb-none {
+      align-self: center;
+      margin-top: 0;
     }
 
-    .watch-btn {
-      grid-area: watch;
-      align-self: start;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      padding: 6px 10px;
-      border: 1.5px solid var(--kraft-deep);
-      border-radius: 2px;
-      background: transparent;
-      color: var(--carbon);
-      cursor: pointer;
-      white-space: nowrap;
-      min-width: 6.5rem;
-      text-align: center;
+    .row .bar {
+      grid-area: bar;
+      margin: 9px 0 0;
     }
 
-    .watch-btn:hover:not([disabled]) {
-      border-color: var(--ink);
-      color: var(--ink);
+    .row .row-meta {
+      grid-area: meta;
     }
 
-    .watch-btn:focus-visible {
-      outline: 2px solid var(--ink);
-      outline-offset: 2px;
-    }
-
-    .watch-btn[aria-pressed="true"] {
-      background: var(--ink);
-      border-color: var(--ink);
-      color: var(--kraft);
-    }
-
-    .watch-btn[disabled] {
-      opacity: 0.55;
-      cursor: progress;
-    }
-
-    .watch-btn.is-error {
-      border-color: var(--ink);
-      color: var(--ink);
-      text-decoration: underline wavy;
+    .desk-links {
+      margin: 10px 0 0;
     }
 
     .threshold {
@@ -892,16 +870,6 @@
     .threshold input:focus {
       outline: 2px solid var(--ink);
       outline-offset: -1px;
-    }
-
-    .threshold .saved {
-      color: var(--c-duty-text);
-      font-weight: 700;
-    }
-
-    .threshold .saved.is-error {
-      color: var(--ink);
-      text-decoration: underline wavy;
     }
 
     /* Sits on the threshold row: an alert with no limit set has nothing to
@@ -1294,115 +1262,15 @@
       .toast { animation: none; }
     }
 
-    /* Square and top-aligned: sleeves are square, and stretching one to the
-       row's height cropped it to a strip whenever the row grew, which is
-       exactly what watching a record does when it reveals the alert field. */
-    .row-thumb,
-    .row-thumb-none {
-      grid-area: thumb;
-      width: 86px;
-      height: 86px;
-      align-self: start;
-      border-radius: 2px;
-      background: var(--paper);
-    }
-
-    .row-thumb {
-      border: 1px solid var(--kraft-deep);
-      object-fit: cover;
-      display: block;
-    }
-
-    .row-thumb-none {
-      border: 1px dashed var(--kraft-deep);
-    }
-
-    .row-head {
-      display: grid;
-      grid-template-columns: minmax(0, 1fr) auto 1.1rem;
-      grid-template-areas: "title total caret";
-      gap: 14px;
-      align-items: baseline;
-      width: 100%;
-      background: none;
-      border: 0;
-      padding: 0;
-      text-align: left;
-      font: inherit;
-      color: inherit;
-      cursor: pointer;
-    }
-
-    .row-title {
-      grid-area: title;
-    }
-
-    .row-total {
-      grid-area: total;
-    }
-
-    .row-caret {
-      grid-area: caret;
-    }
-
-    .row-head:focus-visible {
-      outline: 2px solid var(--ink);
-      outline-offset: 4px;
-    }
-
-    .row-head[disabled] {
-      cursor: default;
-    }
-
-    .row-rank {
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      color: var(--carbon);
-      font-variant-numeric: tabular-nums;
-    }
-
-    .row-title {
-      font-weight: 700;
-      font-size: 1.2rem;
-      line-height: 1.25;
-    }
-
-    .row-artist {
-      display: block;
-      font-weight: 500;
-      color: var(--carbon);
-      font-size: 0.97rem;
-    }
-
-    .row-total {
-      font-family: var(--mono);
-      font-weight: 700;
-      font-size: 1.08rem;
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-
-    .row-total.is-none {
-      color: var(--carbon);
-      font-weight: 500;
-      font-size: 0.9rem;
-    }
-
-    .row-caret {
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      color: var(--carbon);
-      text-align: right;
-    }
-
+    /* Same frame as the inventory's pricing bar. */
     .bar {
       display: flex;
-      height: 26px;
-      margin: 12px 0 0;
+      height: 22px;
+      margin: 0;
       border: 1px solid var(--ink);
       border-radius: 2px;
       overflow: hidden;
-      background: var(--paper);
+      background: var(--kraft);
     }
 
     .bar:hover .bar-seg {
@@ -1528,48 +1396,44 @@
       background: var(--c-iva);
     }
 
-    /* Narrow screens: drop the rank and stack the price under the title, or the
-     title gets squeezed to an unreadable sliver. */
-    @media (max-width: 560px) {
+    /* Narrow screens: the same fold as an inventory row, with the bar and the
+       tags beneath. */
+    @media (max-width: 720px) {
       .row {
-        grid-template-columns: 64px minmax(0, 1fr);
+        grid-template-columns: 46px minmax(0, 1fr) auto;
         grid-template-areas:
-          "thumb main"
-          "thumb watch"
-          ".     detail";
-        column-gap: 12px;
-      }
-
-      .watch-btn {
-        justify-self: start;
-        margin-top: 8px;
-      }
-
-      .row-rank {
-        display: none;
-      }
-
-      .row-thumb,
-      .row-thumb-none {
-        width: 64px;
-        height: 64px;
-      }
-
-      .row-head {
-        grid-template-columns: minmax(0, 1fr) 1.1rem;
-        grid-template-areas:
-          "title caret"
-          "total caret";
-        gap: 3px 12px;
+          "head   head   watch"
+          "thumb  price  price"
+          "bar    bar    bar"
+          "meta   meta   meta"
+          "detail detail detail";
+        row-gap: 9px;
         align-items: start;
+      }
+
+      .row .inv-thumb,
+      .row .inv-thumb-none {
+        align-self: center;
+        margin-top: 0;
+      }
+
+      .row .inv-price {
+        min-width: 0;
+        text-align: left;
+        align-self: center;
+      }
+
+      .row .bar {
+        margin-top: 0;
       }
     }
 
+    /* Set like the inventory byline, because it is one. */
     .row-meta {
-      margin: 9px 0 0;
+      margin: 7px 0 0;
       font-family: var(--mono);
-      font-size: 0.9rem;
-      letter-spacing: 0.06em;
+      font-size: 0.78rem;
+      letter-spacing: 0.09em;
       text-transform: uppercase;
       color: var(--carbon);
       display: flex;
@@ -1601,166 +1465,6 @@
       color: var(--carbon);
       font-weight: 500;
       text-transform: lowercase;
-    }
-
-    /* ---------------------------------------------------- detail */
-
-    .detail {
-      grid-area: detail;
-      margin: 14px 0 4px;
-      padding: 18px;
-      background: var(--paper);
-      border: 1px solid var(--kraft-deep);
-      border-radius: 3px;
-    }
-
-    .detail[hidden] {
-      display: none;
-    }
-
-    .facts {
-      margin: 0;
-      display: grid;
-      grid-template-columns: auto minmax(0, 1fr);
-      gap: 5px 14px;
-      font-size: 0.97rem;
-    }
-
-    .facts dt {
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      letter-spacing: 0.09em;
-      text-transform: uppercase;
-      color: var(--carbon);
-      padding-top: 2px;
-    }
-
-    .facts dd {
-      margin: 0;
-    }
-
-    .why {
-      margin: 16px 0 0;
-      padding: 11px 13px;
-      border-left: 2px solid var(--ink);
-      background: var(--wash);
-      font-size: 0.93rem;
-      color: var(--carbon);
-    }
-
-    .why strong {
-      display: block;
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--ink);
-      margin-bottom: 3px;
-      font-weight: 600;
-    }
-
-    .costs {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 18px;
-      font-family: var(--mono);
-      font-size: 1rem;
-    }
-
-    .costs th {
-      font-size: 0.9rem;
-      font-weight: 500;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      color: var(--carbon);
-      text-align: right;
-      padding: 0 0 7px 12px;
-      border-bottom: 1px solid var(--kraft-deep);
-    }
-
-    .costs th:first-child {
-      text-align: left;
-      padding-left: 0;
-    }
-
-    .costs td {
-      padding: 7px 0 7px 12px;
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .costs td:first-child {
-      text-align: left;
-      padding-left: 0;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .costs .swatch {
-      width: 10px;
-      height: 10px;
-      border-radius: 1px;
-      flex: none;
-    }
-
-    .costs tr.total td {
-      border-top: 1px solid var(--kraft-deep);
-      font-weight: 600;
-      padding-top: 9px;
-    }
-
-    .costs .muted {
-      color: var(--carbon);
-    }
-
-    .detail-links {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-top: 17px;
-    }
-
-    .lnk {
-      font-family: var(--mono);
-      font-size: 0.9rem;
-      font-weight: 600;
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      padding: 9px 15px;
-      border: 1.5px solid var(--ink);
-      border-radius: 2px;
-      text-decoration: none;
-      color: var(--ink);
-      background: transparent;
-      transition: background 120ms ease, color 120ms ease;
-    }
-
-    .lnk:hover {
-      background: var(--ink);
-      color: var(--paper);
-    }
-
-    .lnk:focus-visible {
-      outline: 2px solid var(--ink);
-      outline-offset: 3px;
-    }
-
-    .lnk-primary {
-      background: var(--ink);
-      border-color: var(--ink);
-      color: var(--kraft);
-    }
-
-    .lnk-primary:hover {
-      background: transparent;
-      color: var(--ink);
-    }
-
-    .shipnote {
-      margin: 13px 0 0;
-      font-size: 1rem;
-      color: var(--carbon);
     }
 
     /* ---------------------------------------------------- watchlist */
@@ -3596,28 +3300,24 @@
     </header>
 
     <div class="tabs" role="tablist">
-      <button class="tab" id="tab-desk" role="tab" aria-selected="true" aria-controls="panel-desk">Buying desk</button>
-      <button class="tab" id="tab-inv" role="tab" aria-selected="false" aria-controls="panel-inv">Inventory</button>
+      <button class="tab" id="tab-inv" role="tab" aria-selected="true" aria-controls="panel-inv">Inventory</button>
+      <button class="tab" id="tab-desk" role="tab" aria-selected="false" aria-controls="panel-desk">Buying desk</button>
       <button class="tab tab-info" id="tab-hiw" role="tab" aria-selected="false" aria-controls="panel-hiw">How it works</button>
       <button class="tab tab-info" id="tab-tech" role="tab" aria-selected="false" aria-controls="panel-tech">Technical</button>
     </div>
 
     <!-- ========================= BUYING DESK ========================= -->
-    <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk">
+    <div class="panel" id="panel-desk" role="tabpanel" aria-labelledby="tab-desk" hidden>
 
       <section class="hero">
-        <h1 class="hero-logo">
-          <img src="/aqui-ahora-logo.png" alt="Aquí Ahora: Vinyl Art + Culture">
-        </h1>
-        <div class="hero-copy">
-          <p class="lede"><strong>A buying desk for importing vinyl into Mexico.</strong> It looks up each record on Discogs and adds shipping, duty and IVA to the listed price, so you see the real landed cost before you buy.</p>
-          <ul class="howto">
-            <li><strong>Type up to ten records</strong>: artist and title, then press <em>Check these records</em>. No list of your own? Press <em>Use the demo list</em>.</li>
-            <li><strong>Read the price as one number.</strong> Every result is the total to get that record to your door, cheapest first.</li>
-            <li><strong>Hover the coloured bar</strong> to see what each part of that total costs, or open a row for the full breakdown and a link to the listing.</li>
-            <li><strong>Press Watch to keep a record.</strong> It joins the inventory as wanted; set a peso limit and it tells you when a copy drops under it.</li>
-          </ul>
-        </div>
+        <h1>What it costs to land.</h1>
+        <p class="lede"><strong>A buying desk for importing vinyl into Mexico.</strong> It looks up each record on Discogs and adds shipping, duty and IVA to the listed price, so you see the real landed cost before you buy.</p>
+        <ul class="howto">
+          <li><strong>Type up to ten records</strong>: artist and title, then press <em>Check these records</em>. No list of your own? Press <em>Use the demo list</em>.</li>
+          <li><strong>Read the price as one number.</strong> Every result is the total to get that record to your door, cheapest first.</li>
+          <li><strong>Hover the coloured bar</strong> to see what each part of that total costs, or open a row for the full breakdown and a link to the listing.</li>
+          <li><strong>Press the eye to watch a record.</strong> It joins the inventory as wanted; open the row to set a peso limit, and it tells you when a copy drops under it.</li>
+        </ul>
       </section>
 
       <section class="search">
@@ -3672,11 +3372,14 @@
     </div>
 
     <!-- ========================= INVENTORY ========================= -->
-    <div class="panel" id="panel-inv" role="tabpanel" aria-labelledby="tab-inv" hidden>
+    <div class="panel" id="panel-inv" role="tabpanel" aria-labelledby="tab-inv">
 
       <section class="hero">
-        <h1>What's on the shelf.</h1>
-        <p class="lede"><strong>Every copy the shop owns</strong>: what it cost to land, what it's priced at, and how many are left. Tell a record when to start looking and what price is worth waking you for, and it does the looking copy.</p>
+        <h1 class="hero-logo">
+          <img src="/aqui-ahora-logo.png" alt="Aquí Ahora: Vinyl Art + Culture">
+        </h1>
+        <div class="hero-copy">
+        <p class="lede"><strong>What's on the shelf, and what the shop is looking for.</strong> Every copy it owns: what it cost to land, what it's priced at, and how many are left. Tell a record when to start looking and what price is worth waking you for, and it does the looking.</p>
         <ul class="howto">
           <li><strong>Adjust stock with &minus; and +</strong> as copies sell or a parcel lands. Every change writes straight to the sheet.</li>
           <li><strong>Add records by name</strong> under <em>Add records</em>. Each one is looked up on Discogs and joins the list as wanted, with its watch switched on, so the next sweep looks for a copy. Pressing <em>Watch</em> on the buying desk does the same.</li>
@@ -3686,6 +3389,7 @@
           <li><strong>Press Check listings now</strong> to price every watched pressing of a record this second, or <em>Check my watchlist</em> to do that for everything being watched. Discogs comes back with a real landed figure; the other platforms open as searches, because their APIs aren't built yet. Read it alongside <button class="lnk-inline" type="button" data-goto="trust">what's real and what isn't</button>.</li>
           <li id="inv-sheet-item" hidden><strong>Stock and watches live in one Google Sheet</strong>: <a id="inv-sheet" href="#" target="_blank" rel="noopener noreferrer">open it</a> to read or edit the rows by hand. A record the shop wants is a row with no copies yet. Stock counts belong in a real database eventually; the sheet is what got the demo standing up.</li>
         </ul>
+        </div>
       </section>
 
       <div class="inv-summary" id="inv-summary"></div>
@@ -4214,7 +3918,7 @@
 
       // ------------------------------------------------ tabs
 
-      const TABS = ['desk', 'inv', 'hiw', 'tech'];
+      const TABS = ['inv', 'desk', 'hiw', 'tech'];
 
       function selectTab(which) {
         TABS.forEach((t) => {
@@ -4412,9 +4116,10 @@
         state.pendingWatch.add(releaseId);
 
         const wasWatched = state.watched.has(releaseId);
+        // Disabled is the in-flight state: the button's own styling shows it,
+        // and an icon has no room for a word.
         btn.disabled = true;
         btn.classList.remove('is-error');
-        btn.textContent = wasWatched ? 'Removing…' : 'Adding…';
 
         try {
           if (wasWatched) {
@@ -4459,10 +4164,14 @@
           refreshWatchControls();
           // Re-read rather than patching a local copy: adding one pressing can
           // add every pressing of the master, and the sheet is the record.
-          loadInventory().then(() => { renderInventory(); refreshWatchControls(); });
+          // Awaited, so whatever a caller does next (texting on, straight
+          // after watching) starts from the row as the sheet has it instead of
+          // racing this read and losing to it.
+          await loadInventory();
+          renderInventory();
+          refreshWatchControls();
         } catch (err) {
           btn.classList.add('is-error');
-          btn.textContent = 'Failed';
           setTimeout(() => { btn.classList.remove('is-error'); refreshWatchControls(); }, 2500);
         } finally {
           state.pendingWatch.delete(releaseId);
@@ -4470,38 +4179,82 @@
         }
       }
 
-      /**
-       * Repaints every visible watch control from state. Watching one pressing can
-       * add several release ids at once (all pressings of a master), so the clicked
-       * button is never the only one that needs updating.
-       */
-      function refreshWatchControls(root) {
-        (root || document).querySelectorAll('.watch-btn').forEach((btn) => {
-          const releaseId = Number(btn.dataset.release);
-          if (state.pendingWatch.has(releaseId)) return;   // mid-flight, leave its label alone
-          const watched = state.watched.has(releaseId);
-          btn.setAttribute('aria-pressed', String(watched));
-          btn.textContent = watched ? 'Watching' : 'Watch';
-          const row = btn.closest('.row');
-          const field = row ? row.querySelector('.threshold') : null;
-          if (field) {
-            field.hidden = !watched;
-            // The limit can change on the Inventory tab while this row is on
-            // screen. Leave a field someone is typing in alone.
-            const input = field.querySelector('input');
-            if (input && document.activeElement !== input) {
-              const limit = state.thresholds.get(releaseId);
-              input.value = limit == null ? '' : String(limit);
-            }
-          }
-          // Un-watching drops the record's alert with it, so the button must
-          // not still read "SMS on" if the same record is watched again.
-          const alertBtn = row ? row.querySelector('.alert-toggle') : null;
-          if (alertBtn) paintAlertToggle(alertBtn, !!state.alerts.get(releaseId));
-        });
+      /** The inventory row covering a release: the shelf pressing itself or any
+       *  watched pressing of the same album. */
+      function invForRelease(releaseId) {
+        return (state.invItems || []).find((i) =>
+          i.active !== false && (i.releaseId === releaseId || sweepIds(i).includes(releaseId))) || null;
       }
 
-      // ------------------------------------------------ watchlist tab
+      /** Context chips for a desk row: what the inventory already knows about
+       *  this record, and the one silent way its alert can be inert. */
+      function deskStatusChips(releaseId) {
+        const inv = invForRelease(releaseId);
+        const chips = [];
+        if (inv && inv.qty > 0) {
+          chips.push([icon('box') + 'On the shelf, ' + inv.qty + (inv.qty === 1 ? ' copy' : ' copies'), false]);
+        } else if (inv && invWanted(inv)) {
+          chips.push([icon('flag') + 'Wanted', false]);
+        } else if (inv) {
+          chips.push([icon('flag') + 'Out of stock', true]);
+        }
+        if (state.watched.has(releaseId) && state.thresholds.get(releaseId) == null) {
+          chips.push([icon('warn') + 'No alert price, every copy qualifies', true]);
+        }
+        return chips
+          .map(([t, warn]) => '<span class="wchip' + (warn ? ' is-warn' : '') + '">' + t + '</span>')
+          .join('');
+      }
+
+      /**
+       * Repaints one desk row's watch, SMS and limit controls from state.
+       *
+       * The folded icon buttons and the open panel's switches are painted
+       * together, so they can never disagree. Watching one pressing can add
+       * several release ids at once (all pressings of a master), which is why
+       * callers repaint every row rather than the one that was clicked.
+       */
+      function paintDeskRow(row) {
+        const releaseId = Number(row.dataset.release);
+        if (!releaseId || state.pendingWatch.has(releaseId)) return;   // mid-flight, leave it alone
+        const watched = state.watched.has(releaseId);
+        const alerting = !!state.alerts.get(releaseId);
+        const label = row.dataset.label || 'this record';
+
+        row.querySelectorAll('.watch-btn').forEach((btn) => {
+          btn.setAttribute('aria-pressed', String(watched));
+          if (btn.classList.contains('icon-btn')) {
+            btn.setAttribute('aria-label', (watched ? 'Watching ' : 'Watch ') + label);
+            btn.title = watched ? 'Watching for a copy' : 'Watch for a copy';
+          } else {
+            btn.innerHTML = invWatchLabel(watched);
+          }
+        });
+        row.querySelectorAll('[data-alert-release]').forEach((btn) => paintAlertToggle(btn, alerting));
+
+        const field = row.querySelector('.threshold');
+        if (field) {
+          field.hidden = !watched;
+          // The limit can change on the Inventory tab while this row is on
+          // screen. Leave a field someone is typing in alone.
+          const input = field.querySelector('input');
+          if (input && document.activeElement !== input) {
+            const limit = state.thresholds.get(releaseId);
+            input.value = limit == null ? '' : String(limit);
+          }
+        }
+        const hint = row.querySelector('[data-watchhint]');
+        if (hint) hint.hidden = watched;
+        const status = row.querySelector('[data-deskstatus]');
+        if (status) status.innerHTML = deskStatusChips(releaseId);
+      }
+
+      /** Repaints every desk row from state. */
+      function refreshWatchControls(root) {
+        (root || document).querySelectorAll('.row[data-release]').forEach(paintDeskRow);
+      }
+
+      // ------------------------------------------------ shared formatting
 
       function ago(iso) {
         const then = iso ? Date.parse(iso) : NaN;
@@ -4539,9 +4292,14 @@
         return moneyMxn(mxn).replace(/\.\d\d(?= )/, '');
       }
 
+      /** Paints an SMS switch from its state. The folded row's icon button and
+       *  the open panel's labelled switch share the state and this painter. */
       function paintAlertToggle(btn, on) {
         btn.setAttribute('aria-pressed', on ? 'true' : 'false');
-        btn.innerHTML = on ? '&#9679; SMS on' : 'SMS off';
+        btn.title = invAlertTitle(on);
+        btn.innerHTML = btn.classList.contains('icon-btn')
+          ? icon(on ? 'phone' : 'phoneOff')
+          : invAlertLabel(on);
       }
 
       /**
@@ -4567,12 +4325,19 @@
         const next = !now;
 
         const apply = (on) => {
-          if (item) item.alertSms = on;
           releaseIds.forEach((rid) => {
             if (on) state.alerts.set(rid, true);
             else state.alerts.delete(rid);
           });
           paintAlertToggle(btn, on);
+          // The row holds a second copy of this switch, in the open panel.
+          const row = btn.closest('.row');
+          if (row) paintDeskRow(row);
+          // And the Inventory tab holds a third, on the record's own row.
+          if (item) {
+            item.alertSms = on;
+            repaintInvRow(item);
+          }
         };
 
         apply(next);
@@ -5826,54 +5591,119 @@
         $('legend').hidden = false;
       }
 
+      /** The open panel of a desk row: the same sections an inventory row
+       *  opens into, so a record reads the same way on both tabs. */
       function detailHtml(r, id) {
-        const labels = (r.labels || []).map((l) => esc(l.name) + (l.catno ? ': ' + esc(l.catno) : '')).join('<br>');
-        const tags = [...(r.genres || []), ...(r.styles || [])].map(esc).join(' · ');
-
-        const facts =
-          '<dl class="facts">' +
-          (r.artist ? '<dt>Artist</dt><dd>' + esc(r.artist) + '</dd>' : '') +
-          (r.title ? '<dt>Title</dt><dd>' + esc(r.title) + '</dd>' : '') +
-          (r.labels && r.labels.length ? '<dt>Label</dt><dd>' + labels + '</dd>' : '') +
-          (r.format ? '<dt>Format</dt><dd>' + esc(r.format) + '</dd>' : '') +
-          (r.year ? '<dt>Year</dt><dd>' + esc(r.year) + '</dd>' : '') +
-          (r.originLabel ? '<dt>Pressed</dt><dd>' + esc(r.originLabel) +
-            (r.originApproximate ? ' <span class="tag-approx">(approx.)</span>' : '') + '</dd>' : '') +
-          (tags ? '<dt>Style</dt><dd>' + tags + '</dd>' : '') +
-          '<dt>For sale</dt><dd>' + r.numForSale + ' cop' + (r.numForSale === 1 ? 'y' : 'ies') + ' on Discogs</dd>' +
-          '</dl>';
-
-        const why = r.note
-          ? '<p class="why"><strong>Why this record is in the demo</strong>' + esc(r.note) + '</p>'
-          : '<p class="why"><strong>You searched for</strong>' + esc(r.requested) + '</p>';
+        const rid = r.discogsId || 0;
+        const watched = rid ? state.watched.has(rid) : false;
+        const alerting = rid ? !!state.alerts.get(rid) : false;
+        const limit = rid ? state.thresholds.get(rid) : undefined;
+        const none = (text) => '<span class="fact-none">' + text + '</span>';
 
         let costs = '';
         if (r.cost) {
           const total = r.cost.totalUsd;
-          costs =
-            '<table class="costs"><thead><tr>' +
-            '<th>Component</th><th>Share</th><th>' + (state.currency === 'USD' ? 'USD' : 'MXN') + '</th>' +
-            '</tr></thead><tbody>' +
-            SEGMENTS.map((s) => {
-              const v = r.cost[s.key];
-              return '<tr><td><span class="swatch" style="background:' + s.color + '"></span>' + s.label + '</td>' +
-                '<td class="muted">' + (v / total * 100).toFixed(1) + '%</td>' +
-                '<td>' + esc(moneyBare(v)) + '</td></tr>';
-            }).join('') +
-            '<tr class="total"><td>Landed total</td><td></td><td>' + esc(money(total)) + '</td></tr>' +
-            '</tbody></table>' +
-            (r.shippingNote ? '<p class="shipnote">Shipping: ' + esc(r.shippingNote) + '</p>' : '');
+          costs = invSection('tag', 'Landed cost', {
+            what: 'The listed price plus what it takes to get the copy to the shop: ' +
+              'shipping, then duty and IVA on the way into Mexico.',
+            why: 'One figure a person can compare across records, and the same one ' +
+              'the Inventory tab quotes for this pressing.',
+          },
+            '<div class="pbar-key">' +
+            SEGMENTS.map((s) =>
+              '<span class="pkey"><i style="background:' + s.color + '"></i>' + s.label +
+              '<b>' + esc(money(r.cost[s.key])) + '</b>' +
+              '<em>' + Math.round(r.cost[s.key] / total * 100) + '%</em></span>').join('') +
+            '<span class="pkey is-total">Landed<b>' + esc(money(total)) + '</b></span>' +
+            '</div>' +
+            (r.shippingNote ? '<p class="inv-note">Shipping: ' + esc(r.shippingNote) + '</p>' : ''));
         }
 
-        const links = r.buyUrl
-          ? '<div class="detail-links">' +
-          '<a class="lnk lnk-primary" href="' + esc(r.buyUrl) + '" target="_blank" rel="noopener noreferrer">Buy on Discogs</a>' +
-          '<a class="lnk" href="' + esc(r.releaseUrl) + '" target="_blank" rel="noopener noreferrer">Release details</a>' +
-          '</div>'
-          : '';
+        const watch = !rid ? '' : invSection('bell', 'Watch & alerts', {
+          what: 'Watch adds this record to the inventory as wanted and sweeps every ' +
+            'pressing of it. The peso limit decides which copies found are worth a ' +
+            'text. The two switches move together: texting on starts the watch, ' +
+            'and stopping the watch stops the texts.',
+          why: 'Nothing here buys anything. The alert exists to put a person in front ' +
+            'of the decision while the copy is still there.',
+        },
+          '<p class="inv-status" data-deskstatus="' + rid + '">' + deskStatusChips(rid) + '</p>' +
+          '<div class="inv-toggles">' +
+          '<button class="alert-toggle is-watch watch-btn" type="button" data-release="' + rid + '" ' +
+          'aria-pressed="' + (watched ? 'true' : 'false') + '" title="Look for a copy of this record">' +
+          invWatchLabel(watched) + '</button>' +
+          '<button class="alert-toggle" type="button" data-alert-release="' + rid + '" ' +
+          'aria-pressed="' + (alerting ? 'true' : 'false') + '" title="' + invAlertTitle(alerting) + '">' +
+          invAlertLabel(alerting) + '</button>' +
+          '</div>' +
+          '<p class="inv-note is-none" data-watchhint' + (watched ? ' hidden' : '') + '>' +
+          'Watch this record to set a peso limit on it.</p>' +
+          '<div class="threshold is-inv"' + (watched ? '' : ' hidden') + '>' +
+          '<label for="th-' + id + '">' + icon('bell') + 'Alert under</label>' +
+          '<span class="field-money">' +
+          '<span class="field-pre" aria-hidden="true">$</span>' +
+          '<input class="is-money" id="th-' + id + '" type="number" inputmode="decimal" ' +
+          'min="0" step="1" placeholder="0.00" data-release="' + rid + '" ' +
+          'value="' + (limit == null ? '' : esc(limit)) + '">' +
+          '<span class="field-post" aria-hidden="true">MXN</span>' +
+          '</span>' +
+          '</div>');
 
-        return '<div class="detail" id="' + id + '" hidden>' +
-          facts + why + costs + links + '</div>';
+        const labels = (r.labels || [])
+          .map((l) => esc(l.name) + (l.catno ? ': ' + esc(l.catno) : '')).join('<br>');
+        const styles = [...(r.genres || []), ...(r.styles || [])].map(esc).join(' &middot; ');
+        const pressed = [
+          r.year ? esc(r.year) : '',
+          r.originLabel
+            ? esc(r.originLabel) + (r.originApproximate ? ' <span class="tag-approx">approx.</span>' : '')
+            : '',
+        ].filter(Boolean).join(' &middot; ');
+
+        const details = invSection('disc', 'Record details', {
+          what: 'Which pressing this is and where it was made. Origin is the pressing ' +
+            'country, because the official Discogs API does not say where the seller is.',
+        },
+          '<div class="facts-grid">' +
+          invFact('tag', 'Label', labels || none('Unknown')) +
+          invFact('disc', 'Format', r.format ? esc(r.format) : none('Unknown')) +
+          invFact('calendar', 'Pressed', pressed || none('Unknown')) +
+          invFact('note', 'Style', styles || none('Untagged')) +
+          invFact('box', 'For sale', r.numForSale + ' cop' + (r.numForSale === 1 ? 'y' : 'ies') + ' on Discogs') +
+          '</div>');
+
+        // The alert price is checked against the landed total, so the offer can
+        // say whether this copy already clears it.
+        const under = !!(r.cost && limit != null && r.totalMxn != null && r.totalMxn <= limit);
+        const buy = !r.buyUrl ? '' : invSection('cart', 'Where to buy', {
+          what: 'The Discogs listing this price came from. The other platforms are ' +
+            'not wired in yet; the Inventory tab opens them as searches.',
+        },
+          '<div class="offers">' + offerHtml({
+            platform: 'Discogs', iconName: 'disc',
+            url: r.buyUrl,
+            price: r.cost ? money(r.cost.totalUsd) : null,
+            live: true,
+            under: under,
+            note: r.cost
+              ? [
+                'Landed in Mexico',
+                r.numForSale + (r.numForSale === 1 ? ' copy' : ' copies') + ' listed',
+                r.originLabel ? 'pressed in ' + esc(r.originLabel) : '',
+                under ? '<b>under your alert price</b>' : '',
+              ].filter(Boolean).join(' &middot; ')
+              : 'No copies listed right now',
+          }) + '</div>' +
+          (r.releaseUrl
+            ? '<p class="desk-links"><a class="inv-link" href="' + esc(r.releaseUrl) +
+              '" target="_blank" rel="noopener noreferrer">Release details on Discogs</a></p>'
+            : ''));
+
+        const why = invSection('note', r.note ? 'Why it is in the demo' : 'Your search', null,
+          '<p class="inv-note">' + esc(r.note || r.requested) + '</p>');
+
+        return '<div class="inv-detail" id="' + id + '" hidden>' +
+          costs + watch + details + buy + why +
+          '</div>';
       }
 
       // ------------------------------------------------ row meta tags
@@ -6070,44 +5900,68 @@
       bindTips(document.body, '.info-dot');
       window.addEventListener('scroll', hideFlowTip, { passive: true });
 
-      /** Sleeve thumbnail for the row header; keeps its slot even with no image. */
+      /** Sleeve for the folded row. Same slot and the same eager loading as the
+       *  inventory's: these rows render into a panel that may be hidden. */
       function thumbHtml(r) {
+        const label = esc(r.title || r.requested);
         return r.coverImage
-          ? '<img class="row-thumb" src="' + esc(r.coverImage) + '" alt="Sleeve for ' + esc(r.title || r.requested) + '" ' +
-          'onerror="this.outerHTML=\'<span class=&quot;row-thumb-none&quot;></span>\'">'
-          : '<span class="row-thumb-none"></span>';
+          ? '<img class="inv-thumb" src="' + esc(r.coverImage) + '" alt="Sleeve for ' + label + '" ' +
+            'width="46" height="46" decoding="async" ' +
+            'onerror="this.outerHTML=\'<span class=&quot;inv-thumb-none&quot;></span>\'">'
+          : '<span class="inv-thumb-none"></span>';
+      }
+
+      /** The folded row's two switches. Same buttons as an inventory row, so a
+       *  record watched here looks watched there. */
+      function deskActsHtml(r, label) {
+        const rid = r.discogsId;
+        if (!rid) return '';
+        const watched = state.watched.has(rid);
+        const alerting = !!state.alerts.get(rid);
+        return '<div class="row-acts">' +
+          '<button class="icon-btn watch-btn" type="button" data-release="' + rid + '" ' +
+          'aria-pressed="' + (watched ? 'true' : 'false') + '" ' +
+          'aria-label="' + (watched ? 'Watching ' : 'Watch ') + label + '" ' +
+          'title="' + (watched ? 'Watching for a copy' : 'Watch for a copy') + '">' + EYE_SVG + '</button>' +
+          '<button class="icon-btn is-sms" type="button" data-alert-release="' + rid + '" ' +
+          'aria-pressed="' + (alerting ? 'true' : 'false') + '" ' +
+          'aria-label="' + (alerting ? 'Texting the desk about ' : 'Text the desk about ') + label + '" ' +
+          'title="' + invAlertTitle(alerting) + '">' + icon(alerting ? 'phone' : 'phoneOff') + '</button>' +
+          '</div>';
       }
 
       function rowHtml(r, i) {
         // Keyed by release, not position. The list re-sorts between the streaming
         // pass and the final one, so an index-based id would reopen the wrong row.
         const id = 'detail-' + (r.discogsId ? 'd' + r.discogsId : 'q' + i);
-        const rank = String(i + 1).padStart(2, '0');
+        const label = esc(r.title || r.requested);
 
         if (!r.matched) {
           return '<article class="row is-miss">' +
-            '<span class="row-rank">' + rank + '</span>' +
             thumbHtml(r) +
-            '<div class="row-main">' +
-            '<button class="row-head" disabled>' +
-            '<span class="row-title">' + esc(r.requested) +
-            '<span class="row-artist">' + esc(r.unmatchedReason || 'No match') + '</span></span>' +
-            '<span class="row-total is-none">No match</span><span class="row-caret"></span>' +
+            '<button class="inv-head" type="button" disabled>' +
+            '<span class="inv-title">' + esc(r.requested) +
+            '<span class="inv-artist">' + esc(r.unmatchedReason || 'No match') + '</span></span>' +
             '</button>' +
-            '</div></article>';
+            '<div class="inv-price is-none">No match</div>' +
+            '</article>';
         }
 
+        const byline = [r.artist, r.year].filter(Boolean).map(esc).join(' &middot; ');
+        const head =
+          '<button class="inv-head" type="button" aria-expanded="false" aria-controls="' + id + '">' +
+          CARET_SVG +
+          '<span class="inv-title">' + esc(r.title) +
+          '<span class="inv-artist">' + byline + '</span></span>' +
+          '</button>';
+        const open = '<article class="row' + (r.cost ? '' : ' is-miss') + '" ' +
+          'data-release="' + (r.discogsId || '') + '" data-label="' + label + '">';
+
         if (!r.cost) {
-          return '<article class="row is-miss">' +
-            '<span class="row-rank">' + rank + '</span>' +
-            thumbHtml(r) +
-            '<div class="row-main">' +
-            '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
-            '<span class="row-title">' + esc(r.title) +
-            '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
-            '<span class="row-total is-none">None listed</span><span class="row-caret">+</span>' +
-            '</button>' +
-            '</div>' + detailHtml(r, id) + '</article>';
+          return open + thumbHtml(r) + head +
+            '<div class="inv-price is-none">None listed</div>' +
+            deskActsHtml(r, label) +
+            detailHtml(r, id) + '</article>';
         }
 
         const total = r.cost.totalUsd;
@@ -6119,51 +5973,25 @@
           r.requiresFormalEntry ? '<span class="tag-formal">⚠ Broker entry needed</span>' : '',
         ].filter(Boolean);
 
-        return '<article class="row">' +
-          '<span class="row-rank">' + rank + '</span>' +
-          thumbHtml(r) +
-          '<div class="row-main">' +
-          '<button class="row-head" aria-expanded="false" aria-controls="' + id + '">' +
-          '<span class="row-title">' + esc(r.title) +
-          '<span class="row-artist">' + esc(r.artist) + '</span></span>' +
-          '<span class="row-total">' + esc(money(total)) + '</span>' +
-          '<span class="row-caret">+</span>' +
-          '</button>' +
+        return open + thumbHtml(r) + head +
+          '<div class="inv-price">' + esc(money(total)) + '</div>' +
+          deskActsHtml(r, label) +
           '<div class="bar">' +
           SEGMENTS.map((s) => '<span class="bar-seg ' + s.cls + '" data-pct="' + (r.cost[s.key] / total * 100) +
             '" data-label="' + s.label + '" data-usd="' + r.cost[s.key] + '"></span>').join('') +
           '</div>' +
           '<div class="row-meta">' + meta.map((m) => '<span>' + m + '</span>').join('') + '</div>' +
-          '<div class="threshold"' + (state.watched.has(r.discogsId) ? '' : ' hidden') + '>' +
-          '<label for="th-' + id + '">Alert under</label>' +
-          '<input id="th-' + id + '" type="number" inputmode="decimal" min="0" step="1" ' +
-          'placeholder="MXN" data-release="' + r.discogsId + '" ' +
-          'value="' + (state.thresholds.get(r.discogsId) ?? '') + '">' +
-          '<span class="saved" data-saved="' + r.discogsId + '"></span>' +
-          '<button class="alert-toggle" type="button" data-alert-release="' + r.discogsId + '" ' +
-          'aria-pressed="' + (state.alerts.get(r.discogsId) ? 'true' : 'false') + '" ' +
-          'title="Text the buying desk when this record crosses its limit">' +
-          (state.alerts.get(r.discogsId) ? '&#9679; SMS on' : 'SMS off') + '</button>' +
-          '</div>' +
-          '</div>' +
-          (r.discogsId
-            ? '<button class="watch-btn" type="button" data-release="' + r.discogsId + '" ' +
-            'aria-pressed="' + (state.watched.has(r.discogsId) ? 'true' : 'false') + '">' +
-            (state.watched.has(r.discogsId) ? 'Watching' : 'Watch') + '</button>'
-            : '') +
           detailHtml(r, id) + '</article>';
       }
 
       function wireRows(root) {
-        root.querySelectorAll('.row-head:not([disabled])').forEach((btn) => {
+        root.querySelectorAll('.inv-head:not([disabled])').forEach((btn) => {
           btn.addEventListener('click', () => {
             const panel = document.getElementById(btn.getAttribute('aria-controls'));
             if (!panel) return;
             const open = btn.getAttribute('aria-expanded') === 'true';
             btn.setAttribute('aria-expanded', String(!open));
             panel.hidden = open;
-            const caret = btn.querySelector('.row-caret');
-            if (caret) caret.textContent = open ? '+' : '–';
           });
         });
         root.querySelectorAll('.watch-btn').forEach((btn) => {
@@ -6172,10 +6000,18 @@
             toggleWatch(btn, Number(btn.dataset.release));
           });
         });
-        root.querySelectorAll('.alert-toggle[data-alert-release]').forEach((btn) => {
-          btn.addEventListener('click', (e) => {
+        root.querySelectorAll('[data-alert-release]').forEach((btn) => {
+          btn.addEventListener('click', async (e) => {
             e.stopPropagation();
-            const watchId = state.watched.get(Number(btn.dataset.alertRelease));
+            const releaseId = Number(btn.dataset.alertRelease);
+            let watchId = state.watched.get(releaseId);
+            if (!watchId) {
+              // Asking to be texted about a record is asking for it to be looked
+              // for: the same pairing the Inventory tab makes.
+              const watchBtn = btn.closest('.row').querySelector('.watch-btn');
+              await toggleWatch(watchBtn, releaseId);
+              watchId = state.watched.get(releaseId);
+            }
             if (watchId) toggleAlertSms(btn, watchId);
           });
         });
@@ -6184,12 +6020,11 @@
           input.addEventListener('change', async () => {
             const releaseId = Number(input.dataset.release);
             const watchId = state.watched.get(releaseId);
-            const flag = root.querySelector('[data-saved="' + releaseId + '"]');
             if (!watchId) return;
             const raw = input.value.trim();
             const value = raw === '' ? null : Number(raw);
             if (value !== null && (!Number.isFinite(value) || value < 0)) {
-              if (flag) { flag.classList.add('is-error'); flag.textContent = 'Invalid'; }
+              markSaved(input, false, 'An alert price has to be a number of zero or more.');
               return;
             }
             state.pendingThresholds.add(watchId);
@@ -6200,13 +6035,12 @@
               // Keep the Inventory tab's copy of the row in step without a re-read.
               const inv = findInvItem(watchId);
               if (inv) inv.maxLandedMxn = value;
-              if (flag) {
-                flag.classList.remove('is-error');
-                flag.textContent = 'Saved';
-                setTimeout(() => { flag.textContent = ''; }, 1500);
-              }
-            } catch {
-              if (flag) { flag.classList.add('is-error'); flag.textContent = 'Failed'; }
+              markSaved(input, true);
+              const row = input.closest('.row');
+              const status = row ? row.querySelector('[data-deskstatus]') : null;
+              if (status) status.innerHTML = deskStatusChips(releaseId);
+            } catch (err) {
+              markSaved(input, false, 'Could not save the alert price: ' + ((err && err.message) || 'save failed'));
             } finally {
               state.pendingThresholds.delete(watchId);
             }
@@ -6224,7 +6058,7 @@
         // Re-rendering (a currency flip, say) rebuilds every row, which would
         // otherwise snap shut whatever the user had open. Remember and restore.
         const openIds = new Set(
-          [...wrap.querySelectorAll('.row-head[aria-expanded="true"]')]
+          [...wrap.querySelectorAll('.inv-head[aria-expanded="true"]')]
             .map((b) => b.getAttribute('aria-controls')),
         );
 
@@ -6245,8 +6079,6 @@
           if (!panel || !btn) return;
           panel.hidden = false;
           btn.setAttribute('aria-expanded', 'true');
-          const caret = btn.querySelector('.row-caret');
-          if (caret) caret.textContent = '–';
         });
 
         wireRows(wrap);
