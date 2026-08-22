@@ -1,131 +1,91 @@
 # Questions for Ian
 
-**Internal. Not published on the site.**
+**Internal. Not published on the site. The client-facing version is the "Questions for you" page of the demo guide (22 August 2026).**
 
-Collected as they come up, so nothing has to be reconstructed from memory before
-a meeting. Each one is here because the answer changes what gets built, not
-because it would be nice to know.
+Ordered by what it costs us to guess wrong. Each entry says what the answer changes,
+so the list can be trimmed without losing the reasoning.
 
-Ordered by what it costs us to guess wrong.
+## The five that change what we build next
 
----
+1. **His existing list of 800+ titles.** What form (Discogs export, spreadsheet, something
+   else), and what each row holds: condition, what he paid and in which currency, shelf
+   price, copies. *Why:* it becomes the inventory. The import script maps his columns to
+   the sheet's (artist, album, condition, qty, landed_cost_mxn, shelf_price_mxn, notes)
+   and the enrich script fills release, sleeve, year and pressings from Discogs. Costs in
+   USD or EUR need a rate and a date to become landed pesos. Also: which titles should
+   start with their watch on, and whether the list is stock, wants, or both.
 
-## 1. The German VAT question 💶: money, possibly today
+2. **Where he buys, by share.** Discogs / eBay (which national sites) / European shops
+   (which: HHV, Hard Wax, Decks, Deejay, Rush Hour, Clone, Phonica, Boomkat, Juno) /
+   Bandcamp / Mercado Libre or Mexican sellers. *Why:* sets the build order. eBay by
+   country is a parameter; each European shop is a newsletter parser, so the shop list has
+   to be worth the work. If he buys domestically at all, Mercado Libre may outrank eBay.
 
-**Ask:** When you buy from a German or other EU seller on Discogs, has anyone
-ever deducted VAT from the price because you're outside the EU? Can you pull up
-two or three recent German orders so we can look at what you actually paid?
+3. **German VAT.** On recent orders from German Discogs sellers, was 19% VAT deducted?
+   Two or three order totals settle it. *Why:* possible double taxation today (VAT in the
+   price, IVA on top) and a quiet bias in our cheapest-first sort against non-EU sellers
+   until VAT is modelled as a line. We could not confirm it from Discogs' published docs.
 
-**Why it matters.** A German seller's listed price includes 19% VAT. Discogs
-offers EU sellers no way to deduct it at checkout for a buyer outside the EU,
-and its Seller Policy requires the listed price to be final. So the price shown
-appears to be VAT-inclusive, with Mexican IVA charged on top. If that is what
-has been happening, he has been taxed twice on every German purchase.
+4. **Alerts.** Whose phone, Mexican numbers or not, SMS or WhatsApp, quiet hours.
+   *Why:* Mexican SMS needs sender registration before anything delivers and costs
+   several times the US rate; WhatsApp Business has its own onboarding. Decides the
+   gateway and the cost line.
 
-**Caveat, and the reason this is a question rather than a finding.** We could
-not confirm it from Discogs' published documentation. The page that would
-settle it is behind a seller login. His actual orders are the fastest way to
-know.
+5. **Customs broker introduction.** Will they validate duty, IVA, tasa global and the
+   formal-entry threshold? *Why:* we will not put tax numbers into software without a
+   qualified person confirming them. The rules live in a versioned table so a broker can
+   correct them without a code change.
 
-Two things follow. He may be able to recover it going forward simply by asking
-sellers to deduct VAT on export. And our cost engine is currently comparing
-unlike things: a €20 German listing and a $22 US listing look equivalent, but
-the German one carries a fifth of its price in foreign tax that the US one
-doesn't. Cheapest-first sorting is quietly biased.
+## When he has a minute
 
-**What we do with the answer:** if confirmed, VAT becomes a modelled line in the
-cost breakdown rather than an invisible part of the price.
+6. **Restock counts.** Is one copy left the right default, or per title? Always-in-stock
+   titles? *Why:* decides whether `min_qty` is seeded as 1 for everything or left blank.
+7. **Alert price.** Absolute pesos per record, or a rule (a percentage of shelf price or
+   of last landed cost)? *Why:* if a rule, `max_landed_mxn` can be derived for all 800
+   rows instead of typed; if absolute, the import leaves it blank.
+8. **Pressings.** For albums with many pressings (Autobahn has 143), what should a watch
+   cover: originals only, any vinyl, certain countries? *Why:* the pressing picker for
+   masters above the ten-pressing limit is not built; his answer decides whether it needs
+   to be, or whether a country rule does the job.
+9. **Condition floor.** VG+ acceptable, or NM only? *Why:* eBay can filter on it, Discogs
+   cannot (stats carry no condition), so the Discogs figure may be a Poor copy.
+10. **Sweep cadence.** A few times a day, or hourly for rare wants? *Why:* Discogs allows
+    60 calls a minute, two per pressing; 800 titles with watches on is not sweepable
+    hourly. Tiers by priority, and the watch switch, are the levers.
+11. **Shipping today.** Direct courier or a forwarder; real shipping costs for a few
+    lanes (DE, UK, US, JP). *Why:* calibrates the illustrative shipping table until eBay
+    quotes and purchase history replace it; consolidation may be materially cheaper under
+    the 2026 rules.
+12. **Bandcamp.** Which account follows the labels; fine to route notifications to a
+    mailbox we read? *Why:* the follow list is the coverage; the first email from a label
+    registers it. We cannot follow labels on his behalf.
+13. **The spreadsheet.** Happy in Google Sheets for now; whose Google account owns it (and
+    the Bandcamp mailbox)? *Why:* the service account has to be shared on the sheet;
+    ownership should be the shop's, not ours.
+14. **Access.** Who else gets the link; password or not? *Why:* the link writes to the
+    sheet. Vercel password protection is a Pro-plan feature (~USD 20/month); Vercel
+    Authentication would require a Vercel login, which he does not have.
+15. **Spotify seed (optional).** Connect his account to seed wants from saved albums and
+    followed artists? *Why:* dev-mode apps allow five allowlisted users; needs his sign-in.
+16. **Trade-ins and counter buys.** A real source of stock? *Why:* they arrive without an
+    order, so intake (one of the two unproven boxes) has to accept a copy with no
+    purchase behind it.
+17. **Timing.** When does he need it working for real; when does the shop open? *Why:*
+    sets the Phase 1 schedule and whether the website lands before or after.
 
----
+## From the 6 August brief, still unanswered as far as our notes show
 
-## 2. Which sources actually matter to him 🌍
+Not in the client PDF, to keep that list short. Raise on the call.
 
-**Ask:** Roughly what share of your buying is Discogs, eBay, direct from
-European shops, and Bandcamp? And which specific shops: HHV, Hard Wax, Decks,
-someone else?
-
-**Why it matters.** We can build eBay for Germany almost free: it's one
-parameter on an integration already planned. The big European specialists have
-no APIs at all and each needs its own newsletter parser, so the shop list has to
-be worth the work. Naming five shops is a different project from naming twenty.
-
----
-
-## 3. Mexican domestic supply 🇲🇽
-
-**Ask:** Do you ever buy from Mercado Libre, or from sellers inside Mexico? Is
-that a real source of stock or a rounding error?
-
-**Why it matters.** Domestic listings skip customs, import duty and the
-international shipping lane entirely. The cost engine collapses to price plus
-domestic postage, and the answer is available today rather than after an
-integration. If he buys domestically at all, Mercado Libre may be worth more
-than eBay. If he never does, it drops down the list.
-
----
-
-## 4. What "watch" should mean once inventory exists 📉
-
-**Ask:** When a record sells out on the shelf, should the system start hunting
-for a replacement by itself? Are there titles you always want in stock,
-regardless?
-
-**Why it matters.** This decides whether the stock threshold is a per-title
-number, a simple always-watch flag, or both. It's the difference between a
-watchlist he maintains and one that maintains itself.
-
-**What the tool does today:** both. Every title carries a restock count that
-switches its watch on by itself, and a watch switch that can be set by hand
-regardless. A record the shop has never stocked is a row with no copies yet.
-
----
-
-## 5. Intake: how a parcel becomes stock 📥
-
-**Ask:** When a record arrives, what happens now? Who touches it, and where does
-it get written down?
-
-**Why it matters.** This is one of the two genuinely unsolved boxes in the
-system. A parcel lands weeks after the decision to buy it, and something has to
-turn it into an inventory row carrying its real landed cost without anyone
-retyping it. Scanning a barcode at the counter, confirming against the order
-that triggered the buy, and reconciling by hand are all plausible. His actual
-handling routine decides which.
-
----
-
-## 6. Who receives the alerts 🔔
-
-**Ask:** Whose phone should a rare-find alert reach, just yours, or the shop's
-as well? Are the numbers Mexican?
-
-**Why it matters.** Practical, and it costs money: texting Mexican numbers is
-several times the US rate and needs sender registration before anything
-delivers. Also worth knowing whether an alert at 3am is welcome or a problem.
-
----
-
-## 7. Condition standards 💿
-
-**Ask:** What's your floor? Would you take a VG+ sleeve on a record you want
-badly, or is NM the line?
-
-**Why it matters.** eBay gives us condition per listing, which is the first time
-we can actually filter on it. Without a rule the cheapest copy wins, and the
-cheapest copy is often cheap for a reason.
-
----
-
-## 8. Spotify library as a starting point 🎧
-
-**Ask:** Would you be willing to connect your Spotify account so we can seed the
-watchlist from your saved albums and followed artists?
-
-**Why it matters.** It replaces typing records in one at a time. It's optional
-and it needs his explicit sign-in, so it's worth asking before building.
-
----
+- **CFDI 4.0 / facturación.** Who handles invoicing; does Clip's facturación cover it, or
+  is a stamping service needed? Legal requirement before the store opens.
+- **Rekordbox.** Confirm the real want is BPM and key on listings, not inventory sync.
+- **Buying rules.** Fixed margin, maximum price, or by feel? The scoring engine needs a
+  rule; the retail markup default is deliberately unset until he names it.
+- **Retail platform.** Committed to anything? Common Ground trial started?
+- **Buyers club.** Listed in the SOW, never defined.
+- **Tracked labels, distributors and stores.** The template for Phase 2; quoting waits on it.
 
 ## Answered
 
-*Nothing yet: move items here with the answer and the date.*
+*Nothing yet. Move items here with the answer and the date.*
