@@ -101,7 +101,7 @@ let unmatched = 0;
 let failed = 0;
 
 for (const { item, rowNumber } of queued) {
-  const label = `${item.artist || "?"} — ${item.album || "?"}`.trim();
+  const label = `${item.artist || "?"}: ${item.album || "?"}`.trim();
   const changes: string[] = [];
 
   try {
@@ -122,7 +122,7 @@ for (const { item, rowNumber } of queued) {
       }
       const hit = await searchRelease(query);
       if (!hit) {
-        console.log(`  row ${rowNumber}: ${label} — no vinyl release matched`);
+        console.log(`  row ${rowNumber}: ${label}: no vinyl release matched`);
         unmatched += 1;
         continue;
       }
@@ -180,7 +180,7 @@ for (const { item, rowNumber } of queued) {
     }
 
     if (changes.length === 0) {
-      console.log(`  row ${rowNumber}: ${label} — nothing to add`);
+      console.log(`  row ${rowNumber}: ${label}: nothing to add`);
       continue;
     }
 
@@ -188,9 +188,9 @@ for (const { item, rowNumber } of queued) {
     // can confidently return the wrong pressing and the only way to catch
     // that is to be able to read what it picked.
     console.log(
-      `  row ${rowNumber}: ${item.artist} — ${item.album}` +
+      `  row ${rowNumber}: ${item.artist}: ${item.album}` +
         (item.releaseId ? ` [release ${item.releaseId}]` : "") +
-        ` — ${changes.join(", ")}`,
+        `: ${changes.join(", ")}`,
     );
 
     if (!dryRun) {
@@ -199,7 +199,7 @@ for (const { item, rowNumber } of queued) {
     filled += 1;
   } catch (err) {
     failed += 1;
-    console.error(`  row ${rowNumber}: ${label} — FAILED: ${(err as Error).message}`);
+    console.error(`  row ${rowNumber}: ${label}: FAILED: ${(err as Error).message}`);
   }
 }
 
