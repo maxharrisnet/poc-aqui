@@ -1,5 +1,5 @@
 import type { MasterVersion } from "./discogs.js";
-import type { PressingScope } from "./watchlist.js";
+import type { PressingScope } from "./inventory.js";
 
 /**
  * At or below this many vinyl pressings we watch all of them; above it the
