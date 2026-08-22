@@ -444,9 +444,9 @@
 
     .tile {
       display: grid;
-      gap: 7px;
+      gap: 9px;
       align-content: start;
-      padding: 18px 20px 16px;
+      padding: 18px 20px 18px;
       border: 1.5px solid var(--kraft-deep);
       border-radius: 3px;
       background: var(--paper);
@@ -454,12 +454,14 @@
       color: inherit;
       text-align: left;
       cursor: pointer;
-      transition: border-color 120ms ease, transform 120ms ease;
+      /* Clips the bar that bleeds past the padding to the card's own corners. */
+      overflow: hidden;
+      transition: border-color 140ms ease, transform 140ms ease;
     }
 
     .tile:hover {
       border-color: var(--ink);
-      transform: translateY(-2px);
+      transform: translateY(-3px);
     }
 
     .tile:focus-visible {
@@ -467,54 +469,124 @@
       outline-offset: 3px;
     }
 
-    /* The two working tabs carry the ink edge the callout uses, so the pair
-       that does something reads apart from the pair that explains it. */
     .tile.is-major {
-      padding: 24px 24px 20px;
-      border-left-width: 6px;
-      border-left-color: var(--ink);
+      padding: 0 24px 24px;
     }
 
-    .tile-k {
-      font-family: var(--mono);
-      font-size: 0.76rem;
-      font-weight: 700;
-      letter-spacing: 0.14em;
-      text-transform: uppercase;
-      color: var(--carbon);
+    /* The tab's own bar, capping the card edge to edge: the inventory's is
+       landed cost against margin, the desk's is the record plus the three
+       costs stacked on it. It thickens on hover, and that plus the arrow is
+       all the movement this page has. */
+    .tile-bar {
+      display: flex;
+      height: 9px;
+      margin: 0 -24px 20px;
+      background: var(--kraft-deep);
+      transition: height 140ms ease;
     }
 
+    .tile:hover .tile-bar {
+      height: 14px;
+    }
+
+    .tile-bar i {
+      display: block;
+      height: 100%;
+    }
+
+    /* The destination's own name, in the face its page is titled in, so a tile
+       and the headline it opens are recognisably the same thing. */
     .tile-h {
-      font-size: 1.24rem;
-      font-weight: 700;
-      line-height: 1.22;
+      font-family: var(--display);
+      font-weight: 400;
+      font-size: clamp(1.55rem, 2.5vw, 2.05rem);
+      line-height: 0.98;
+      letter-spacing: -0.005em;
+      text-transform: uppercase;
       color: var(--ink);
     }
 
+    .tile:not(.is-major) .tile-h {
+      font-size: 1.12rem;
+      line-height: 1.05;
+      letter-spacing: 0.01em;
+    }
+
     .tile-d {
+      max-width: 46ch;
       font-size: 0.97rem;
       color: var(--carbon);
     }
 
+    /* Data voice, and a hairline above it, because it is measured rather than
+       written: the count comes from the sheet as the page loads. */
     .tile-stat {
+      margin-top: 3px;
+      padding-top: 11px;
+      border-top: 1px solid var(--kraft-deep);
       font-family: var(--mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       letter-spacing: 0.05em;
       color: var(--carbon);
     }
 
     .tile-go {
-      margin-top: 3px;
+      justify-self: start;
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-top: 5px;
+      padding: 10px 16px;
+      border: 1.5px solid var(--ink);
+      border-radius: 2px;
+      background: var(--ink);
+      color: var(--kraft);
       font-family: var(--mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       font-weight: 700;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.11em;
       text-transform: uppercase;
-      color: var(--ink);
     }
 
     .tile-go::after {
-      content: " \2192";
+      content: "\2192";
+      transition: transform 140ms ease;
+    }
+
+    .tile:hover .tile-go::after {
+      transform: translateX(4px);
+    }
+
+    /* The reference pair says the same thing more quietly: no fill, no bar. */
+    .tile:not(.is-major) .tile-go {
+      margin-top: 2px;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--ink);
+    }
+
+    /* The border and the shadow still answer the pointer; only the movement
+       goes, which is the part that causes trouble. */
+    @media (prefers-reduced-motion: reduce) {
+
+      .tile,
+      .tile-bar,
+      .tile-go::after {
+        transition: none;
+      }
+
+      .tile:hover {
+        transform: none;
+      }
+
+      .tile:hover .tile-bar {
+        height: 9px;
+      }
+
+      .tile:hover .tile-go::after {
+        transform: none;
+      }
     }
 
     .callout.is-splash {
@@ -3583,32 +3655,43 @@
         </ul>
 
         <div class="tiles">
+          <!-- Each working tile wears the bar its own tab draws: the shelf's
+               landed-cost-versus-margin split, and the desk's record plus the
+               three costs stacked on it. Same four colours, same meanings. -->
           <button class="tile is-major" type="button" data-tile="inv">
-            <span class="tile-k">Inventory</span>
-            <span class="tile-h">What's on the shelf, and what's wanted</span>
-            <span class="tile-d">Stock counts, what each copy cost to land and what it sells for. Set the count that starts a hunt and the price worth a text.</span>
-            <span class="tile-stat" id="tile-inv-stat">Loading the sheet…</span>
-            <span class="tile-go" aria-hidden="true">Open</span>
+            <span class="tile-bar" aria-hidden="true">
+              <i style="background:var(--c-iva);width:62%"></i>
+              <i style="background:var(--c-record);width:38%"></i>
+            </span>
+            <span class="tile-h">Inventory</span>
+            <span class="tile-d">Every record the shop owns or is hunting. What each copy cost to land, what it sells for, and how many are left, plus the count that starts a hunt and the price worth a text.</span>
+            <span class="tile-stat" id="tile-inv-stat">Reading the sheet…</span>
+            <span class="tile-go">Open the inventory</span>
           </button>
           <button class="tile is-major" type="button" data-tile="desk">
-            <span class="tile-k">Buying desk</span>
-            <span class="tile-h">Price any record, landed in Mexico</span>
-            <span class="tile-d">Type up to ten records, or use the demo list. Results stream in cheapest first, with the cost split into record, shipping, duty and IVA.</span>
-            <span class="tile-stat">Live Discogs data · about 20 seconds a run</span>
-            <span class="tile-go" aria-hidden="true">Open</span>
+            <span class="tile-bar" aria-hidden="true">
+              <i style="background:var(--c-record);width:45%"></i>
+              <i style="background:var(--c-shipping);width:28%"></i>
+              <i style="background:var(--c-duty);width:13%"></i>
+              <i style="background:var(--c-iva);width:14%"></i>
+            </span>
+            <span class="tile-h">Buying desk</span>
+            <span class="tile-d">Price any record the way it actually arrives: the listed price plus shipping, duty and IVA. Up to ten at a time, cheapest first, each total split into its four parts.</span>
+            <span class="tile-stat">Live Discogs prices · about 20 seconds a run</span>
+            <span class="tile-go">Open the buying desk</span>
           </button>
         </div>
 
         <div class="tiles is-minor">
           <button class="tile" type="button" data-tile="hiw">
-            <span class="tile-k">How it works</span>
-            <span class="tile-d">The whole chain in eight steps, and which numbers are real versus illustrative.</span>
-            <span class="tile-go" aria-hidden="true">Read</span>
+            <span class="tile-h">How it works</span>
+            <span class="tile-d">The whole chain in eight steps, and which numbers are real rather than illustrative.</span>
+            <span class="tile-go">Read it</span>
           </button>
           <button class="tile" type="button" data-tile="tech">
-            <span class="tile-k">Technical</span>
+            <span class="tile-h">Technical</span>
             <span class="tile-d">The system diagram, every data source, what is built and what it costs to run.</span>
-            <span class="tile-go" aria-hidden="true">Read</span>
+            <span class="tile-go">Read it</span>
           </button>
         </div>
 
