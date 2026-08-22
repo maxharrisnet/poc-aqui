@@ -74,6 +74,10 @@ regardless?
 number, a simple always-watch flag, or both. It's the difference between a
 watchlist he maintains and one that maintains itself.
 
+**What the tool does today:** both. Every title carries a restock count that
+switches its watch on by itself, and a watch switch that can be set by hand
+regardless. A record the shop has never stocked is a row with no copies yet.
+
 ---
 
 ## 5. Intake: how a parcel becomes stock 📥

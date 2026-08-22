@@ -51,20 +51,20 @@ npm run smoketest
 > as a signal that the project is a Node server and tries to deploy it as such,
 > which breaks the static-plus-functions build.
 
-## Watchlist (v0.2a)
+## Inventory and watchlist (v0.4)
 
-State now lives in Google Sheets rather than memory. Two sheets, deliberately
-separate because they hold different things: **Watchlist** is one row per album
-you want; **Inventory** (v0.2b) will be one row per physical copy you own.
+State lives in one Google Sheet, one row per title. A row the shop owns copies
+of is stock; a row with no copies and no purchase history is a record it wants.
+Either kind can have its watch switched on, and a sweep prices every row that
+does. Earlier versions kept a separate watchlist sheet; it is no longer read.
 
 ### Setup
 
-Beyond `DISCOGS_TOKEN`, four environment variables are required:
+Beyond `DISCOGS_TOKEN`, three environment variables are required:
 
 ```
 GOOGLE_SERVICE_ACCOUNT_EMAIL=...@....iam.gserviceaccount.com
 GOOGLE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\nMIIEv...\n-----END PRIVATE KEY-----\n"
-WATCHLIST_SHEET_ID=...
 INVENTORY_SHEET_ID=...
 ```
 
@@ -77,25 +77,31 @@ environment variables.
 npm run check-sheets
 ```
 
-It reads one cell from each sheet and reports precisely what is wrong. The
-overwhelmingly common failure is a 403, which is almost never a bad key. It
-means the spreadsheets have not been shared with the service account's email
+It reads the sheet wider than the app does and reports precisely what is wrong.
+The overwhelmingly common failure is a 403, which is almost never a bad key. It
+means the spreadsheet has not been shared with the service account's email
 address as an Editor. Two other things that bite: `GOOGLE_PRIVATE_KEY` must keep
 its literal `\n` sequences and stay quoted, and the Sheets API must be enabled
 on the Cloud project.
 
 ### Using it
 
-- **Watch** on any result adds the record. A POST takes 2–3 seconds because it
-  makes two or three rate-limited Discogs calls; the button disables itself
-  meanwhile, so a double-click cannot create duplicate rows.
+- **Watch** on any desk result adds the record to the inventory as wanted, with
+  its watch on. **Add records** on the Inventory tab does the same from typed
+  names. Either way a POST takes 2–3 seconds because it makes two or three
+  rate-limited Discogs calls; the button disables itself meanwhile, so a
+  double-click cannot create duplicate rows, and a title already on the shelf
+  gets its watch switched on rather than a second row.
 - **Alert under** sets a per-record threshold in pesos, saved on blur.
-- **Check my watchlist** sweeps every watched pressing and writes results back
-  to the sheet as it goes.
+- **Check listings now** on a row prices every watched pressing of it and
+  writes the best price back. **Check my watchlist** does that for every row
+  whose watch is on, capped at `MAX_SWEEP_ITEMS` (12) per run, least recently
+  checked first.
+- **Remove from the inventory** on a row with no copies marks it inactive. The
+  sheet keeps the row.
 
-The sweep only covers rows where `active` is `TRUE`. That column is the lever
-for keeping a growing watchlist inside the time budget: paused rows cost
-nothing.
+The `watching` column is the lever for keeping a growing list inside the time
+budget: rows with it off cost nothing.
 
 ### Watching albums, not pressings
 
@@ -120,8 +126,8 @@ Both were found the hard way and are worth knowing before touching `src/sheets.t
   blank row anywhere in the data, its table detection misfires: a 17-column row
   landed as 2 values in columns P and Q, fifteen fields discarded, HTTP 200.
   `appendRow` therefore computes the target row and writes to it explicitly, and
-  `addWatchItem` reads the row back to confirm what landed.
-- **Never derive a sheet row from an array index.** `listWatchItems` filters out
+  `addInventoryItem` reads the row back to confirm what landed.
+- **Never derive a sheet row from an array index.** `listInventoryItems` filters out
   blank rows, so position in that array and true row number drift apart the
   moment a blank row exists above the target: updates then overwrite an
   unrelated record. Use `resolveRowNumber`, which scans the raw grid.
@@ -190,9 +196,9 @@ locally. Without it the site loads fine but every check returns a clear
 
 ### Three things to know before sharing the URL
 
-**The link now writes to the sheets, not just reads.** v0.1 was read-only, so an
+**The link now writes to the sheet, not just reads.** v0.1 was read-only, so an
 open URL cost only rate limit. From v0.2a, anyone holding the link can add to
-and edit the watchlist. **Keep Vercel's deployment protection enabled**, or put
+and edit the inventory. **Keep Vercel's deployment protection enabled**, or put
 a shared passphrase in front of the mutating endpoints. Do not ship open write
 access on a link that gets forwarded.
 
@@ -214,7 +220,7 @@ in memory; serverless has no shared memory, so `/api/results` returns null and
 each visitor runs their own check. That's the right model for a shared link,
 and it means the page always opens on the idle state.
 
-## How the watchlist was chosen
+## How the demo list was chosen
 
 Every `discogsId` in `src/releases.ts` was verified against the live
 `GET /releases/{id}` endpoint before being committed: release IDs guessed
@@ -243,8 +249,10 @@ because they're necessarily what Ian would watch:
 
 ## The interface
 
-Two tabs. **Buying desk** is the tool; **How it works** explains the whole
-chain in eight steps so the client can understand it without us narrating.
+Four tabs. **Buying desk** prices; **Inventory** is every record the shop owns
+or wants, with its watches; **How it works** explains the whole chain in eight
+steps so the client can understand it without us narrating; **Technical** is
+every moving part, what it runs on and what it costs.
 
 On the desk you can either type up to ten records into the search rows, or
 press **Use the demo list** for the eight curated pressings. Results stream
@@ -277,7 +285,10 @@ labelled, which is exactly the gap eBay's Browse API closes in Phase 1.
 
 ## Files
 
-- `releases.ts`: the watchlist, with verified Discogs IDs
+- `releases.ts`: the demo list, with verified Discogs IDs
+- `inventory.ts`: the sheet schema: stock, watches and sweep state, one row per title
+- `sheets.ts`: Google Sheets auth and reads/writes, knows nothing about records
+- `pressings.ts`: which pressings of an album a watch covers
 - `discogs.ts`: API client, sanctioned endpoints only
 - `fx.ts`: live FX via Frankfurter
 - `shipping.ts`: origin-based shipping estimates
