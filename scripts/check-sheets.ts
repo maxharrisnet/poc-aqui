@@ -1,8 +1,8 @@
 import { getRows } from "../src/sheets.js";
 
 /**
- * Connectivity and integrity diagnostic. Run before anything else depends on
- * Sheets:
+ * Connectivity and integrity diagnostic for the inventory sheet. Run before
+ * anything else depends on Sheets:
  *
  *   npm run check-sheets
  *
@@ -19,7 +19,7 @@ import { getRows } from "../src/sheets.js";
  *    therefore deliberately reads WIDER than the app does.
  */
 
-const APP_LAST_COLUMN_INDEX = 17; // R. The widest sheet is the watchlist, A:R
+const APP_LAST_COLUMN_INDEX = 25; // Z. The inventory sheet is A:Z
 const WIDE_RANGE = "A1:BZ200";
 
 const colName = (index: number): string => {
@@ -33,10 +33,7 @@ const colName = (index: number): string => {
   return s;
 };
 
-const targets = [
-  ["WATCHLIST_SHEET_ID", process.env.WATCHLIST_SHEET_ID],
-  ["INVENTORY_SHEET_ID", process.env.INVENTORY_SHEET_ID],
-] as const;
+const targets = [["INVENTORY_SHEET_ID", process.env.INVENTORY_SHEET_ID]] as const;
 
 let failed = false;
 
@@ -80,11 +77,11 @@ for (const [name, id] of targets) {
 
 if (failed) {
   console.error("\nChecklist:");
-  console.error("  1. Both spreadsheets shared with GOOGLE_SERVICE_ACCOUNT_EMAIL as Editor");
+  console.error("  1. The inventory spreadsheet shared with GOOGLE_SERVICE_ACCOUNT_EMAIL as Editor");
   console.error("  2. Google Sheets API enabled on the Cloud project");
   console.error("  3. GOOGLE_PRIVATE_KEY quoted, with its \\n sequences intact");
   console.error("  4. No stray data outside the app's column range");
   process.exit(1);
 }
 
-console.log("\nBoth sheets reachable, no data outside the expected range.");
+console.log("\nSheet reachable, no data outside the expected range.");

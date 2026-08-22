@@ -1,5 +1,6 @@
 import { getRows, updateRange, rowRange } from "../src/sheets.js";
-import { searchRelease, getRelease } from "../src/discogs.js";
+import { searchRelease, getRelease, getMasterVersions } from "../src/discogs.js";
+import { planPressings, AUTO_WATCH_LIMIT } from "../src/pressings.js";
 import {
   ensureHeaders,
   fromRow,
@@ -26,6 +27,7 @@ import {
  *   artist      \
  *   album        > from the release, for rows imported with only an id
  *   condition   /
+ *   pressings   which pressings a sweep prices, from the release's master
  *
  * It never overwrites a value that is already there. An import of 800 rows is
  * someone else's data, and a script that "corrects" it is a script that loses
@@ -66,6 +68,7 @@ function missing(item: InventoryItem): string[] {
   if (item.year === null) gaps.push("year");
   if (!item.artist.trim()) gaps.push("artist");
   if (!item.album.trim()) gaps.push("album");
+  if (item.watchedReleaseIds.length === 0) gaps.push("pressings");
   return gaps;
 }
 
@@ -128,10 +131,15 @@ for (const { item, rowNumber } of queued) {
     }
 
     // Search results carry a thumbnail, but the release carries the year, the
-    // canonical artist and a larger image, so one lookup covers every
-    // remaining gap rather than two partial ones.
+    // canonical artist, a larger image and the master, so one lookup covers
+    // every remaining gap rather than two partial ones.
     const wantsRelease =
-      force || !item.thumbUrl.trim() || item.year === null || !item.artist.trim() || !item.album.trim();
+      force ||
+      !item.thumbUrl.trim() ||
+      item.year === null ||
+      !item.artist.trim() ||
+      !item.album.trim() ||
+      item.watchedReleaseIds.length === 0;
 
     if (wantsRelease && item.releaseId !== null) {
       const meta = await getRelease(item.releaseId);
@@ -150,6 +158,24 @@ for (const { item, rowNumber } of queued) {
       if (!item.album.trim() && meta.title) {
         item.album = meta.title;
         changes.push(`album=${meta.title}`);
+      }
+
+      // Which pressings a sweep should price. Resolved once: the plan always
+      // holds at least the row's own release, so an enriched row never comes
+      // back through here. Same rule as adding through the page.
+      if (force || item.watchedReleaseIds.length === 0) {
+        const master = meta.masterId
+          ? await getMasterVersions(meta.masterId)
+          : { total: 0, versions: [] };
+        const plan = planPressings(master.versions, master.total, AUTO_WATCH_LIMIT, item.releaseId);
+        item.masterId = meta.masterId;
+        item.watchedReleaseIds = plan.needsUserSelection ? [item.releaseId] : plan.releaseIds;
+        item.pressingScope = plan.scope;
+        item.pressingCount = plan.totalVinylVersions;
+        changes.push(
+          `pressings=${item.watchedReleaseIds.length}` +
+            (plan.needsUserSelection ? ` of ${plan.totalVinylVersions}, pick by hand` : ""),
+        );
       }
     }
 

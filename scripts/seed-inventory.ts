@@ -172,6 +172,17 @@ const items: InventoryItem[] = SEED.map(
     // with no alert channel just waits to be noticed by hand.
     alertSms: watching,
     lastPurchasedAt: lastPurchasedAt(i, qty, addedAt(i)),
+    // Resolved by scripts/enrich-inventory.ts: until then a sweep prices the
+    // shelf pressing only, which is correct and free.
+    masterId: null,
+    watchedReleaseIds: [],
+    pressingScope: "all",
+    pressingCount: 0,
+    lastCheckedAt: null,
+    bestLandedMxn: null,
+    bestReleaseId: null,
+    status: "watching",
+    active: true,
   }),
 );
 
