@@ -1,5 +1,10 @@
 import { getRows, appendRow, updateRange, rowRange } from "./sheets.js";
 
+export type PressingScope = "all" | "selected";
+/** `alerted` means the last check crossed the limit. Alerts fire on the
+ *  crossing only, so this is what stops a nightly re-alert for the same copy. */
+export type SweepStatus = "watching" | "alerted";
+
 export interface InventoryItem {
   id: string;
   artist: string;
@@ -21,17 +26,33 @@ export interface InventoryItem {
   addedAt: string;
   notes: string;
   /** Discogs sleeve image. Filled by scripts/enrich-inventory.ts, never typed
-   *  by hand — a stale or wrong URL is worse than an empty frame. */
+   *  by hand: a stale or wrong URL is worse than an empty frame. */
   thumbUrl: string;
   year: number | null;
-  /** Text the desk when this record crosses its alert threshold. Mirrors the
-   *  watchlist's own switch: an alert that nobody receives is not an alert,
-   *  and the buy at the end of this loop is made by a person. */
+  /** Text the desk when this record crosses its alert threshold. An alert
+   *  that nobody receives is not an alert, and the buy at the end of this
+   *  loop is made by a person. */
   alertSms: boolean;
   /** When the shop last bought a copy of this record, as opposed to addedAt,
    *  which is when the title first appeared on the shelf. Empty means it has
    *  never been restocked since. */
   lastPurchasedAt: string;
+  /** Discogs master, blank where a release has none. Resolved at add time. */
+  masterId: number | null;
+  /** What a sweep prices. Empty means "just releaseId": see sweepReleaseIds. */
+  watchedReleaseIds: number[];
+  pressingScope: PressingScope;
+  /** Vinyl versions known at add time, so sweep cost is knowable before it runs. */
+  pressingCount: number;
+  lastCheckedAt: string | null;
+  /** Cheapest landed cost found by the last check, and which pressing it was. */
+  bestLandedMxn: number | null;
+  bestReleaseId: number | null;
+  status: SweepStatus;
+  /** Soft delete. A blank cell reads as true so rows written before this
+   *  column existed survive: deleting sheet rows is what resolveRowNumber
+   *  exists to avoid. */
+  active: boolean;
 }
 
 /** Column order is the sheet contract. Append only, never reorder. */
@@ -53,11 +74,20 @@ export const INVENTORY_HEADERS = [
   "year",
   "alert_sms",
   "last_purchased_at",
+  "master_id",
+  "watched_release_ids",
+  "pressing_scope",
+  "pressing_count",
+  "last_checked_at",
+  "best_landed_mxn",
+  "best_release_id",
+  "status",
+  "active",
 ] as const;
 
-/** A:Q: seventeen columns. Update if headers are appended. */
-export const INVENTORY_RANGE = "A:Q";
-const HEADER_RANGE = "A1:Q1";
+/** A:Z: twenty-six columns. Update if headers are appended. */
+export const INVENTORY_RANGE = "A:Z";
+const HEADER_RANGE = "A1:Z1";
 
 const str = (v: string | undefined): string => v ?? "";
 const numOrNull = (v: string | undefined): number | null => {
@@ -85,6 +115,15 @@ export function toRow(item: InventoryItem): string[] {
     item.year === null ? "" : String(item.year),
     item.alertSms ? "TRUE" : "FALSE",
     item.lastPurchasedAt,
+    item.masterId === null ? "" : String(item.masterId),
+    item.watchedReleaseIds.join(","),
+    item.pressingScope,
+    String(item.pressingCount),
+    item.lastCheckedAt ?? "",
+    item.bestLandedMxn === null ? "" : String(item.bestLandedMxn),
+    item.bestReleaseId === null ? "" : String(item.bestReleaseId),
+    item.status,
+    item.active ? "TRUE" : "FALSE",
   ];
 }
 
@@ -107,6 +146,18 @@ export function fromRow(row: string[]): InventoryItem {
     year: numOrNull(row[14]),
     alertSms: str(row[15]).toUpperCase() === "TRUE",
     lastPurchasedAt: str(row[16]),
+    masterId: numOrNull(row[17]),
+    watchedReleaseIds: str(row[18])
+      .split(",")
+      .map((s) => Number(s.trim()))
+      .filter((n) => Number.isFinite(n) && n > 0),
+    pressingScope: str(row[19]) === "selected" ? "selected" : "all",
+    pressingCount: numOrNull(row[20]) ?? 0,
+    lastCheckedAt: str(row[21]) === "" ? null : str(row[21]),
+    bestLandedMxn: numOrNull(row[22]),
+    bestReleaseId: numOrNull(row[23]),
+    status: str(row[24]) === "alerted" ? "alerted" : "watching",
+    active: str(row[25]).trim().toUpperCase() !== "FALSE",
   };
 }
 
@@ -114,7 +165,32 @@ export function newInventoryId(): string {
   return `i_${Math.random().toString(36).slice(2, 10)}`;
 }
 
-/** Same contract as the watchlist's resolveRowNumber: see that comment. */
+/** The pressings a sweep prices for this row. A row added through Watch or Add
+ *  carries every pressing of its master; a row typed or seeded by hand has
+ *  only the pressing on the shelf, which is the right thing to price until
+ *  scripts/enrich-inventory.ts has resolved its master. */
+export function sweepReleaseIds(
+  item: Pick<InventoryItem, "releaseId" | "watchedReleaseIds">,
+): number[] {
+  if (item.watchedReleaseIds.length > 0) return item.watchedReleaseIds;
+  return item.releaseId === null ? [] : [item.releaseId];
+}
+
+/** The row that already covers a release: the shelf pressing itself or any
+ *  watched pressing of the same album. Inactive rows count, because reviving
+ *  one beats appending a duplicate of it. */
+export function findByRelease(items: InventoryItem[], releaseId: number): InventoryItem | undefined {
+  return items.find((i) => i.releaseId === releaseId || i.watchedReleaseIds.includes(releaseId));
+}
+
+/**
+ * Finds the 1-based sheet row holding `id`.
+ *
+ * Sheet row numbers must be resolved from the raw grid, never from the index
+ * of a filtered array: a blank row anywhere above the target shifts the two
+ * apart and the write lands on the wrong record. `rows` must be the full
+ * response from getRows, header included.
+ */
 export function resolveRowNumber(rows: string[][], id: string): number | null {
   for (let i = 1; i < rows.length; i += 1) {
     if ((rows[i]?.[0] ?? "").trim() === id) return i + 1;
@@ -128,10 +204,21 @@ function sheetId(): string {
   return id;
 }
 
+/**
+ * Ensures row 1 holds the header. Safe to call repeatedly.
+ *
+ * Refuses to touch a row 1 that holds something other than the expected
+ * header: if it were blindly overwritten, a deleted header row or a row
+ * inserted above it would cause the next write to permanently destroy a
+ * real record.
+ */
 export async function ensureHeaders(): Promise<void> {
   const rows = await getRows(sheetId(), HEADER_RANGE);
   const existing = rows[0] ?? [];
   if (existing[0] === INVENTORY_HEADERS[0]) {
+    // A sheet created before a column was appended still carries the older,
+    // shorter header. Extending it is safe. The columns it names are blank:
+    // and without this the new column stays permanently unlabelled.
     if (existing.length < INVENTORY_HEADERS.length) {
       await updateRange(sheetId(), HEADER_RANGE, [[...INVENTORY_HEADERS]]);
     }
@@ -164,6 +251,8 @@ export async function addInventoryItem(item: InventoryItem): Promise<InventoryIt
   await ensureHeaders();
   const rowNumber = await appendRow(sheetId(), INVENTORY_RANGE, toRow(item));
 
+  // Read back what actually landed. Sheets has silently mangled writes before;
+  // a wrong row is far worse than a failed one.
   const written = await getRows(sheetId(), rowRange(INVENTORY_RANGE, rowNumber));
   const id = written[0]?.[0] ?? "";
   if (id !== item.id) {
@@ -175,12 +264,29 @@ export async function addInventoryItem(item: InventoryItem): Promise<InventoryIt
   return item;
 }
 
-/** Merges `patch` onto the current sheet row: same rationale as patchWatchItem. */
+/**
+ * Merges `patch` onto whatever is currently in the sheet for `id`.
+ *
+ * Deliberately re-reads rather than writing a caller-held snapshot: a sweep can
+ * take minutes, and PUTting a stale row silently reverts anything the user
+ * changed in the meantime. Sheets has no compare-and-swap, so this narrows the
+ * race to the read-write gap rather than closing it.
+ */
 export async function patchInventoryItem(
   id: string,
   patch: Partial<InventoryItem>,
 ): Promise<InventoryItem> {
   const rows = await fetchGrid();
+
+  // The header grows with the schema. Extending it here, from the grid already
+  // in hand, means the first write after a deploy labels the new columns
+  // without a separate read, and a sheet that predates a column never shows
+  // that column unlabelled.
+  const header = rows[0] ?? [];
+  if (header[0] === INVENTORY_HEADERS[0] && header.length < INVENTORY_HEADERS.length) {
+    await updateRange(sheetId(), HEADER_RANGE, [[...INVENTORY_HEADERS]]);
+  }
+
   const rowNumber = resolveRowNumber(rows, id);
   if (rowNumber === null) throw new Error(`Inventory item ${id} not found`);
 
