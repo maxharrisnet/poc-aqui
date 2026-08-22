@@ -213,7 +213,7 @@ export function publicSheetsError(message: string): string | null {
       );
     case "404":
       return (
-        "No spreadsheet with that id. Check WATCHLIST_SHEET_ID and INVENTORY_SHEET_ID in " +
+        "No spreadsheet with that id. Check INVENTORY_SHEET_ID in" +
         "this deployment's environment, and remember that changing them needs a redeploy " +
         "to take effect."
       );
