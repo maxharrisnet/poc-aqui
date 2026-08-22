@@ -3772,24 +3772,22 @@
     /* Only on the two reference pages, and only once there is a way back to
        speak of. The sticky row already carries the tabs; this is for the
        Technical page, which runs several screens past its own headline. */
+    /* Square and wordless: an arrow pointing up needs no label beside it, and
+       the corner it sits in is the one place a caption would be in the way. */
     .totop {
       position: fixed;
       right: 18px;
       bottom: 18px;
       z-index: 40;
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 14px;
+      display: grid;
+      place-items: center;
+      width: 42px;
+      height: 42px;
+      padding: 0;
       border: 1.5px solid var(--ink);
       border-radius: 2px;
       background: var(--ink);
       color: var(--kraft);
-      font-family: var(--mono);
-      font-size: 0.74rem;
-      font-weight: 700;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
       cursor: pointer;
       box-shadow: 0 8px 20px rgba(10, 10, 10, 0.18);
     }
@@ -4431,12 +4429,11 @@
 
   </div>
 
-  <button class="totop" id="totop" type="button" hidden>
-    <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+  <button class="totop" id="totop" type="button" aria-label="Back to top" title="Back to top" hidden>
+    <svg viewBox="0 0 24 24" width="19" height="19" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
       <path d="M12 19.5V5.2"/>
       <path d="M5.6 11.6 12 5.2l6.4 6.4"/>
     </svg>
-    Top
   </button>
 
   <script>
