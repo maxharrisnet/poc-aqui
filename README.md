@@ -263,8 +263,9 @@ watching it work is better than watching it hang.
 Every record shows a stacked bar decomposing landed cost into record /
 shipping / duty / IVA. Expanding a row gives cover art, label and catalogue
 number, format, pressing country, styles, the actual money in every cost
-line, and direct links to buy on Discogs. A header toggle flips the whole
-page between MXN and USD.
+line, and direct links to buy on Discogs. Everything reads in pesos: the
+MXN/USD toggle is parked behind `CURRENCY_PARKED` in the page script, wired
+but hidden, until it earns its place.
 
 Two things worth pointing at during a demo:
 

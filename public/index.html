@@ -259,6 +259,12 @@
       outline-offset: -3px;
     }
 
+    /* Parked by CURRENCY_PARKED in the script. The flex display above would
+       otherwise beat the hidden attribute. */
+    .ccy[hidden] {
+      display: none;
+    }
+
     /* ---------------------------------------------------- tabs */
 
     /* Five tabs no longer fit a phone. The strip scrolls rather than wrapping:
@@ -970,6 +976,12 @@
       padding: 11px 14px 12px;
       box-shadow: 0 8px 24px rgba(10, 10, 10, 0.16);
       animation: toast-in 220ms ease-out;
+    }
+
+    /* A text carries the colour of the switch that sends it, so the toast and
+       the SMS button on the row read as the same thing. */
+    .toast.is-sms {
+      border-left-color: var(--c-sms);
     }
 
     /* Sourcing notices are advice, not alarms: same card, calmer edge. */
@@ -2042,8 +2054,12 @@
       cursor: help;
     }
 
+    /* Keeps its slot when there is nothing to flag. A flag that only some
+       rows carry moved every stepper on those rows 19px to the left, and a
+       column that jumps between rows cannot be scanned. */
     .inv-flag[hidden] {
-      display: none;
+      display: grid;
+      visibility: hidden;
     }
 
     .stepper {
@@ -2112,6 +2128,7 @@
     .inv-price {
       grid-area: price;
       min-width: 8.5rem;
+      position: relative;
       text-align: right;
       font-family: var(--mono);
       font-size: 0.95rem;
@@ -2125,12 +2142,21 @@
       color: var(--carbon);
     }
 
+    /* Two lines of height for the best-seen line, but none of its width. In
+       the flow, the line's width set the column's, and every row with a best
+       price shoved the count beside it to the left. Hung under the price and
+       anchored to the column's right edge, it can run as long as it likes. */
+    .inv-price.has-best {
+      padding-bottom: 17px;
+    }
+
     /* The second line of the price column: what a sweep last found. Muted
        unless the figure is under the record's alert price, which is the one
        thing on the row worth a colour. */
     .inv-best {
-      display: block;
-      margin-top: 2px;
+      position: absolute;
+      right: 0;
+      bottom: 0;
       font-size: 0.72rem;
       font-weight: 500;
       letter-spacing: 0.02em;
@@ -4063,6 +4089,11 @@
 
       const CURRENCY_KEY = 'aqui-ahora:currency';
 
+      /** The MXN/USD switch is parked: everything reads in pesos for now.
+       *  The buttons, the stored choice and setCurrency stay wired, so
+       *  flipping this to false brings the toggle back as it was. */
+      const CURRENCY_PARKED = true;
+
       // ------------------------------------------------ color theme
       // DARK MODE DISABLED. To restore, uncomment the head script, the two
       // dark :root blocks, the .theme button and its icon-swap CSS, then
@@ -4094,7 +4125,7 @@
       }
 
       const state = {
-        currency: loadCurrency(),
+        currency: CURRENCY_PARKED ? 'MXN' : loadCurrency(),
         data: null,
         live: [],      // results as they stream in
         running: false,
@@ -4218,10 +4249,14 @@
 
       function setCurrency(c) {
         state.currency = c;
-        try {
-          localStorage.setItem(CURRENCY_KEY, c);
-        } catch {
-          // Storage unavailable. The choice just won't survive a reload.
+        // While the switch is parked the forced peso default is not a choice,
+        // so it must not overwrite the one a person made before.
+        if (!CURRENCY_PARKED) {
+          try {
+            localStorage.setItem(CURRENCY_KEY, c);
+          } catch {
+            // Storage unavailable. The choice just won't survive a reload.
+          }
         }
         $('ccy-mxn').setAttribute('aria-pressed', String(c === 'MXN'));
         $('ccy-usd').setAttribute('aria-pressed', String(c === 'USD'));
@@ -4234,6 +4269,7 @@
 
       // The markup hardcodes MXN as pressed; sync the buttons to the stored choice.
       setCurrency(state.currency);
+      $('ccy-mxn').parentElement.hidden = CURRENCY_PARKED;
 
       // ------------------------------------------------ typed rows
 
@@ -4579,7 +4615,7 @@
         // alert-coloured edge. Sourcing notices are advice about the setup.
         const kind = alert.kind || 'SMS';
         el.className = 'toast' + (alert.plain ? ' is-plain' : '') +
-          (kind === 'SMS' ? '' : ' is-note');
+          (alert.plain ? '' : kind === 'SMS' ? ' is-sms' : ' is-note');
         if (alert.plain) {
           el.innerHTML = '<div class="toast-body"><span class="toast-icon">' +
             esc(alert.icon || '\u2705') + '</span>' + esc(alert.message) + '</div>';
@@ -4913,23 +4949,37 @@
 
       /** The price column. A title on the shelf shows its shelf price with the
        *  best landed price seen beneath it; a wanted title has no shelf price,
-       *  so the best price seen is the figure. */
+       *  so the best price seen is the figure. When it was seen is left to the
+       *  open row: with it, the line outgrew the column. */
       function invPriceHtml(item) {
         const checked = ago(item.lastCheckedAt).replace(/^checked /, '');
         const under = item.status === 'alerted' ? ' is-under' : '';
+        let main;
+        let cls = '';
+        let sub = '';
         if (item.shelfPriceMxn != null) {
-          const sub = !item.watching ? ''
-            : item.bestLandedMxn == null ? '<span class="inv-best">no copy priced yet</span>'
-            : '<span class="inv-best' + under + '">best ' + esc(moneyMxn(item.bestLandedMxn)) +
-              ' &middot; ' + esc(checked) + '</span>';
-          return '<div class="inv-price">' + esc(moneyMxn(item.shelfPriceMxn)) + sub + '</div>';
+          main = esc(moneyMxn(item.shelfPriceMxn));
+          if (item.watching) {
+            sub = item.bestLandedMxn == null
+              ? 'no copy priced yet'
+              : 'best ' + esc(moneyMxn(item.bestLandedMxn));
+          }
+        } else if (item.bestLandedMxn != null) {
+          main = esc(moneyMxn(item.bestLandedMxn));
+          cls = under;
+          sub = 'best seen';
+        } else {
+          main = 'not priced';
+          cls = ' is-none';
+          if (item.watching) sub = esc(checked);
         }
-        if (item.bestLandedMxn != null) {
-          return '<div class="inv-price' + under + '">' + esc(moneyMxn(item.bestLandedMxn)) +
-            '<span class="inv-best' + under + '">best seen &middot; ' + esc(checked) + '</span></div>';
-        }
-        return '<div class="inv-price is-none">not priced' +
-          (item.watching ? '<span class="inv-best">' + esc(checked) + '</span>' : '') + '</div>';
+        // has-best reserves the second line's height: the line itself sits
+        // outside the flow so its width cannot move the count column.
+        return '<div class="inv-price' + cls + (sub ? ' has-best' : '') + '">' + main +
+          (sub
+            ? '<span class="inv-best' + (item.bestLandedMxn != null ? under : '') + '">' + sub + '</span>'
+            : '') +
+          '</div>';
       }
 
       /** How much of the album a sweep covers. Silent for the common case of
